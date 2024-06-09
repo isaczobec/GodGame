@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.Sockets;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -20,6 +21,7 @@ public class VisibleSquareMesh {
 
     public Vector3[] vertices;
     private int[] triangles;
+    private Vector2[] uvs;
 
     public Mesh mesh { get; private set; }
 
@@ -42,9 +44,12 @@ public class VisibleSquareMesh {
     /// <summary>
     /// Generates the vertices array for this rectangle
     /// </summary>
-    public void CalculateVerticesArray(float quadSize, bool setMeshVertices = false) {
+    public void CalculateVerticesArray(float quadSize, bool setMeshVertices = false, bool setUVs = true) {
 
         Vector3[] newVertices = new Vector3[sizeX * sizeZ]; // set the size of the array
+
+        Vector2[] newUVs = new Vector2[sizeX * sizeZ]; // create an array for UVs
+
         int currentVertexIndex = 0;
         for (int x = 0; x < sizeX; x++) {
             for (int z = 0; z < sizeZ; z++) {
@@ -54,6 +59,12 @@ public class VisibleSquareMesh {
                     height,
                     centerPosition.y + z * quadSize - (sizeZ - 1) * quadSize / 2
                 );
+
+                // set UVs to be on a grid between [0,0] and [1,1]
+                if (setUVs) {
+                    newUVs[currentVertexIndex] = new Vector2((float)x / sizeX, (float)z / sizeZ);
+                }
+
                 currentVertexIndex++;
             }
         }
@@ -61,6 +72,10 @@ public class VisibleSquareMesh {
             mesh.vertices = newVertices;
         } else {
             vertices = newVertices;
+        }
+
+        if (setUVs) {
+            uvs = newUVs;
         }
     }
 
@@ -99,6 +114,7 @@ public class VisibleSquareMesh {
         mesh.Clear();
         mesh.vertices = vertices;
         mesh.triangles = triangles;
+        mesh.uv = uvs;
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
     }
@@ -118,11 +134,56 @@ public class SquareMeshObject : MonoBehaviour {
     private MeshFilter meshFilter;
     private MeshRenderer meshRenderer;
 
-    public void Initialize(Material material = null) {
+    private Material ownedMaterial;
+    
+
+
+    // ----- TEXTURE SETTINGS -----
+    private int textureSize = 32;
+
+    public Texture2D inlandnessTexture;
+    public string inlandnessTextureName = "_InlandnessTexture";
+    public Texture2D plainnessTexture;
+    public string plainnessTextureName = "_PlainnessTexture";
+    public Texture2D bumpinessTexture;
+    public string bumpinessTextureName = "_BumpinessTexture";
+    public Texture2D humidityTexture;
+    public string humidityTextureName = "_HumidityTexture";
+    public Texture2D heatTexture;
+    public string heatTextureName = "_HeatTexture";
+
+
+
+
+
+
+
+    // ---------------------------
+    public void Initialize(Material baseMaterial = null) {
         meshFilter = gameObject.AddComponent<MeshFilter>();
         meshRenderer = gameObject.AddComponent<MeshRenderer>();
-        if (material != null) { meshRenderer.material = material; }
+
+        if (baseMaterial != null) { 
+            meshRenderer.material = baseMaterial; 
+            ownedMaterial = meshRenderer.material; // create an instance of the material
+            }
+
         meshFilter.mesh = squareMesh.mesh;
+
+        InitializeTextures();
+    }
+
+    private void InitializeTextures() {
+        inlandnessTexture = new Texture2D(textureSize, textureSize);
+        ownedMaterial.SetTexture(inlandnessTextureName, inlandnessTexture);
+        plainnessTexture = new Texture2D(textureSize, textureSize);
+        ownedMaterial.SetTexture(plainnessTextureName, plainnessTexture);
+        bumpinessTexture = new Texture2D(textureSize, textureSize);
+        ownedMaterial.SetTexture(bumpinessTextureName, bumpinessTexture);
+        humidityTexture = new Texture2D(textureSize, textureSize);
+        ownedMaterial.SetTexture(humidityTextureName, humidityTexture);
+        heatTexture = new Texture2D(textureSize, textureSize);
+        ownedMaterial.SetTexture(heatTextureName, heatTexture);
     }
 
     public void UpdateMesh(bool updateSquareMesh = true) {

@@ -77,7 +77,7 @@ public class MeshGenerator : MonoBehaviour
         SquareMeshObject meshObject = squareMeshObject.AddComponent<SquareMeshObject>();
         squareMeshObjects.Add(meshObject);
         meshObject.squareMesh = new VisibleSquareMesh(centerPosition, xSize, zSize, quadSize);
-        meshObject.Initialize(material:baseMaterial);
+        meshObject.Initialize(baseMaterial:baseMaterial);
 
         return meshObject;
     }
@@ -97,21 +97,21 @@ public class MeshGenerator : MonoBehaviour
     /// <summary>
     /// Generates the height of a squareMeshObject using perlin noise. Will be made more elaborate in the future
     /// </summary>
-    private void GenerateHeight(SquareMeshObject squareMeshObject, bool updateMesh = true) {
-        for (int j = 0; j < squareMeshObject.squareMesh.vertices.Length; j++) {
-            squareMeshObject.squareMesh.vertices[j].y = terrainGenerator.GenerateHeight(new Vector2(squareMeshObject.squareMesh.vertices[j].x, squareMeshObject.squareMesh.vertices[j].z));
-        }
+    private void GenerateTerrain(SquareMeshObject squareMeshObject, bool updateMesh = true) {
+
+        terrainGenerator.GenerateChunk(squareMeshObject);
+
         if (updateMesh) {
             UpdateMesh(squareMeshObject);
         }
     }
 
     /// <summary>
-    /// Generates the height of all squareMeshObjects using GenerateHeight().
+    /// Generates the height of all squareMeshObjects using GenerateTerrain().
     /// </summary>
     private void GenerateAllHeights(bool updateMesh = true) {
         foreach (SquareMeshObject meshObject in squareMeshObjects) {
-            GenerateHeight(meshObject, false);
+            GenerateTerrain(meshObject, false);
         }
         if(updateMesh) UpdateAllMeshes();
     }
@@ -136,7 +136,7 @@ public class MeshGenerator : MonoBehaviour
         if (!discoveredChunks.Contains(chunkCoordinates)) {
             discoveredChunks.Add(chunkCoordinates);
             SquareMeshObject newMeshObject = CreateSquareMeshGameObject(new Vector2(chunkCoordinates.x * chunkSize, chunkCoordinates.y * chunkSize), (int)chunkSize, (int)chunkSize);
-            GenerateHeight(newMeshObject);
+            GenerateTerrain(newMeshObject);
             chunks.Add(new Chunk(chunkCoordinates, newMeshObject));
         }
     }
@@ -150,13 +150,12 @@ public class MeshGenerator : MonoBehaviour
             int cY = centerPosition.y < 0? (int)(centerPosition.y / chunkSize - 0.5f) : (int)(centerPosition.y / chunkSize + 0.5f);
             Vector2Int chunkCoordinates = new Vector2Int(cX, cY);
 
-            int sideLength = renderAround.getRenderDistanceChunks() * 2 + -1;
+            int sideLength = renderAround.getRenderDistanceChunks() * 2 + -1; // only uneven numbers
             for (int i = 0; i < sideLength; i++) {
                 for (int j = 0; j < sideLength; j++) {
                     PromptChunkCoordinates(chunkCoordinates + new Vector2Int(i-(int)Mathf.Floor(sideLength/2), j-(int)Mathf.Floor(sideLength/2)));
                 }
             }
-            PromptChunkCoordinates(chunkCoordinates);
         }
 
     }

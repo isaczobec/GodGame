@@ -442,26 +442,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   multiplyRandomNumbersWith: 1000
+  addRandomNumbersWith: 1000
   inlandnessPerlinGenerator:
-    scale: 0.01
-    inlandnessHeightMultiplier: 15
-    inlandnessHeightCurve:
+    scale: 0.001
+    valMultiplier: 200
+    valCurve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 0
         value: 0
-        inSlope: 0.44249222
-        outSlope: 0.44249222
+        inSlope: 0.87741673
+        outSlope: 0.87741673
         tangentMode: 34
         weightedMode: 0
         inWeight: 0
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 0.8058944
-        value: 0.35660198
-        inSlope: 1.8785862
-        outSlope: 1.8785862
+        time: 0.58553404
+        value: 0.51375735
+        inSlope: 1.0252976
+        outSlope: 1.0252976
         tangentMode: 34
         weightedMode: 0
         inWeight: 0.33333334
@@ -469,11 +470,146 @@ MonoBehaviour:
       - serializedVersion: 3
         time: 1
         value: 1
-        inSlope: 3.31468
-        outSlope: 3.31468
+        inSlope: 1.1731787
+        outSlope: 1.1731787
         tangentMode: 34
         weightedMode: 0
         inWeight: 0.33333334
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  plainnessPerlinGenerator:
+    scale: 0.005
+    valMultiplier: 1
+    valCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0.078262135
+        outSlope: 0.078262135
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 0.30696392
+        value: 0.024023652
+        inSlope: -0.0016118493
+        outSlope: -0.0016118493
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.53844374
+      - serializedVersion: 3
+        time: 0.66394925
+        value: 0.46409053
+        inSlope: 0.028859165
+        outSlope: 0.028859165
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.49801594
+      - serializedVersion: 3
+        time: 0.7795572
+        value: 0.9058825
+        inSlope: 1.306241
+        outSlope: 1.306241
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0.42694765
+        outSlope: 0.42694765
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  bumpinessPerlinGenerator:
+    scale: 0.02
+    valMultiplier: 20
+    valCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 1
+        outSlope: 1
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 1
+        outSlope: 1
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  humidityPerlinGenerator:
+    scale: 0.1
+    valMultiplier: 1
+    valCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 1
+        outSlope: 1
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 1
+        outSlope: 1
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  heatPerlinGenerator:
+    scale: 0.1
+    valMultiplier: 1
+    valCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 1
+        outSlope: 1
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 1
+        outSlope: 1
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0
         outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
@@ -642,7 +778,7 @@ Transform:
   m_GameObject: {fileID: 1039704457}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -151.6, y: 9.625059, z: -48.8}
+  m_LocalPosition: {x: -443, y: 9.625059, z: -257}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -763,7 +899,7 @@ Transform:
   m_GameObject: {fileID: 1585595516}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 47.4, y: 11.2, z: -50.6}
+  m_LocalPosition: {x: 183, y: 11.2, z: 376}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

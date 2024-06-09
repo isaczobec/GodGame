@@ -21,22 +21,24 @@ public class PerlinGenerator
     private Vector2 origin;
 
     public float scale;
-    public float inlandnessHeightMultiplier;
-    public AnimationCurve inlandnessHeightCurve;
+    public float valMultiplier;
+    public AnimationCurve valCurve;
 
     public void SetOrigin(Vector2 origin) {
         this.origin = origin;
     }
 
 
-    public float SampleNosie(Vector2 location, bool clamp = false, bool runThroughCurve = true, bool multiplyWithHeightMultiplier = true) {
-        Vector2 sampleFromLocation = (location - origin) * scale;
+    public float SampleNosie(Vector2 location, bool clamp = false, bool runThroughCurve = true, bool multiplyWithHeightMultiplier = true, float multiplyScale = 1) {
+        
+        Vector2 sampleFromLocation = (location - origin) * scale * multiplyScale;
         float noise = Mathf.PerlinNoise(sampleFromLocation.x, sampleFromLocation.y);
 
         if (clamp) {noise = Mathf.Clamp(noise, 0f, 1f);}
-        if (runThroughCurve) {noise = inlandnessHeightCurve.Evaluate(noise);}
-        if (multiplyWithHeightMultiplier) {noise *= inlandnessHeightMultiplier;}
+        if (runThroughCurve) {noise = valCurve.Evaluate(noise);}
+        if (multiplyWithHeightMultiplier) {noise *= valMultiplier;}
 
         return noise;
     }
+
 }
