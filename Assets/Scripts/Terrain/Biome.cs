@@ -12,9 +12,12 @@ public class Biome
 {
     // bounds for the inlandness, heat, humidity cube for this biome
 
+    public string name;
+    public int biomeMaskIndex;
+
     [Header("inlandness, heat, humidity cube")]
-    public Vector3 bottomLeftCornerBound;
-    public Vector3 topRightCorner;
+    public Vector3 bound0;
+    public Vector3 bound1;
 
     public float linearPadding = 0.1f; // padding for the linear interpolation between biomes
 
@@ -31,9 +34,22 @@ public class Biome
     [Header("Color")]
     public Color color;
 
+    public void InitializePerlinGenerators(Vector2 pos1, Vector2 pos2) { 
+
+        plainnessPerlinGenerator.SetOrigin(pos1);
+        bumpinessPerlinGenerator.SetOrigin(pos2);
+
+    }
+
+    public float EvaluateInlandness(Vector2 position, float inlandness) {
+        float inl = inlandnessHeightCurve.Evaluate(inlandness);
+        inl *= inlandnessHeightMultiplier;
+        return inl;
+    }
+
     public float GetHeight(Vector2 position, float inlandness) {
 
-        inlandness *= inlandnessHeightMultiplier;
+        inlandness = EvaluateInlandness(position, inlandness);
 
         // get how plain the terrain is
         float plainness = plainnessPerlinGenerator.SampleNosie(position);
@@ -43,4 +59,11 @@ public class Biome
         return height;
 
     }
+}
+
+/// <summary>
+/// A return type of info on how to interpolate between biomes
+public class BiomeInterpolationInfo {
+    public Biome biome; // which biome
+    public float weight; // its weight in the interpolation
 }

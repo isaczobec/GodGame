@@ -128,6 +128,63 @@ public class VisibleSquareMesh {
 
 }
 
+
+public class BiomeMaskTextures {
+
+        // biome mask textures
+    public Texture2D biomeMaskTexture1;
+    public string biomeMaskTextureName1 = "_BiomeMaskTexture1";
+    public Texture2D biomeMaskTexture2;
+    public string biomeMaskTextureName2 = "_BiomeMaskTexture2";
+
+    private Texture2D[] biomeMaskTextures;
+
+    public int textureSize = 10;
+
+    public float[,,,] biomeMaskValues;
+
+    public void InitializeBiomeMaskTextures(Material ownedMaterial) {
+        biomeMaskTexture1 = new Texture2D(textureSize, textureSize);
+        ownedMaterial.SetTexture(biomeMaskTextureName1, biomeMaskTexture1);
+        biomeMaskTexture2 = new Texture2D(textureSize, textureSize);
+        ownedMaterial.SetTexture(biomeMaskTextureName2, biomeMaskTexture2);
+
+        biomeMaskTextures = new Texture2D[] { biomeMaskTexture1, biomeMaskTexture2 };
+        biomeMaskValues = new float[biomeMaskTextures.Length, textureSize, textureSize, 4]; // four color channels
+    }
+
+    /// <summary>
+    /// Sets the value of a pixel in the biome mask texture. Does not apply the changes to the texture!
+    /// </summary>
+    public void SetBiomeMask(int index, int x, int y, float value) {
+        int bigIndex = index / 4;
+        int smallIndex = index % 4;
+
+        float[] vals = new float[] {0f,0f,0f,0f};
+        vals[smallIndex] = value;
+        // set all values
+        for (int i = 0; i < 4; i++) {
+            biomeMaskValues[bigIndex, x, y, i] += vals[i];
+        }
+
+    }
+
+    public void ApplyAllBiomeMaskChanges() {
+        for (int i = 0; i < biomeMaskTextures.Length; i++) {
+
+            for (int x = 0; x < textureSize; x++) {
+                for (int y = 0; y < textureSize; y++) {
+                    Color color = new Color(biomeMaskValues[i, x, y, 0], biomeMaskValues[i, x, y, 1], biomeMaskValues[i, x, y, 2], biomeMaskValues[i, x, y, 3]);
+                    biomeMaskTextures[i].SetPixel(x, y, color);
+                }
+            }
+
+            biomeMaskTextures[i].Apply();
+        }
+    }
+
+}
+
 public class SquareMeshObject : MonoBehaviour {
 
     public VisibleSquareMesh squareMesh;
@@ -140,6 +197,7 @@ public class SquareMeshObject : MonoBehaviour {
 
     // ----- TEXTURE SETTINGS -----
     private int textureSize = 32;
+    private int smallerTextureSize = 10;
 
     public Texture2D inlandnessTexture;
     public string inlandnessTextureName = "_InlandnessTexture";
@@ -151,6 +209,12 @@ public class SquareMeshObject : MonoBehaviour {
     public string humidityTextureName = "_HumidityTexture";
     public Texture2D heatTexture;
     public string heatTextureName = "_HeatTexture";
+    public Texture2D colorTexture;
+    public string colorTextureName = "_ColorTexture";
+
+    public BiomeMaskTextures biomeMaskTextures;
+
+
 
 
 
@@ -184,6 +248,11 @@ public class SquareMeshObject : MonoBehaviour {
         ownedMaterial.SetTexture(humidityTextureName, humidityTexture);
         heatTexture = new Texture2D(textureSize, textureSize);
         ownedMaterial.SetTexture(heatTextureName, heatTexture);
+        colorTexture = new Texture2D(textureSize, smallerTextureSize);
+        ownedMaterial.SetTexture(colorTextureName, colorTexture);
+
+        biomeMaskTextures = new BiomeMaskTextures();
+        biomeMaskTextures.InitializeBiomeMaskTextures(ownedMaterial);
     }
 
     public void UpdateMesh(bool updateSquareMesh = true) {
