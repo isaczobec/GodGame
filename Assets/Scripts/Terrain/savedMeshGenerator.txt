@@ -1,0 +1,288 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+
+/// <summary>
+/// A class containing a square mesh object and the IRenderAround interfaces that belong to it
+public class SquareMeshFamily {
+
+    public List<IRenderAround> renderArounds = new List<IRenderAround>();
+    public SquareMeshObject squareMeshObject = null;
+
+    public Vector2 upperLeftCorner;
+    public Vector2 lowerRightCorner;
+
+    /// <summary>
+    /// Calculates the bounds of the square mesh family (and sets upperLeftCorner and lowerRightCorner)
+    /// </summary>
+    public void CalculateBounds() {
+
+        if (renderArounds.Count == 0) {
+            return;
+        }
+
+        Vector2 firstCenterPosition = renderArounds[0].getCenterPosition();
+        float firstRenderDistance = renderArounds[0].getRenderDistance();
+        upperLeftCorner = firstCenterPosition + new Vector2(-firstRenderDistance, firstRenderDistance);
+        lowerRightCorner = firstCenterPosition + new Vector2(firstRenderDistance, -firstRenderDistance);
+        // so that the first renderAround is the first to be compared
+
+        for (int i = 1; i < renderArounds.Count; i++) { // skip the first renderAround
+
+            Vector2 centerPosition = renderArounds[i].getCenterPosition();
+            float renderDistance = renderArounds[i].getRenderDistance();
+
+            if (centerPosition.x - renderDistance < upperLeftCorner.x) {
+                upperLeftCorner.x = centerPosition.x - renderDistance;
+            }
+            if (centerPosition.y + renderDistance > upperLeftCorner.y) {
+                upperLeftCorner.y = centerPosition.y + renderDistance;
+            }
+            if (centerPosition.x + renderDistance > lowerRightCorner.x) {
+                lowerRightCorner.x = centerPosition.y + renderDistance;
+            }
+            if (centerPosition.y - renderDistance < lowerRightCorner.y) {
+                lowerRightCorner.y = centerPosition.y - renderDistance;
+            }
+        }
+    }
+
+    public bool IsWithinBounds(Vector2 position, float renderDistance) {
+    if (position.x - renderDistance < upperLeftCorner.x) {
+        return false;
+    }
+    if (position.y - renderDistance > upperLeftCorner.y) { // Corrected from "+"
+        return false;
+    }
+    if (position.x + renderDistance > lowerRightCorner.x) {
+        return false;
+    }
+    if (position.y + renderDistance < lowerRightCorner.y) { // Corrected from "-"
+        return false;
+    }
+    return true;
+}
+
+}
+
+public class MeshGenerator : MonoBehaviour
+{
+
+    // ------------ MESH GENERATION SETTINGS ------------
+    [Header("Mesh Generation Settings")]
+
+
+    // variables for generating the mesh
+    [SerializeField] private float quadSize = 1f;
+
+
+
+    // ------------ MESH GENERATION OBJECTS ------------
+
+    [SerializeField] private Material baseMaterial;
+
+    List<SquareMeshObject> squareMeshObjects = new List<SquareMeshObject>();
+
+    private PerlinGenerator perlinGenerator;
+
+    [SerializeField] private List<BasicEntity> basicEntities = new List<BasicEntity>(); // entities that will be rendered around
+    List<IRenderAround> renderArounds = new List<IRenderAround>();
+    List<SquareMeshFamily> squareMeshFamilies = new List<SquareMeshFamily>();
+
+    void Start()
+    {
+        // add all the basic entities to the renderArounds list
+        foreach (BasicEntity basicEntity in basicEntities) {
+            renderArounds.Add(basicEntity);
+        }
+
+        perlinGenerator = new PerlinGenerator(new Vector2(999, 999), 0.06f);
+
+        // create the initial square mesh family
+        CreateInitialSquareMeshFamily();
+
+
+        // start the coroutine that calculates the renderArounds
+        StartCoroutine(CalculateRenderArounds());
+
+    }
+
+    private void Update() {
+        // squareMeshObjects[0].squareMesh.verticies[0].y += 2f * Time.deltaTime;
+        // squareMeshObjects[0].UpdateMesh();
+    }
+
+
+    /// <summary>
+    /// Creates and returns a square mesh at the given position with the given size and an accompaying mesh filter
+    /// </summary>
+    private SquareMeshObject CreateSquareMeshGameObject(Vector2 centerPosition, int xSize, int zSize) {
+        GameObject squareMeshObject = Instantiate(new GameObject(), Vector3.zero, Quaternion.identity, transform);
+        SquareMeshObject meshObject = squareMeshObject.AddComponent<SquareMeshObject>();
+        squareMeshObjects.Add(meshObject);
+        meshObject.squareMesh = new VisibleSquareMesh(centerPosition, xSize, zSize, quadSize);
+        meshObject.Initialize(material:baseMaterial);
+
+        return meshObject;
+    }
+
+    /// <summary>
+    /// Deletes a square mesh object from the list and destroys the game object
+    /// </summary>
+    private void DeleteSquareMeshGameObject(SquareMeshObject meshToDelete) {
+        if (!squareMeshObjects.Contains(meshToDelete)) {
+            Debug.LogError("Trying to delete a mesh that doesn't exist in the list");
+            return;
+        }
+        squareMeshObjects.Remove(meshToDelete);
+        Destroy(meshToDelete.gameObject);
+    }
+
+    /// <summary>
+    /// Generates the height of a squareMeshObject using perlin noise. Will be made more elaborate in the future
+    /// </summary>
+    private void GenerateHeight(SquareMeshObject squareMeshObject, bool updateMesh = true) {
+        for (int j = 0; j < squareMeshObject.squareMesh.vertices.Length; j++) {
+            squareMeshObject.squareMesh.vertices[j].y = perlinGenerator.SampleNosie(new Vector2(squareMeshObject.squareMesh.vertices[j].x, squareMeshObject.squareMesh.vertices[j].z)) * 5;
+        }
+        if (updateMesh) {
+            UpdateAllMeshes();
+        }
+    }
+
+    /// <summary>
+    /// Generates the height of all squareMeshObjects using GenerateHeight().
+    /// </summary>
+    private void GenerateAllHeights(bool updateMesh = true) {
+        foreach (SquareMeshObject meshObject in squareMeshObjects) {
+            GenerateHeight(meshObject, updateMesh);
+        }
+        UpdateAllMeshes();
+    }
+
+    /// <summary>
+    /// Updates all meshes in the squareMeshObjects list
+    /// </summary>
+    private void UpdateAllMeshes() {
+        foreach (SquareMeshObject meshObject in squareMeshObjects) {
+            meshObject.UpdateMesh();
+        }
+    }
+
+    /// <summary>
+    /// Moves a square mesh object the given x and z position
+    /// </summary>
+    private void MoveSquareMeshObject(SquareMeshObject meshObject, int x, int z) { 
+        meshObject.squareMesh.MoveCenterPosition(x, z);
+        GenerateHeight(meshObject); // !!!!!! THIS UPDATES ALL VERTICIES, NOT JUST THE MOVED ONES. FIX THIS IN THE FUTURE
+    }
+
+
+
+
+    // ---- CALCULATING WHERE TO RENDER SQUAREMESHES ----
+
+    private IEnumerator CalculateRenderArounds() {
+        while (true) {
+            HandleRenderArounds();
+            yield return new WaitForSeconds(0.7f);
+                }
+            }
+        
+    
+
+    private void HandleRenderArounds() {
+        // get all the renderArounds
+        CalculateSquareMeshLocations();
+        GenerateSquareMeshForFamilies();
+        DeleteEmptyFamilies();
+    }
+
+
+    private void CreateInitialSquareMeshFamily() {
+        // create the first square mesh family
+        SquareMeshFamily firstSquareMeshFamily = new SquareMeshFamily();
+        firstSquareMeshFamily.renderArounds.Add(renderArounds[0]);
+        firstSquareMeshFamily.CalculateBounds();
+        squareMeshFamilies.Add(firstSquareMeshFamily);
+    }
+
+    private void CalculateSquareMeshLocations() {
+
+        
+
+        // loop through all the renderArounds
+        foreach (IRenderAround renderAround in renderArounds) {
+            bool foundFamily = false;
+
+            foreach (SquareMeshFamily squareMeshFamily in squareMeshFamilies) {
+                if (squareMeshFamily.renderArounds.Contains(renderAround)) {
+                    if (foundFamily == true) { 
+                        squareMeshFamily.renderArounds.Remove(renderAround); // remove the renderAround from the family if it's already in the list, dont have a renderAround in multiple families
+                    } else {
+                    foundFamily = true;
+                    }
+                    }  
+                // dont add the renderAround if it's already in the list
+                else if (Vector2.Distance(renderAround.getCenterPosition(), squareMeshFamily.upperLeftCorner) < renderAround.getRenderDistance() ||
+                Vector2.Distance(renderAround.getCenterPosition(), squareMeshFamily.lowerRightCorner) < renderAround.getRenderDistance()
+                && foundFamily == false) {
+                    Debug.Log("Adding renderAround to family");
+                    // if the renderAround is close to the squareMeshFamily
+                    squareMeshFamily.renderArounds.Add(renderAround);
+                    foundFamily = true;
+                }
+                squareMeshFamily.CalculateBounds();
+            }
+
+            if (foundFamily == false) {
+                SquareMeshFamily newSquareMeshFamily = new SquareMeshFamily();
+                newSquareMeshFamily.renderArounds.Add(renderAround);
+                newSquareMeshFamily.CalculateBounds();
+                squareMeshFamilies.Add(newSquareMeshFamily);
+            }
+        }
+
+        }
+
+
+        private void GenerateSquareMeshForFamilies() {
+            foreach (SquareMeshFamily squareMeshFamily in squareMeshFamilies) {
+
+
+                // calculate position and x and y size all from the top left and bottom right corners
+                Vector2 centerPosition = new Vector2((squareMeshFamily.upperLeftCorner.x + squareMeshFamily.lowerRightCorner.x) / 2, (squareMeshFamily.upperLeftCorner.y + squareMeshFamily.lowerRightCorner.y) / 2);
+
+
+                if (squareMeshFamily.squareMeshObject == null) {
+                    int xSize = (int)(Mathf.Abs(squareMeshFamily.upperLeftCorner.x - squareMeshFamily.lowerRightCorner.x) / quadSize);
+                    int zSize = (int)(Mathf.Abs(squareMeshFamily.upperLeftCorner.y - squareMeshFamily.lowerRightCorner.y) / quadSize);
+                    squareMeshFamily.squareMeshObject = CreateSquareMeshGameObject(centerPosition, xSize, zSize);
+                } else {
+                    int moveX = (int)(centerPosition.x - squareMeshFamily.squareMeshObject.squareMesh.centerPosition.x);
+                    int moveZ = (int)(centerPosition.y - squareMeshFamily.squareMeshObject.squareMesh.centerPosition.y);
+
+                    Debug.Log(squareMeshFamily.upperLeftCorner + " " + squareMeshFamily.lowerRightCorner);
+
+                    MoveSquareMeshObject(squareMeshFamily.squareMeshObject, moveX, moveZ);
+                }
+            }
+        }
+
+        private void DeleteEmptyFamilies() {
+            List<SquareMeshFamily> familiesToDelete = new List<SquareMeshFamily>();
+            foreach (SquareMeshFamily squareMeshFamily in squareMeshFamilies) {
+                if (squareMeshFamily.renderArounds.Count == 0) {
+                    familiesToDelete.Add(squareMeshFamily);
+                }
+            }
+            foreach (SquareMeshFamily familyToDelete in familiesToDelete) {
+                DeleteSquareMeshGameObject(familyToDelete.squareMeshObject);
+                squareMeshFamilies.Remove(familyToDelete);
+            }
+        }
+    }
+
+
+
