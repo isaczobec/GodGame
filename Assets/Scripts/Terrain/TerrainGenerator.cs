@@ -105,24 +105,20 @@ public class TerrainGenerator: MonoBehaviour
     }
 
     private void SetTexture(SquareMeshObject squareMeshObject, PerlinGenerator perlinGenerator, Texture2D texture) {
+    float sampleXFrom = squareMeshObject.squareMesh.vertices[0].x;
+    float sampleZFrom = squareMeshObject.squareMesh.vertices[0].z;
 
-        // get the initial sample positions
-        float sampleXFrom = squareMeshObject.squareMesh.vertices[0].x;
-        float sampleZFrom = squareMeshObject.squareMesh.vertices[0].z;
+    for (int y = 0; y < texture.height; y++) {
+        for (int x = 0; x < texture.width; x++) {
+            float sampleX = sampleXFrom + x / (float)(texture.width) * squareMeshObject.squareMesh.sizeX * squareMeshObject.squareMesh.quadSize;
+            float sampleZ = sampleZFrom + y / (float)(texture.height) * squareMeshObject.squareMesh.sizeZ * squareMeshObject.squareMesh.quadSize;
 
-
-        for (int y = 0; y < texture.height; y++) {
-            for (int x = 0; x < texture.width; x++) {
-                float sampleX = sampleXFrom + x * squareMeshObject.squareMesh.quadSize * squareMeshObject.squareMesh.sizeX / texture.width;
-                float sampleZ = sampleZFrom + y * squareMeshObject.squareMesh.quadSize * squareMeshObject.squareMesh.sizeZ / texture.height;
-
-                float height = perlinGenerator.SampleNosie(new Vector2(sampleX, sampleZ), clamp:true, runThroughCurve:false, multiplyWithHeightMultiplier:false);
-                texture.SetPixel(x, y, new Color(height, height, height, 1f));
-            }
+            float height = perlinGenerator.SampleNosie(new Vector2(sampleX, sampleZ), clamp: true, runThroughCurve: false, multiplyWithHeightMultiplier: false);
+            texture.SetPixel(x, y, new Color(height, height, height, 1f));
         }
-        texture.Apply();
-
     }
+    texture.Apply();
+}
 
 
     public enum BiomeTextureType {
