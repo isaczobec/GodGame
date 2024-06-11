@@ -40,6 +40,18 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _Desert_940e2191a01441e7bbc995c3e0164b40_PatchTexture1_644807516_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 3775233eaa8792e438f091bb902e3a17, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Desert_940e2191a01441e7bbc995c3e0164b40_SandTexture2_3572068626_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 54ee9446f44936242a2542e845b9c1f8, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Desert_940e2191a01441e7bbc995c3e0164b40_SandTexture_3288225360_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 44882958beff6d64e86de8e28e6b3eeb, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _GrassTexture1:
         m_Texture: {fileID: 2800000, guid: d2362d6bea4b1e546bf26fb47549de40, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -81,6 +93,14 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _PlainnessTexture:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TextureMixing_f28f67554abb4644b7dd49eef494bc9b_Tex1_4183523101_Texture2D:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TextureMixing_f28f67554abb4644b7dd49eef494bc9b_Tex2_2278980768_Texture2D:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}

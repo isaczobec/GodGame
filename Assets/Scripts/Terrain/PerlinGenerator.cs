@@ -1,3 +1,7 @@
+
+
+
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -58,12 +62,16 @@ public class PerlinGenerator
         Vector2 sampleFromLocation = (location - origin) * scale * multiplyScale;
         float noise = Mathf.PerlinNoise(sampleFromLocation.x, sampleFromLocation.y);
 
+        
         if (fractalSettings.Length > 0)
         {
+            float ampSum = 1f;
             foreach (PerlinFractalSettings fractalSetting in fractalSettings)
             {
                 noise += Mathf.PerlinNoise(sampleFromLocation.x * fractalSetting.frequencyMultiplier, sampleFromLocation.y * fractalSetting.frequencyMultiplier) * fractalSetting.amplitudeMultiplier;
+                ampSum += fractalSetting.amplitudeMultiplier;
             }
+            noise /= ampSum;
         }
 
         return noise;

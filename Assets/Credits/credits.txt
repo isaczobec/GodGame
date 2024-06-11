@@ -1,1 +1,3 @@
 Terrain textures: https://assetstore.unity.com/packages/2d/textures-materials/nature/midgard-textures-218478
+
+More terrain textures: (Screaming brain studios): https://screamingbrainstudios.itch.io/base-material-pack

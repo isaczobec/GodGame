@@ -24,7 +24,6 @@ public class Biome
 
     [Header("BIOME SETTINGS")]
     [Header("Inlandness")]
-    public float inlandnessHeightMultiplier = 100f;
     public AnimationCurve inlandnessHeightCurve;
     [Header("Plainness")]
     public PerlinGenerator plainnessPerlinGenerator;
@@ -41,15 +40,24 @@ public class Biome
 
     }
 
-    public float EvaluateInlandness(Vector2 position, float inlandness) {
+
+    /// <summary>
+    /// Evaluates the inlandness curve, returning a value between 0 and 1
+    /// </summary>
+    public float EvaluateInlandness(float inlandness) {
+
+        // limit the inlandness to the bounds so the curve is smoothly evaluated
+        inlandness -= bound0.x;
+        inlandness /= (bound1.x - bound0.x);
+
         float inl = inlandnessHeightCurve.Evaluate(inlandness);
-        inl *= inlandnessHeightMultiplier;
         return inl;
     }
 
-    public float GetHeight(Vector2 position, float inlandness) {
+    public float GetHeight(Vector2 position, float inlandness, float inlandnessHeightMultiplier) {
 
-        inlandness = EvaluateInlandness(position, inlandness);
+        inlandness = EvaluateInlandness(inlandness);
+        inlandness *= inlandnessHeightMultiplier;
 
         // get how plain the terrain is
         float plainness = plainnessPerlinGenerator.SampleNosie(position);

@@ -20,21 +20,22 @@ public class TerrainGenerator: MonoBehaviour
 
 
     private int seed = 0;
-    [SerializeField] private float multiplyRandomNumbersWith = 1000f;
-    [SerializeField] private float addRandomNumbersWith = 1000f; // add this to the random numbers to avoid negative numbers, which give symmetric noise
+    [SerializeField] private float multiplyRandomNumbersWith = 10000f;
+    [SerializeField] private float addRandomNumbersWith = 10000f; // add this to the random numbers to avoid negative numbers, which give symmetric noise
 
     [Header("WORLD GENERATION SETTINGS")]
 
     [Header("Perlin generator settings")]
     [SerializeField] private PerlinGenerator inlandnessPerlinGenerator; // a perlin generator for the inlandness of the terrain, ie how elevated and mountainous it is
-    // [SerializeField] private PerlinGenerator plainnessPerlinGenerator; // a perlin generator for the plainness of the terrain, ie how flat it is
-    // [SerializeField] private PerlinGenerator bumpinessPerlinGenerator; // a perlin generator for the bumpiness of the terrain, ie how bumpy it is. Used in tandem with the plainness perlin generator, which is a multiplier with this one
+    [SerializeField] private float inlandnessHeightMultiplier = 300f;
 
     [SerializeField] private PerlinGenerator humidityPerlinGenerator; // a perlin generator for the humidity of the terrain. for instance used for biome generation
     [SerializeField] private PerlinGenerator heatPerlinGenerator; // a perlin generator for the heat of the terrain. for instance used for biome generation
 
     // all biomes that can be generated
-    [SerializeField] private List<Biome> biomes = new List<Biome>();
+
+    [SerializeField] private BiomeSO[] biomeSOs;
+    private List<Biome> biomes = new List<Biome>();
 
 
 
@@ -46,9 +47,18 @@ public class TerrainGenerator: MonoBehaviour
 
     void Start()
     {
+        AddBiomesFromSO();
+
         InitializePerlinGenerators(seed);
     }
 
+    private void AddBiomesFromSO()
+    {
+        foreach (BiomeSO biomeSO in biomeSOs)
+        {
+            biomes.Add(biomeSO.biome);
+        }
+    }
 
     private void InitializePerlinGenerators(int seed) {
 
@@ -110,8 +120,8 @@ public class TerrainGenerator: MonoBehaviour
 
     for (int y = 0; y < texture.height; y++) {
         for (int x = 0; x < texture.width; x++) {
-            float sampleX = sampleXFrom + x / (float)(texture.width) * squareMeshObject.squareMesh.sizeX * squareMeshObject.squareMesh.quadSize;
-            float sampleZ = sampleZFrom + y / (float)(texture.height) * squareMeshObject.squareMesh.sizeZ * squareMeshObject.squareMesh.quadSize;
+            float sampleX = sampleXFrom + (x) / (float)(texture.width) * squareMeshObject.squareMesh.sizeX * squareMeshObject.squareMesh.quadSize;
+            float sampleZ = sampleZFrom + (y) / (float)(texture.height) * squareMeshObject.squareMesh.sizeZ * squareMeshObject.squareMesh.quadSize;
 
             float height = perlinGenerator.SampleNosie(new Vector2(sampleX, sampleZ), clamp: true, runThroughCurve: false, multiplyWithHeightMultiplier: false);
             texture.SetPixel(x, y, new Color(height, height, height, 1f));
@@ -161,7 +171,7 @@ public class TerrainGenerator: MonoBehaviour
 
                     case BiomeTextureType.Inlandness:
                         foreach (BiomeInterpolationInfo interpolateBiome in interpolateBiomes) {
-                            float val = interpolateBiome.biome.EvaluateInlandness(new Vector2(sampleX, sampleZ), inlandness);
+                            float val = interpolateBiome.biome.EvaluateInlandness(inlandness);
                             texture.SetPixel(x, y, new Color(val, val, val, 1f));
                         }
                         break;
@@ -287,7 +297,7 @@ private float SmoothingFunction(float x) {
 
         float heightSum = 0;
         foreach (BiomeInterpolationInfo interpolateBiome in interpolateBiomes) {
-            heightSum += interpolateBiome.biome.GetHeight(position, inlandnessHeight) * interpolateBiome.weight;
+            heightSum += interpolateBiome.biome.GetHeight(position, inlandnessHeight, inlandnessHeightMultiplier) * interpolateBiome.weight;
         }
 
         return heightSum;

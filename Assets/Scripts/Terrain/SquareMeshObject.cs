@@ -147,9 +147,9 @@ public class BiomeMaskTextures {
     public float[,,,] biomeMaskValues;
 
     public void InitializeBiomeMaskTextures(Material ownedMaterial) {
-        biomeMaskTexture1 = new Texture2D(textureSize, textureSize) {filterMode = FilterMode.Point};
+        biomeMaskTexture1 = new Texture2D(textureSize, textureSize) {wrapMode = TextureWrapMode.Mirror};
         ownedMaterial.SetTexture(biomeMaskTextureName1, biomeMaskTexture1);
-        biomeMaskTexture2 = new Texture2D(textureSize, textureSize) {filterMode = FilterMode.Point};
+        biomeMaskTexture2 = new Texture2D(textureSize, textureSize) {wrapMode = TextureWrapMode.Mirror};
         ownedMaterial.SetTexture(biomeMaskTextureName2, biomeMaskTexture2);
 
         biomeMaskTextures = new Texture2D[] { biomeMaskTexture1, biomeMaskTexture2 };
@@ -242,17 +242,17 @@ public class SquareMeshObject : MonoBehaviour {
     }
 
     private void InitializeTextures() {
-        inlandnessTexture = new Texture2D(textureSize, textureSize) {filterMode = FilterMode.Point};
+        inlandnessTexture = new Texture2D(textureSize, textureSize) {wrapMode = TextureWrapMode.Mirror};
         ownedMaterial.SetTexture(inlandnessTextureName, inlandnessTexture);
-        plainnessTexture = new Texture2D(textureSize, textureSize) {filterMode = FilterMode.Point};
+        plainnessTexture = new Texture2D(textureSize, textureSize) {wrapMode = TextureWrapMode.Mirror};
         ownedMaterial.SetTexture(plainnessTextureName, plainnessTexture);
-        bumpinessTexture = new Texture2D(textureSize, textureSize) {filterMode = FilterMode.Point};
+        bumpinessTexture = new Texture2D(textureSize, textureSize) {wrapMode = TextureWrapMode.Mirror};
         ownedMaterial.SetTexture(bumpinessTextureName, bumpinessTexture);
-        humidityTexture = new Texture2D(textureSize, textureSize) {filterMode = FilterMode.Point};
+        humidityTexture = new Texture2D(textureSize, textureSize) {wrapMode = TextureWrapMode.Mirror};
         ownedMaterial.SetTexture(humidityTextureName, humidityTexture);
-        heatTexture = new Texture2D(textureSize, textureSize) {filterMode = FilterMode.Point};
+        heatTexture = new Texture2D(textureSize, textureSize) {wrapMode = TextureWrapMode.Mirror};
         ownedMaterial.SetTexture(heatTextureName, heatTexture);
-        colorTexture = new Texture2D(textureSize, smallerTextureSize) {filterMode = FilterMode.Point};
+        colorTexture = new Texture2D(textureSize, smallerTextureSize) {wrapMode = TextureWrapMode.Mirror};
         ownedMaterial.SetTexture(colorTextureName, colorTexture);
 
         biomeMaskTextures = new BiomeMaskTextures();
