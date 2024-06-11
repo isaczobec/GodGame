@@ -68,7 +68,7 @@ public class MeshGenerator : MonoBehaviour
     /// <summary>
     /// Creates and returns a square mesh at the given position with the given size and an accompaying mesh filter
     /// </summary>
-    private SquareMeshObject CreateSquareMeshGameObject(Vector2 centerPosition, int xSize, int zSize) {
+    private SquareMeshObject CreateSquareMeshGameObject(Vector2 centerPosition, int xSize, int zSize, Vector2Int chunkCoordinates) {
         // GameObject squareMeshObject = Instantiate(GameObject., Vector3.zero, Quaternion.identity, transform);
 
         GameObject squareMeshObject = new GameObject("SquareMeshObject");
@@ -76,7 +76,7 @@ public class MeshGenerator : MonoBehaviour
 
         SquareMeshObject meshObject = squareMeshObject.AddComponent<SquareMeshObject>();
         squareMeshObjects.Add(meshObject);
-        meshObject.squareMesh = new VisibleSquareMesh(centerPosition, xSize, zSize, quadSize);
+        meshObject.squareMesh = new VisibleSquareMesh(centerPosition, xSize, zSize, quadSize, chunkCoordinates);
         meshObject.Initialize(baseMaterial:baseMaterial);
 
         return meshObject;
@@ -135,7 +135,7 @@ public class MeshGenerator : MonoBehaviour
     private void PromptChunkCoordinates(Vector2Int chunkCoordinates) {
         if (!discoveredChunks.Contains(chunkCoordinates)) {
             discoveredChunks.Add(chunkCoordinates);
-            SquareMeshObject newMeshObject = CreateSquareMeshGameObject(new Vector2(chunkCoordinates.x * chunkSize, chunkCoordinates.y * chunkSize), (int)chunkSize, (int)chunkSize);
+            SquareMeshObject newMeshObject = CreateSquareMeshGameObject(new Vector2(chunkCoordinates.x * chunkSize * quadSize, chunkCoordinates.y * chunkSize * quadSize), (int)chunkSize, (int)chunkSize, chunkCoordinates);
             GenerateTerrain(newMeshObject);
             chunks.Add(new Chunk(chunkCoordinates, newMeshObject));
         }
@@ -146,8 +146,8 @@ public class MeshGenerator : MonoBehaviour
 
             // calculate chunk coordinates
             Vector2 centerPosition = renderAround.getCenterPosition();
-            int cX = centerPosition.x < 0? (int)(centerPosition.x / chunkSize - 0.5f) : (int)(centerPosition.x / chunkSize + 0.5f);
-            int cY = centerPosition.y < 0? (int)(centerPosition.y / chunkSize - 0.5f) : (int)(centerPosition.y / chunkSize + 0.5f);
+            int cX = centerPosition.x < 0? (int)(centerPosition.x / chunkSize / quadSize - 0.5f) : (int)(centerPosition.x / chunkSize / quadSize + 0.5f);
+            int cY = centerPosition.y < 0? (int)(centerPosition.y / chunkSize / quadSize - 0.5f) : (int)(centerPosition.y / chunkSize / quadSize + 0.5f);
             Vector2Int chunkCoordinates = new Vector2Int(cX, cY);
 
             int sideLength = renderAround.getRenderDistanceChunks() * 2 + -1; // only uneven numbers

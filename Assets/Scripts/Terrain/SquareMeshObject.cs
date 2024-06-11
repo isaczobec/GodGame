@@ -25,11 +25,14 @@ public class VisibleSquareMesh {
 
     public Mesh mesh { get; private set; }
 
-    public VisibleSquareMesh(Vector2 centerPosition, int sizeX, int sizeZ, float quadSize, bool generateVerticesTriangles = true) {
+    public Vector2Int chunkCoordinates { get; private set; }
+
+    public VisibleSquareMesh(Vector2 centerPosition, int sizeX, int sizeZ, float quadSize, Vector2Int chunkCoordinates, bool generateVerticesTriangles = true) {
         this.centerPosition = centerPosition;
         this.sizeX = sizeX + 1;
         this.sizeZ = sizeZ + 1;
         this.quadSize = quadSize;
+        this.chunkCoordinates = chunkCoordinates;
 
         mesh = new Mesh();
 
@@ -62,7 +65,7 @@ public class VisibleSquareMesh {
 
                 // set UVs to be on a grid between [0,0] and [1,1]
                 if (setUVs) {
-                    newUVs[currentVertexIndex] = new Vector2((float)x / sizeX, (float)z / sizeZ);
+                    newUVs[currentVertexIndex] = new Vector2((float)x / (sizeX-1), (float)z / (sizeZ-1));
                 }
 
                 currentVertexIndex++;
@@ -230,6 +233,7 @@ public class SquareMeshObject : MonoBehaviour {
         if (baseMaterial != null) { 
             meshRenderer.material = baseMaterial; 
             ownedMaterial = meshRenderer.material; // create an instance of the material
+            ownedMaterial.SetVector("_ChunkCoordinates", new Vector2(squareMesh.chunkCoordinates.x, squareMesh.chunkCoordinates.y));
             }
 
         meshFilter.mesh = squareMesh.mesh;

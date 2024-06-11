@@ -44,8 +44,32 @@ Material:
         m_Texture: {fileID: 2800000, guid: d2362d6bea4b1e546bf26fb47549de40, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _GrassTexture2:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _HeatTexture:
         m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Hills_80f3476ecc2a4018b0b514ddcf1ea6b1_GrassTexture1_1528063408_Texture2D:
+        m_Texture: {fileID: 2800000, guid: e6416366d730e6242af7df36e49af4de, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Hills_80f3476ecc2a4018b0b514ddcf1ea6b1_GrassTexture2_1981632442_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 56d380f0cab5ca646972307c5090027a, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Hills_80f3476ecc2a4018b0b514ddcf1ea6b1_GrassTexture3_2006426560_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 75b7da6433acfec40a6c5a42d397b042, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Hills_80f3476ecc2a4018b0b514ddcf1ea6b1_PlainTexture_2204984339_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 40fe88e73997f6b4bbef91edf9d7ae39, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Hills_80f3476ecc2a4018b0b514ddcf1ea6b1_YellowPatchTexture_2261882915_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 2e29874fe14efdb4681fbf7c164732c9, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _HumidityTexture:
@@ -76,7 +100,8 @@ Material:
     m_Floats:
     - _QueueControl: 0
     - _QueueOffset: 0
-    m_Colors: []
+    m_Colors:
+    - _ChunkCoordinates: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
 --- !u!114 &2788929836121986472
 MonoBehaviour:
