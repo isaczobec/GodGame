@@ -444,7 +444,7 @@ MonoBehaviour:
   multiplyRandomNumbersWith: 10000
   addRandomNumbersWith: 10000
   inlandnessPerlinGenerator:
-    scale: 0.001
+    scale: 0.0003
     valMultiplier: 1
     valCurve:
       serializedVersion: 2
@@ -474,7 +474,7 @@ MonoBehaviour:
     constantValue: 0
   inlandnessHeightMultiplier: 300
   humidityPerlinGenerator:
-    scale: 0.001
+    scale: 0.0003
     valMultiplier: 1
     valCurve:
       serializedVersion: 2
@@ -503,7 +503,7 @@ MonoBehaviour:
     fractalSettings: []
     constantValue: 0
   heatPerlinGenerator:
-    scale: 0.001
+    scale: 0.0003
     valMultiplier: 1
     valCurve:
       serializedVersion: 2
@@ -534,10 +534,13 @@ MonoBehaviour:
       frequencyMultiplier: 2
     - amplitudeMultiplier: 0.1
       frequencyMultiplier: 4
+    - amplitudeMultiplier: 0.05
+      frequencyMultiplier: 8
     constantValue: 0
   biomeSOs:
   - {fileID: 11400000, guid: 241e102e408cb2e41bb6551839846851, type: 2}
   - {fileID: 11400000, guid: 87f3ec429368a6e4caf932321e477d09, type: 2}
+  - {fileID: 11400000, guid: 55b5c2f3d2294be44b95b3c2bd883bf1, type: 2}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0

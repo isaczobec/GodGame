@@ -18,7 +18,6 @@ MonoBehaviour:
     bound0: {x: 0, y: 0.5, z: 0}
     bound1: {x: 1, y: 1, z: 1}
     linearPadding: 0.1
-    inlandnessHeightMultiplier: 300
     inlandnessHeightCurve:
       serializedVersion: 2
       m_Curve:
@@ -102,3 +101,19 @@ MonoBehaviour:
       fractalSettings: []
       constantValue: 0
     color: {r: 0.97163963, g: 1, b: 0.5707547, a: 1}
+    generateWater: 0
+    lakePerlinGenerator:
+      scale: 0
+      valMultiplier: 0
+      valCurve:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      fractalSettings: []
+      constantValue: 0
+    waterThreshold: 0.5
+    waterPlainnessThreshold: 0.5
+    waterPlainnessSmoothness: 0.1
+    waterDepthMultiplier: 20

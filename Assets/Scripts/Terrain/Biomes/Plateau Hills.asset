@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4f0e7c8e3215fc14c855e91e031ae7ac, type: 3}
-  m_Name: Hills
+  m_Name: Plateau Hills
   m_EditorClassIdentifier: 
   biome:
-    name: Hills
-    biomeMaskIndex: 0
-    bound0: {x: 0, y: 0, z: 0}
-    bound1: {x: 1, y: 0.5, z: 0.5}
+    name: Plateau Hills
+    biomeMaskIndex: 2
+    bound0: {x: 0, y: 0, z: 0.5}
+    bound1: {x: 1, y: 0.5, z: 1}
     linearPadding: 0.1
     inlandnessHeightCurve:
       serializedVersion: 2
@@ -43,7 +43,7 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
     plainnessPerlinGenerator:
-      scale: 0.004
+      scale: 0.005
       valMultiplier: 1
       valCurve:
         serializedVersion: 2
@@ -51,69 +51,38 @@ MonoBehaviour:
         - serializedVersion: 3
           time: 0
           value: 0
-          inSlope: 0.19109416
-          outSlope: 0.19109416
-          tangentMode: 34
+          inSlope: 0.23103581
+          outSlope: 0.23103581
+          tangentMode: 0
           weightedMode: 0
           inWeight: 0
-          outWeight: 0.33333334
+          outWeight: 0.33156192
         - serializedVersion: 3
-          time: 0.4157724
-          value: 0.07945168
-          inSlope: 0.4154255
-          outSlope: 0.4154255
+          time: 0.48430923
+          value: 0.106083386
+          inSlope: 1.0110081
+          outSlope: 1.0110081
           tangentMode: 0
           weightedMode: 0
           inWeight: 0.33333334
-          outWeight: 0.26541185
+          outWeight: 0.87190473
         - serializedVersion: 3
-          time: 0.667346
-          value: 0.8496499
-          inSlope: 0.89273834
-          outSlope: 0.89273834
+          time: 0.70743495
+          value: 0.8789799
+          inSlope: 0.40644735
+          outSlope: 0.40644735
           tangentMode: 0
           weightedMode: 0
           inWeight: 0.33333334
-          outWeight: 0.28442073
+          outWeight: 0.37619543
         - serializedVersion: 3
           time: 1
           value: 1
-          inSlope: 0.4519714
-          outSlope: 0.4519714
-          tangentMode: 34
+          inSlope: -0
+          outSlope: -0
+          tangentMode: 0
           weightedMode: 0
-          inWeight: 0.33333334
-          outWeight: 0
-        m_PreInfinity: 2
-        m_PostInfinity: 2
-        m_RotationOrder: 4
-      fractalSettings:
-      - amplitudeMultiplier: 0.4
-        frequencyMultiplier: 3
-      constantValue: 0
-    bumpinessPerlinGenerator:
-      scale: 0.01
-      valMultiplier: 80
-      valCurve:
-        serializedVersion: 2
-        m_Curve:
-        - serializedVersion: 3
-          time: 0
-          value: 0
-          inSlope: 1
-          outSlope: 1
-          tangentMode: 34
-          weightedMode: 0
-          inWeight: 0
-          outWeight: 0
-        - serializedVersion: 3
-          time: 1
-          value: 1
-          inSlope: 1
-          outSlope: 1
-          tangentMode: 34
-          weightedMode: 0
-          inWeight: 0
+          inWeight: 0.8829945
           outWeight: 0
         m_PreInfinity: 2
         m_PostInfinity: 2
@@ -121,66 +90,83 @@ MonoBehaviour:
       fractalSettings:
       - amplitudeMultiplier: 0.5
         frequencyMultiplier: 2
-      - amplitudeMultiplier: 0.3
+      - amplitudeMultiplier: 0.15
         frequencyMultiplier: 4
-      - amplitudeMultiplier: 0.3
-        frequencyMultiplier: 8
       constantValue: 0
-    color: {r: 0.4094887, g: 1, b: 0.2783019, a: 1}
-    generateWater: 1
-    lakePerlinGenerator:
-      scale: 0.001
-      valMultiplier: 1
+    bumpinessPerlinGenerator:
+      scale: 0.004
+      valMultiplier: 200
       valCurve:
         serializedVersion: 2
         m_Curve:
         - serializedVersion: 3
           time: 0
           value: 0
-          inSlope: 1
-          outSlope: 1
-          tangentMode: 34
+          inSlope: 1.0691824
+          outSlope: 1.0691824
+          tangentMode: 0
           weightedMode: 0
           inWeight: 0
-          outWeight: 0
+          outWeight: 0.22300395
+        - serializedVersion: 3
+          time: 0.33780873
+          value: 0.21490845
+          inSlope: 1.230507
+          outSlope: 1.230507
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.33333334
+          outWeight: 0.33333334
+        - serializedVersion: 3
+          time: 0.40957266
+          value: 0.56894547
+          inSlope: 0.76217926
+          outSlope: 0.76217926
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.33333334
+          outWeight: 0.5422228
+        - serializedVersion: 3
+          time: 0.66762626
+          value: 0.94590473
+          inSlope: 0.50178486
+          outSlope: 0.50178486
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.33333334
+          outWeight: 0.4129855
         - serializedVersion: 3
           time: 1
           value: 1
-          inSlope: 1
-          outSlope: 1
-          tangentMode: 34
+          inSlope: 0.07204107
+          outSlope: 0.07204107
+          tangentMode: 0
           weightedMode: 0
-          inWeight: 0
+          inWeight: 0.77716875
           outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      fractalSettings:
+      - amplitudeMultiplier: 0.5
+        frequencyMultiplier: 2
+      - amplitudeMultiplier: 0.25
+        frequencyMultiplier: 4
+      constantValue: 0
+    color: {r: 0.4094887, g: 1, b: 0.2783019, a: 1}
+    generateWater: 0
+    lakePerlinGenerator:
+      scale: 0
+      valMultiplier: 0
+      valCurve:
+        serializedVersion: 2
+        m_Curve: []
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
       fractalSettings: []
       constantValue: 0
-    waterThreshold: 0.7
-    waterPlainnessSmoothness: 5
-    waterDepthMultiplier: 1200
-    waterDepthProfile:
-      serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: 0
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 1
-        value: 1
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
+    waterThreshold: 0.5
+    waterPlainnessThreshold: 0.5
+    waterPlainnessSmoothness: 0.1
+    waterDepthMultiplier: 20

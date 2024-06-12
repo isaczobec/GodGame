@@ -142,7 +142,7 @@ public class BiomeMaskTextures {
 
     private Texture2D[] biomeMaskTextures;
 
-    public int textureSize = 10;
+    public int textureSize = 8;
 
     public float[,,,] biomeMaskValues;
 
@@ -199,8 +199,8 @@ public class SquareMeshObject : MonoBehaviour {
 
 
     // ----- TEXTURE SETTINGS -----
-    private int textureSize = 16;
-    private int smallerTextureSize = 8;
+    private int textureSize = 8;
+    private int smallerTextureSize = 4;
 
     public Texture2D inlandnessTexture;
     public string inlandnessTextureName = "_InlandnessTexture";
@@ -214,6 +214,9 @@ public class SquareMeshObject : MonoBehaviour {
     public string heatTextureName = "_HeatTexture";
     public Texture2D colorTexture;
     public string colorTextureName = "_ColorTexture";
+    public Texture2D steepnessTexture;
+    public string steepnessTextureName = "_SteepnessTexture";
+
 
     public BiomeMaskTextures biomeMaskTextures;
 
@@ -252,6 +255,8 @@ public class SquareMeshObject : MonoBehaviour {
         ownedMaterial.SetTexture(humidityTextureName, humidityTexture);
         heatTexture = new Texture2D(textureSize, textureSize) {wrapMode = TextureWrapMode.Mirror};
         ownedMaterial.SetTexture(heatTextureName, heatTexture);
+        steepnessTexture = new Texture2D(textureSize, textureSize) {wrapMode = TextureWrapMode.Mirror};
+        ownedMaterial.SetTexture(steepnessTextureName, steepnessTexture);
         colorTexture = new Texture2D(textureSize, smallerTextureSize) {wrapMode = TextureWrapMode.Mirror};
         ownedMaterial.SetTexture(colorTextureName, colorTexture);
 

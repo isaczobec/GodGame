@@ -84,6 +84,26 @@ Material:
         m_Texture: {fileID: 2800000, guid: 2e29874fe14efdb4681fbf7c164732c9, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _Hills_bf7ad8c91bf84d02b9dd0476acc8aeef_GrassTexture1_1528063408_Texture2D:
+        m_Texture: {fileID: 2800000, guid: e6416366d730e6242af7df36e49af4de, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Hills_bf7ad8c91bf84d02b9dd0476acc8aeef_GrassTexture2_1981632442_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 56d380f0cab5ca646972307c5090027a, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Hills_bf7ad8c91bf84d02b9dd0476acc8aeef_GrassTexture3_2006426560_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 75b7da6433acfec40a6c5a42d397b042, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Hills_bf7ad8c91bf84d02b9dd0476acc8aeef_PlainTexture_2204984339_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 40fe88e73997f6b4bbef91edf9d7ae39, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Hills_bf7ad8c91bf84d02b9dd0476acc8aeef_YellowPatchTexture_2261882915_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 2e29874fe14efdb4681fbf7c164732c9, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _HumidityTexture:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -93,6 +113,50 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _PlainnessTexture:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _PlateauHills_31fe75ef64844d9cbb942e5528235c92_GrassTexture1_1528063408_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 6e64d6a65ac932b41bea437bae364c4f, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _PlateauHills_31fe75ef64844d9cbb942e5528235c92_GrassTexture2_1981632442_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 64d896a85bb47a146bdb30ce2a751795, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _PlateauHills_31fe75ef64844d9cbb942e5528235c92_GrassTexture3_2006426560_Texture2D:
+        m_Texture: {fileID: 2800000, guid: d2362d6bea4b1e546bf26fb47549de40, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _PlateauHills_31fe75ef64844d9cbb942e5528235c92_PlainTexture_2204984339_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 85374a1a9c8aaa94ab0c5aeede9b50a8, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _PlateauHills_31fe75ef64844d9cbb942e5528235c92_YellowPatchTexture_2261882915_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 2e29874fe14efdb4681fbf7c164732c9, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _PlateauHills_ce31b21f8c3d4de9ba03b8a850f0a70a_GrassTexture1_1528063408_Texture2D:
+        m_Texture: {fileID: 2800000, guid: d2362d6bea4b1e546bf26fb47549de40, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _PlateauHills_ce31b21f8c3d4de9ba03b8a850f0a70a_GrassTexture2_1981632442_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 64d896a85bb47a146bdb30ce2a751795, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _PlateauHills_ce31b21f8c3d4de9ba03b8a850f0a70a_GrassTexture3_2006426560_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 3f4dc9dc9475b284ea264abd90131c2b, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _PlateauHills_ce31b21f8c3d4de9ba03b8a850f0a70a_PlainTexture_2204984339_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 40fe88e73997f6b4bbef91edf9d7ae39, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _PlateauHills_ce31b21f8c3d4de9ba03b8a850f0a70a_YellowPatchTexture_2261882915_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 2e29874fe14efdb4681fbf7c164732c9, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SteepnessTexture:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
