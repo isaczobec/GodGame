@@ -30,6 +30,9 @@ public class MeshGenerator : MonoBehaviour
     [SerializeField] private float chunkSize = 50f;
 
 
+    [SerializeField] private int initialWorldSize = 20;
+
+
 
     // ------------ MESH GENERATION OBJECTS ------------
 
@@ -54,6 +57,13 @@ public class MeshGenerator : MonoBehaviour
             renderArounds.Add(basicEntity);
         }
 
+
+
+        for (int i = -initialWorldSize; i < initialWorldSize; i++) {
+            for (int j = -initialWorldSize; j < initialWorldSize; j++) {
+                PromptChunkCoordinates(new Vector2Int(i, j));
+            }
+        }
 
         StartCoroutine(UpdateRenderArounds());
 

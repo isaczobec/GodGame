@@ -195,6 +195,8 @@ public class SquareMeshObject : MonoBehaviour {
     private MeshRenderer meshRenderer;
 
     private Material ownedMaterial;
+
+    private MeshCollider meshCollider;
     
 
 
@@ -232,6 +234,9 @@ public class SquareMeshObject : MonoBehaviour {
     public void Initialize(Material baseMaterial = null) {
         meshFilter = gameObject.AddComponent<MeshFilter>();
         meshRenderer = gameObject.AddComponent<MeshRenderer>();
+
+        meshCollider = gameObject.AddComponent<MeshCollider>();
+        meshCollider.sharedMesh = squareMesh.mesh;
 
         if (baseMaterial != null) { 
             meshRenderer.material = baseMaterial; 

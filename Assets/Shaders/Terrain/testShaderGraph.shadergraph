@@ -432,7 +432,7 @@
                 "m_Node": {
                     "m_Id": "5319d63d80eb443ca852efceb46bfa15"
                 },
-                "m_SlotId": 1
+                "m_SlotId": 0
             }
         },
         {
@@ -511,8 +511,8 @@
     },
     "m_FragmentContext": {
         "m_Position": {
-            "x": 88.9998779296875,
-            "y": -495.0
+            "x": 85.0001449584961,
+            "y": -462.9999694824219
         },
         "m_Blocks": [
             {
@@ -1508,8 +1508,8 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -2056.0,
-            "y": -1053.9998779296875,
+            "x": -1954.0,
+            "y": -1089.0001220703125,
             "width": 281.0,
             "height": 471.0
         }
@@ -1784,10 +1784,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -1050.0,
-            "y": 124.9999771118164,
-            "width": 128.0,
-            "height": 118.0000228881836
+            "x": -983.0,
+            "y": -120.9999771118164,
+            "width": 126.0,
+            "height": 118.0
         }
     },
     "m_Slots": [
@@ -2615,9 +2615,9 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -2018.9998779296875,
-            "y": -1580.0,
-            "width": 250.9998779296875,
+            "x": -2011.0,
+            "y": -1576.0,
+            "width": 251.0,
             "height": 399.0
         }
     },
@@ -3340,7 +3340,7 @@
     "m_Hidden": false,
     "m_ShaderOutputName": "_BlendValue",
     "m_StageCapability": 3,
-    "m_Value": 0.0,
+    "m_Value": 1.0,
     "m_DefaultValue": 0.0,
     "m_Labels": []
 }
@@ -3534,9 +3534,9 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -677.5626220703125,
-            "y": -241.5626678466797,
-            "width": 208.0,
+            "x": -735.0000610351563,
+            "y": -274.0000305175781,
+            "width": 208.00006103515626,
             "height": 302.0
         }
     },
