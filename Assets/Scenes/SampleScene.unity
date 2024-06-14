@@ -438,9 +438,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 039a998e64b8ce34488810d1d267dc07, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  quadSize: 5
-  chunkSize: 10
-  initialWorldSize: 40
+  quadSize: 10
+  chunkSize: 40
+  initialWorldSize: 5
   baseMaterial: {fileID: 2100000, guid: 336a8b8df2105e1408f6ba1691e6d477, type: 2}
   basicEntities:
   - {fileID: 1039704458}
@@ -707,7 +707,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e88193dfc48774e45a11604cf9877035, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  renderDistance: 1
+  renderDistance: 2
 --- !u!136 &1039704459
 CapsuleCollider:
   m_ObjectHideFlags: 0

@@ -137,6 +137,7 @@ public class MeshGenerator : MonoBehaviour
 
     private void UpdateMesh(SquareMeshObject meshObject) {
         meshObject.UpdateMesh();
+        
     }
 
 

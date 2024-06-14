@@ -27,7 +27,7 @@ public class VisibleSquareMesh {
 
     public Vector2Int chunkCoordinates { get; private set; }
 
-    public VisibleSquareMesh(Vector2 centerPosition, int sizeX, int sizeZ, float quadSize, Vector2Int chunkCoordinates, bool generateVerticesTriangles = true) {
+    public VisibleSquareMesh(Vector2 centerPosition, int sizeX, int sizeZ, float quadSize, Vector2Int chunkCoordinates, bool generateVerticesTriangles = true, bool bakeLighting = false) {
         this.centerPosition = centerPosition;
         this.sizeX = sizeX + 1;
         this.sizeZ = sizeZ + 1;
@@ -42,6 +42,24 @@ public class VisibleSquareMesh {
             UpdateMesh();
         }
 
+        // doesnt work at all
+        if (bakeLighting) {
+            BakeLighting(LightDirection.Day);
+        }
+
+    }
+
+    // Doesnt work at all
+    public void BakeLighting(LightDirection lightDirection) {
+        Vector3 lightDirectionVector = GlobalLightDirections.GetLightDirection(lightDirection);
+        Vector3[] normals = mesh.normals;
+        Color[] colors = new Color[vertices.Length];
+        for (int i = 0; i < vertices.Length; i++) {
+            Debug.Log(normals[i]);
+            float lightIntensity = Mathf.Clamp01(Vector3.Dot(normals[i], -1 * lightDirectionVector));
+            colors[i] = new Color(lightIntensity, lightIntensity, lightIntensity, 1);
+        }
+        mesh.colors = colors;
     }
 
     /// <summary>
@@ -80,7 +98,10 @@ public class VisibleSquareMesh {
         if (setUVs) {
             uvs = newUVs;
         }
+
     }
+
+
 
     /// <summary>
     /// Generates the triangles array for this rectangle. Must be ran after CalculateVerticesArray().
@@ -142,7 +163,7 @@ public class BiomeMaskTextures {
 
     private Texture2D[] biomeMaskTextures;
 
-    public int textureSize = 8;
+    public int textureSize = 32;
 
     public float[,,,] biomeMaskValues;
 
@@ -201,8 +222,8 @@ public class SquareMeshObject : MonoBehaviour {
 
 
     // ----- TEXTURE SETTINGS -----
-    private int textureSize = 8;
-    private int smallerTextureSize = 4;
+    private int textureSize = 32;
+    private int smallerTextureSize = 16;
 
     public Texture2D inlandnessTexture;
     public string inlandnessTextureName = "_InlandnessTexture";
@@ -218,6 +239,13 @@ public class SquareMeshObject : MonoBehaviour {
     public string colorTextureName = "_ColorTexture";
     public Texture2D steepnessTexture;
     public string steepnessTextureName = "_SteepnessTexture";
+
+
+    public Texture2D inlandnessHumidityHeatTexture;
+    public string inlandnessHumidityHeatTextureName = "_InlandnessHumidityHeatTexture";
+
+    public Texture2D plainnessBumpinessSteepnessTexture;
+    public string plainnessBumpinessSteepnessTextureName = "_PlainnessBumpinessSteepnessTexture";
 
 
     public BiomeMaskTextures biomeMaskTextures;
@@ -265,15 +293,19 @@ public class SquareMeshObject : MonoBehaviour {
         colorTexture = new Texture2D(textureSize, smallerTextureSize) {wrapMode = TextureWrapMode.Mirror};
         ownedMaterial.SetTexture(colorTextureName, colorTexture);
 
+        inlandnessHumidityHeatTexture = new Texture2D(textureSize, textureSize) {wrapMode = TextureWrapMode.Mirror};
+        ownedMaterial.SetTexture(inlandnessHumidityHeatTextureName, inlandnessHumidityHeatTexture);
+
+        plainnessBumpinessSteepnessTexture = new Texture2D(textureSize, textureSize) {wrapMode = TextureWrapMode.Mirror};
+        ownedMaterial.SetTexture(plainnessBumpinessSteepnessTextureName, plainnessBumpinessSteepnessTexture);
+
         biomeMaskTextures = new BiomeMaskTextures();
         biomeMaskTextures.InitializeBiomeMaskTextures(ownedMaterial);
     }
 
     public void UpdateMesh(bool updateSquareMesh = true) {
         if (updateSquareMesh) squareMesh.UpdateMesh();
-        meshFilter.mesh.Clear();
         meshFilter.mesh = squareMesh.mesh;
-        meshFilter.mesh.RecalculateNormals();
     }
 
     public void MoveCenterPosition(int x, int z) {
