@@ -89,12 +89,14 @@ public class TerrainGenerator: MonoBehaviour
 
     public void GenerateChunk(
         SquareMeshObject squareMeshObject,
+        int LOD = 0,
         bool setTextures = true
         ) {
         
         Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunk/SetVertexHeights");
         // set the height of the verticies
         for (int i = 0; i < squareMeshObject.squareMesh.vertices.Length; i++) {
+            
             Vector3 vertex = squareMeshObject.squareMesh.vertices[i];
             float height = GetHeight(new Vector2(vertex.x, vertex.z));
             vertex.y = height;

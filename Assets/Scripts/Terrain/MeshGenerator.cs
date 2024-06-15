@@ -47,6 +47,8 @@ public class MeshGenerator : MonoBehaviour
 
     [SerializeField] private int fullWorldSizeChunks = 100;
 
+    [SerializeField] private int LODlevels = 4;
+
 
 
     // ------------ MESH GENERATION OBJECTS ------------
@@ -111,7 +113,7 @@ public class MeshGenerator : MonoBehaviour
 
         SquareMeshObject meshObject = squareMeshObject.AddComponent<SquareMeshObject>();
         squareMeshObjects.Add(meshObject);
-        meshObject.squareMesh = new VisibleSquareMesh(centerPosition, xSize, zSize, quadSize, chunkCoordinates);
+        meshObject.squareMesh = new VisibleSquareMesh(centerPosition, xSize, zSize, quadSize, chunkCoordinates, levelsOfDetail: LODlevels);
         meshObject.Initialize(baseMaterial:baseMaterial);
 
         return meshObject;
@@ -132,21 +134,20 @@ public class MeshGenerator : MonoBehaviour
     /// <summary>
     /// Generates the height of a squareMeshObject using perlin noise. Will be made more elaborate in the future
     /// </summary>
-    private void GenerateTerrain(SquareMeshObject squareMeshObject, bool updateMesh = true, bool generateMeshCollider = true) {
+    private void GenerateTerrain(SquareMeshObject squareMeshObject, int LOD = 3, bool generateMeshCollider = true) {
 
         Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunk");
-        terrainGenerator.GenerateChunk(squareMeshObject);
+        terrainGenerator.GenerateChunk(squareMeshObject, LOD: LOD);
         Profiler.EndSample();
 
         Profiler.BeginSample("WorldGeneration/GenerateTerrain/UpdateMesh");
-        if (updateMesh) {
-            UpdateMesh(squareMeshObject);
-        }
+        squareMeshObject.SetLOD(LOD);
+        squareMeshObject.StartCoroutine(squareMeshObject.testCouroutine());
         Profiler.EndSample();
 
-        if (generateMeshCollider) {
-            squareMeshObject.AddMeshCollider();
-        }
+        // if (generateMeshCollider) {
+        //     squareMeshObject.AddMeshCollider();
+        // }
     }
 
     /// <summary>
@@ -154,7 +155,7 @@ public class MeshGenerator : MonoBehaviour
     /// </summary>
     private void GenerateAllHeights(bool updateMesh = true) {
         foreach (SquareMeshObject meshObject in squareMeshObjects) {
-            GenerateTerrain(meshObject, false);
+            GenerateTerrain(meshObject, LODlevels - 1); // set minimum detail level
         }
         if(updateMesh) UpdateAllMeshes();
     }
@@ -203,11 +204,11 @@ public class MeshGenerator : MonoBehaviour
 
 
     public Vector2 GetChunkWorldPostion(Vector2Int chunkCoordinates) {
-        return new Vector2((chunkCoordinates.x - fullWorldSizeChunks/2 + 0.5f) * chunkSize * quadSize, (chunkCoordinates.y - fullWorldSizeChunks/2 + 0.5f) * chunkSize * quadSize);
+        return new Vector2((chunkCoordinates.x - fullWorldSizeChunks/2 + 0.5f) * (chunkSize-1) * quadSize, (chunkCoordinates.y - fullWorldSizeChunks/2 + 0.5f) * (chunkSize-1) * quadSize);
     }
 
     public Vector2Int GetChunkCoordinates(Vector2 worldPosition) {
-        return new Vector2Int(Mathf.FloorToInt(worldPosition.x / chunkSize / quadSize + fullWorldSizeChunks/2), Mathf.FloorToInt(worldPosition.y / chunkSize / quadSize + fullWorldSizeChunks/2));
+        return new Vector2Int(Mathf.FloorToInt(worldPosition.x / (chunkSize+1) / quadSize + fullWorldSizeChunks/2), Mathf.FloorToInt(worldPosition.y / (chunkSize+1) / quadSize + fullWorldSizeChunks/2));
     }
 
     public Chunk GetChunk(Vector2Int chunkCoordinates) {
