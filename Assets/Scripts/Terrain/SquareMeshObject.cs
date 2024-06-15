@@ -103,6 +103,7 @@ public class VisibleSquareMesh {
 
 
 
+
     /// <summary>
     /// Generates the triangles array for this rectangle. Must be ran after CalculateVerticesArray().
     /// </summary>
@@ -218,12 +219,16 @@ public class SquareMeshObject : MonoBehaviour {
     private Material ownedMaterial;
 
     private MeshCollider meshCollider;
+
+
+    private float visibilityMultiplier = 1f; // the visibility of the square mesh object. 1 if an entity can see it. lower values makes the material darker
+    public string visibilityMultiplierName = "_VisibilityMultiplier";
+    private Coroutine visibilityMultiplierCoroutine;
     
 
 
     // ----- TEXTURE SETTINGS -----
     private int textureSize = 32;
-    private int smallerTextureSize = 16;
 
     public Texture2D inlandnessTexture;
     public string inlandnessTextureName = "_InlandnessTexture";
@@ -235,8 +240,6 @@ public class SquareMeshObject : MonoBehaviour {
     public string humidityTextureName = "_HumidityTexture";
     public Texture2D heatTexture;
     public string heatTextureName = "_HeatTexture";
-    public Texture2D colorTexture;
-    public string colorTextureName = "_ColorTexture";
     public Texture2D steepnessTexture;
     public string steepnessTextureName = "_SteepnessTexture";
 
@@ -248,6 +251,7 @@ public class SquareMeshObject : MonoBehaviour {
     public string plainnessBumpinessSteepnessTextureName = "_PlainnessBumpinessSteepnessTexture";
 
 
+
     public BiomeMaskTextures biomeMaskTextures;
 
 
@@ -255,16 +259,16 @@ public class SquareMeshObject : MonoBehaviour {
 
 
 
-
+    public void AddMeshCollider() {
+        meshCollider = gameObject.AddComponent<MeshCollider>();
+        meshCollider.sharedMesh = squareMesh.mesh;
+    }   
 
 
     // ---------------------------
     public void Initialize(Material baseMaterial = null) {
         meshFilter = gameObject.AddComponent<MeshFilter>();
         meshRenderer = gameObject.AddComponent<MeshRenderer>();
-
-        meshCollider = gameObject.AddComponent<MeshCollider>();
-        meshCollider.sharedMesh = squareMesh.mesh;
 
         if (baseMaterial != null) { 
             meshRenderer.material = baseMaterial; 
@@ -290,8 +294,6 @@ public class SquareMeshObject : MonoBehaviour {
         ownedMaterial.SetTexture(heatTextureName, heatTexture);
         steepnessTexture = new Texture2D(textureSize, textureSize) {wrapMode = TextureWrapMode.Mirror};
         ownedMaterial.SetTexture(steepnessTextureName, steepnessTexture);
-        colorTexture = new Texture2D(textureSize, smallerTextureSize) {wrapMode = TextureWrapMode.Mirror};
-        ownedMaterial.SetTexture(colorTextureName, colorTexture);
 
         inlandnessHumidityHeatTexture = new Texture2D(textureSize, textureSize) {wrapMode = TextureWrapMode.Mirror};
         ownedMaterial.SetTexture(inlandnessHumidityHeatTextureName, inlandnessHumidityHeatTexture);
@@ -310,5 +312,27 @@ public class SquareMeshObject : MonoBehaviour {
 
     public void MoveCenterPosition(int x, int z) {
         squareMesh.MoveCenterPosition(x, z);
+    }
+
+
+    public void SetVisibilityMultiplier(float targetVisibilityMultiplier, float duration = 0.2f) {
+        if (visibilityMultiplierCoroutine != null) {
+            StopCoroutine(visibilityMultiplierCoroutine);
+        }
+        visibilityMultiplierCoroutine = StartCoroutine(UpdateVisibilityMultiplier(targetVisibilityMultiplier,duration));
+    }
+
+
+    public IEnumerator UpdateVisibilityMultiplier(float targetVisibilityMultiplier, float time) {
+        float startVisibilityMultiplier = visibilityMultiplier;
+        float currentTime = 0;
+        while (currentTime < time) {
+            visibilityMultiplier = Mathf.Lerp(startVisibilityMultiplier, targetVisibilityMultiplier, currentTime / time);
+            ownedMaterial.SetFloat(visibilityMultiplierName, visibilityMultiplier);
+            currentTime += Time.deltaTime;
+            yield return null;
+        }
+        visibilityMultiplier = targetVisibilityMultiplier;
+        ownedMaterial.SetFloat(visibilityMultiplierName, visibilityMultiplier);
     }
 }

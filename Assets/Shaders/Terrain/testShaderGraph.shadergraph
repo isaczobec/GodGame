@@ -38,6 +38,9 @@
         },
         {
             "m_Id": "89af319a6dfe40ecaea54d385b562940"
+        },
+        {
+            "m_Id": "04013d0402e043f3a8bf1fd07081b8a3"
         }
     ],
     "m_Keywords": [],
@@ -670,6 +673,34 @@
     ],
     "m_Dropdowns": [],
     "m_DropdownSelectedEntries": []
+}
+
+{
+    "m_SGVersion": 1,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.Vector1ShaderProperty",
+    "m_ObjectId": "04013d0402e043f3a8bf1fd07081b8a3",
+    "m_Guid": {
+        "m_GuidSerialized": "9cd2b629-b3b5-47f1-865b-ea17b65ff385"
+    },
+    "m_Name": "Visibility",
+    "m_DefaultRefNameVersion": 1,
+    "m_RefNameGeneratedByDisplayName": "Visibility",
+    "m_DefaultReferenceName": "_Visibility",
+    "m_OverrideReferenceName": "",
+    "m_GeneratePropertyBlock": true,
+    "m_UseCustomSlotLabel": false,
+    "m_CustomSlotLabel": "",
+    "m_DismissedVersion": 0,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": 1.0,
+    "m_FloatType": 0,
+    "m_RangeValues": {
+        "x": 0.0,
+        "y": 1.0
+    }
 }
 
 {
@@ -1459,7 +1490,7 @@
     "m_Hidden": false,
     "m_ShaderOutputName": "_TextureScaleMultiplier",
     "m_StageCapability": 2,
-    "m_Value": 3.0,
+    "m_Value": 6.0,
     "m_DefaultValue": 0.0,
     "m_Labels": []
 }
@@ -2277,7 +2308,7 @@
     "m_Hidden": false,
     "m_ShaderOutputName": "_TextureScaleMultiplier",
     "m_StageCapability": 2,
-    "m_Value": 3.0,
+    "m_Value": 6.0,
     "m_DefaultValue": 0.0,
     "m_Labels": []
 }
@@ -2676,6 +2707,9 @@
         },
         {
             "m_Id": "89af319a6dfe40ecaea54d385b562940"
+        },
+        {
+            "m_Id": "04013d0402e043f3a8bf1fd07081b8a3"
         }
     ]
 }
@@ -3045,7 +3079,7 @@
     "m_Hidden": false,
     "m_ShaderOutputName": "_TextureScaleMultiplier",
     "m_StageCapability": 2,
-    "m_Value": 3.0,
+    "m_Value": 6.0,
     "m_DefaultValue": 0.0,
     "m_Labels": []
 }

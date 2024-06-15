@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 
 /// <summary>
@@ -91,6 +92,7 @@ public class TerrainGenerator: MonoBehaviour
         bool setTextures = true
         ) {
         
+        Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunk/SetVertexHeights");
         // set the height of the verticies
         for (int i = 0; i < squareMeshObject.squareMesh.vertices.Length; i++) {
             Vector3 vertex = squareMeshObject.squareMesh.vertices[i];
@@ -98,8 +100,10 @@ public class TerrainGenerator: MonoBehaviour
             vertex.y = height;
             squareMeshObject.squareMesh.vertices[i] = vertex;
         }
+        Profiler.EndSample();
 
 
+        Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunk/SetTextures");
         // set the textures
         if (setTextures) {
             // SetTexture(squareMeshObject, inlandnessPerlinGenerator, squareMeshObject.inlandnessTexture);
@@ -110,13 +114,14 @@ public class TerrainGenerator: MonoBehaviour
             // SetBiomeInterpolatedTexture(squareMeshObject, squareMeshObject.bumpinessTexture, BiomeTextureType.Bumpiness);
             // SetBiomeInterpolatedTexture(squareMeshObject, squareMeshObject.steepnessTexture, BiomeTextureType.Steepness);
 
-            SetPlainnessBumpinessSteepnessTexture(squareMeshObject, squareMeshObject.plainnessBumpinessSteepnessTexture, squareMeshObject.plainnessBumpinessSteepnessTexture.height, squareMeshObject.plainnessBumpinessSteepnessTexture.width);
+            SetAllTextures(squareMeshObject, squareMeshObject.inlandnessHumidityHeatTexture, squareMeshObject.plainnessBumpinessSteepnessTexture, squareMeshObject.plainnessBumpinessSteepnessTexture.height, squareMeshObject.plainnessBumpinessSteepnessTexture.width);
             SetInlandnessHumidityHeatTexture(squareMeshObject, squareMeshObject.inlandnessHumidityHeatTexture);
 
             // SetBiomeInterpolatedTexture(squareMeshObject, squareMeshObject.colorTexture, BiomeTextureType.Color);
-            SetBiomeInterpolatedTexture(squareMeshObject, null, BiomeTextureType.BiomeMask, squareMeshObject.biomeMaskTextures.textureSize, squareMeshObject.biomeMaskTextures.textureSize);
+            // SetBiomeInterpolatedTexture(squareMeshObject, null, BiomeTextureType.BiomeMask, squareMeshObject.biomeMaskTextures.textureSize, squareMeshObject.biomeMaskTextures.textureSize);
             
         }
+        Profiler.EndSample();
 
     }
 
@@ -135,6 +140,7 @@ public class TerrainGenerator: MonoBehaviour
     }
     texture.Apply();
     }   
+
 
     private void SetInlandnessHumidityHeatTexture(SquareMeshObject squareMeshObject, Texture2D texture) {    
     float sampleXFrom = squareMeshObject.squareMesh.vertices[0].x;
@@ -166,9 +172,10 @@ public class TerrainGenerator: MonoBehaviour
         InlandnessHeatHumidity,
     }
 
-    // THIS CAN BE OPTIMISED BY RENDERING TO DIFFERENT CHANNELS OF THE SAME TEXTURE, GIVEN THAT DIFFERENT TEXTURES HAVE THE SAME SIZE
-    // CAN BE OPTIMISED BY NOT RUNNING THE INTERPOLATEBIOMES FUNCTION MULTIPLE TIMES
-    private void SetPlainnessBumpinessSteepnessTexture(SquareMeshObject squareMeshObject, Texture2D texture, int textureHeight = 10, int textureWidth = 10) { // THE INTERPOLATEBIOMES IS BEING RAN MULTIPLE TIMES, FIX THIS
+    /// <summary>
+    /// Sets all textures for a squareMeshObject. Make sure all textures have the same size.
+    /// </summary>
+    private void SetAllTextures(SquareMeshObject squareMeshObject, Texture2D inlHumHeatTexture, Texture2D plainBumpSteepTexture, int textureHeight = 10, int textureWidth = 10) { // THE INTERPOLATEBIOMES IS BEING RAN MULTIPLE TIMES, FIX THIS
 
         // get the initial sample positions
         float sampleXFrom = squareMeshObject.squareMesh.vertices[0].x;
@@ -185,11 +192,13 @@ public class TerrainGenerator: MonoBehaviour
                 float inlandness = inlandnessPerlinGenerator.SampleNosie(new Vector2(sampleX, sampleZ), clamp: true);
                 float humidity = humidityPerlinGenerator.SampleNosie(new Vector2(sampleX, sampleZ), clamp: true);
                 float heat = heatPerlinGenerator.SampleNosie(new Vector2(sampleX, sampleZ), clamp: true);
+
+
                 
                 List<BiomeInterpolationInfo> interpolateBiomes = GetBiomesOnPoint(inlandness, heat, humidity);
 
 
-                
+                inlHumHeatTexture.SetPixel(x, y, new Color(inlandness, humidity, heat, 0f));
 
                 float r = 0f;
                 float g = 0f;
@@ -201,95 +210,19 @@ public class TerrainGenerator: MonoBehaviour
                             g += interpolateBiome.biome.bumpinessPerlinGenerator.SampleNosie(new Vector2(sampleX, sampleZ), clamp: true, runThroughCurve: false, multiplyWithHeightMultiplier: false) * interpolateBiome.weight;
                             b += interpolateBiome.biome.GetHeightGradient(new Vector2(sampleX, sampleZ), inlandness, inlandnessHeightMultiplier,raw:false).magnitude * interpolateBiome.weight; // feels a little bit stupid that this has to be interpolated between biomes, but kinda makes sense
 
+                            squareMeshObject.biomeMaskTextures.SetBiomeMask(interpolateBiome.biome.biomeMaskIndex, x, y, interpolateBiome.weight);
+
                 }
-                texture.SetPixel(x, y, new Color(r, g, b, a));
+                plainBumpSteepTexture.SetPixel(x, y, new Color(r, g, b, a));
             }
         }
 
-        texture?.Apply();
-
+        plainBumpSteepTexture?.Apply();
+        inlHumHeatTexture?.Apply();
+        squareMeshObject.biomeMaskTextures.ApplyAllBiomeMaskChanges();
     }
 
     // this is now only used for biome mask textures
-    private void SetBiomeInterpolatedTexture(SquareMeshObject squareMeshObject, Texture2D texture, BiomeTextureType biomeTextureType, int textureHeight = 10, int textureWidth = 10) { // THE INTERPOLATEBIOMES IS BEING RAN MULTIPLE TIMES, FIX THIS
-
-        // get the initial sample positions
-        float sampleXFrom = squareMeshObject.squareMesh.vertices[0].x;
-        float sampleZFrom = squareMeshObject.squareMesh.vertices[0].z;
-
-        int tH = 0;
-        int tW = 0;
-        if (texture != null) {
-            tH = texture.height;
-            tW = texture.width;
-        } else if (biomeTextureType == BiomeTextureType.BiomeMask) {
-            tH = textureHeight;
-            tW = textureWidth;
-        } 
-
-        
-
-        for (int y = 0; y < tH; y++) {
-            for (int x = 0; x < tW; x++) {
-                float sampleX = sampleXFrom + x * squareMeshObject.squareMesh.quadSize * squareMeshObject.squareMesh.sizeX / tW;
-                float sampleZ = sampleZFrom + y * squareMeshObject.squareMesh.quadSize * squareMeshObject.squareMesh.sizeZ / tH;
-
-                float inlandness = inlandnessPerlinGenerator.SampleNosie(new Vector2(sampleX, sampleZ), clamp: true);
-                float humidity = humidityPerlinGenerator.SampleNosie(new Vector2(sampleX, sampleZ), clamp: true);
-                float heat = heatPerlinGenerator.SampleNosie(new Vector2(sampleX, sampleZ), clamp: true);
-                
-                List<BiomeInterpolationInfo> interpolateBiomes = GetBiomesOnPoint(inlandness, heat, humidity);
-
-                switch (biomeTextureType) {
-
-                    case BiomeTextureType.Inlandness:
-                        foreach (BiomeInterpolationInfo interpolateBiome in interpolateBiomes) {
-                            float val = interpolateBiome.biome.EvaluateInlandness(inlandness);
-                            texture.SetPixel(x, y, new Color(val, val, val, 1f));
-                        }
-                        break;
-
-                    case BiomeTextureType.Plainness:
-                        SetPixelValueBiomeInterpolationPerlin(x, y, sampleX, sampleZ, interpolateBiomes, texture, biomeTextureType);
-                        break;
-
-                    case BiomeTextureType.Bumpiness:
-                        SetPixelValueBiomeInterpolationPerlin(x, y, sampleX, sampleZ, interpolateBiomes, texture, biomeTextureType);
-                        break;
-
-                    case BiomeTextureType.BiomeMask:
-
-                        foreach (BiomeInterpolationInfo interpolateBiome in interpolateBiomes) {
-                            squareMeshObject.biomeMaskTextures.SetBiomeMask(interpolateBiome.biome.biomeMaskIndex, x, y, interpolateBiome.weight);
-                        }
-
-                        break;
-
-                    case BiomeTextureType.Color:
-                        Color runningColorSum = new Color(0, 0, 0, 0);
-                        foreach (BiomeInterpolationInfo bi in interpolateBiomes) {
-                            runningColorSum += bi.biome.color * bi.weight;
-                        } 
-                        texture.SetPixel(x, y, runningColorSum);
-                        break;
-                    case BiomeTextureType.Steepness:
-                        float b = 0f;
-                        foreach (BiomeInterpolationInfo interpolateBiome in interpolateBiomes) {
-                            b += interpolateBiome.biome.GetHeightGradient(new Vector2(sampleX, sampleZ), inlandness, inlandnessHeightMultiplier,raw:false).magnitude * interpolateBiome.weight;
-                            texture.SetPixel(x, y, new Color(b, b, b, 1f));
-                        }
-                        break;
-                }
-
-            }
-        }
-        if (texture != null) { // if we arent rendering the biome mask
-            texture.Apply();
-        } else if (biomeTextureType == BiomeTextureType.BiomeMask) {
-            squareMeshObject.biomeMaskTextures.ApplyAllBiomeMaskChanges();
-        }
-
-    }
 
 
 

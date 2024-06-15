@@ -439,12 +439,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   quadSize: 10
-  chunkSize: 40
+  chunkSize: 80
   initialWorldSize: 5
+  fullWorldSizeChunks: 1000
   baseMaterial: {fileID: 2100000, guid: 336a8b8df2105e1408f6ba1691e6d477, type: 2}
   basicEntities:
   - {fileID: 1039704458}
-  - {fileID: 1585595517}
   terrainGenerator: {fileID: 644989434}
 --- !u!114 &644989434
 MonoBehaviour:
