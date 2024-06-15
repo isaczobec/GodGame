@@ -81,7 +81,7 @@ public class Biome
         float waterValue = GetWaterValue(position);
 
         bumpiness *= plainness;
-        bumpiness *= Mathf.Pow((1 - waterValue), waterPlainnessSmoothness);
+        bumpiness *= Mathf.Pow(1 - waterValue, waterPlainnessSmoothness);
 
         float waterDepth = waterValue * waterDepthMultiplier;
 

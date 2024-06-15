@@ -304,16 +304,23 @@ private float SmoothingFunction(float x) {
     /// </summary>
     private float GetHeight(Vector2 position) {
 
+        Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunk/SetVertexHeights/SamplePerlinNoise");
         float inlandnessHeight = inlandnessPerlinGenerator.SampleNosie(position, clamp: true);
         float humidity = humidityPerlinGenerator.SampleNosie(position, clamp: true);
         float heat = heatPerlinGenerator.SampleNosie(position, clamp: true);
+        Profiler.EndSample();
 
+        Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunk/SetVertexHeights/InterpolateBiomes");
         List<BiomeInterpolationInfo> interpolateBiomes = GetBiomesOnPoint(inlandnessHeight, heat, humidity);
+        Profiler.EndSample();
 
+        Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunk/SetVertexHeights/CalculateHeight");
         float heightSum = 0;
         foreach (BiomeInterpolationInfo interpolateBiome in interpolateBiomes) {
+            
             heightSum += interpolateBiome.biome.GetHeight(position, inlandnessHeight, inlandnessHeightMultiplier) * interpolateBiome.weight;
         }
+        Profiler.EndSample();
 
         return heightSum;
 
