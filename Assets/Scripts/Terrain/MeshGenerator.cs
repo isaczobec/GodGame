@@ -44,7 +44,9 @@ public class MeshGenerator : MonoBehaviour
     /// <summary>
     /// A 2D array of all chunks in the world
     /// </summary>
-    private Chunk[,] chunksArray;
+    // private Chunk[,] chunksArray;
+
+    private ChunkTree chunkTreeRef;
 
 
 
@@ -52,13 +54,15 @@ public class MeshGenerator : MonoBehaviour
     {
         
         worldDataGenerator = WorldDataGenerator.instance;
+        chunkTreeRef = worldDataGenerator.chunkTree;
+
         maxChunkSize = worldDataGenerator.maxChunkSize;
         initialWorldSize = worldDataGenerator.initialWorldSize;
         fullWorldSizeChunks = worldDataGenerator.fullWorldSizeChunks;
         LODlevels = worldDataGenerator.LODlevels;
         quadSize = worldDataGenerator.quadSize;
 
-        InitializeChunkArray();
+        // InitializeChunkArray();
 
         // add all the basic entities to the renderArounds list
         foreach (BasicEntity basicEntity in basicEntities) {
@@ -69,7 +73,7 @@ public class MeshGenerator : MonoBehaviour
 
         for (int i = -initialWorldSize; i < initialWorldSize; i++) {
             for (int j = -initialWorldSize; j < initialWorldSize; j++) {
-                PromptChunkGeneration(new Vector2Int(i + fullWorldSizeChunks/2, j + fullWorldSizeChunks/2));
+                PromptChunkMeshGeneration(new Vector2Int(i + fullWorldSizeChunks/2, j + fullWorldSizeChunks/2));
                 
             }
         }
@@ -116,15 +120,11 @@ public class MeshGenerator : MonoBehaviour
     /// <summary>
     /// Generates the height of a squareMeshObject using perlin noise. Will be made more elaborate in the future
     /// </summary>
-    private void GenerateTerrain(SquareMeshObject squareMeshObject, bool generateMeshCollider = true) {
+    private void GenerateChunkTerrain(SquareMeshObject squareMeshObject, bool generateMeshCollider = true) {
 
-        Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunk");
-        terrainGenerator.GenerateChunk(squareMeshObject, LOD: LODlevels-1);
-        Profiler.EndSample();
+        terrainGenerator.GenerateChunkTextures(squareMeshObject, LOD: LODlevels-1);
 
-        Profiler.BeginSample("WorldGeneration/GenerateTerrain/UpdateMesh");
         squareMeshObject.SetLOD(LODlevels-1);
-        Profiler.EndSample();
 
         if (generateMeshCollider) {
             squareMeshObject.AddMeshCollider();
@@ -132,11 +132,11 @@ public class MeshGenerator : MonoBehaviour
     }
 
     /// <summary>
-    /// Generates the height of all squareMeshObjects using GenerateTerrain().
+    /// Generates the height of all squareMeshObjects using GenerateChunkTerrain().
     /// </summary>
     private void GenerateAllHeights(bool updateMesh = true) {
         foreach (SquareMeshObject meshObject in squareMeshObjects) {
-            GenerateTerrain(meshObject); // set minimum detail level
+            GenerateChunkTerrain(meshObject); // set minimum detail level
         }
         if(updateMesh) UpdateAllMeshes();
     }
@@ -173,15 +173,15 @@ public class MeshGenerator : MonoBehaviour
 
     // ---- chunk array management ----
 
-    private void InitializeChunkArray() {
-        chunksArray = new Chunk[fullWorldSizeChunks, fullWorldSizeChunks];
+    // private void InitializeChunkArray() {
+    //     chunksArray = new Chunk[fullWorldSizeChunks, fullWorldSizeChunks];
 
-        for (int i = 0; i < fullWorldSizeChunks; i++) {
-            for (int j = 0; j < fullWorldSizeChunks; j++) {
-                chunksArray[i, j] = new Chunk(new Vector2Int(i, j));
-            }
-        }
-    }
+    //     for (int i = 0; i < fullWorldSizeChunks; i++) {
+    //         for (int j = 0; j < fullWorldSizeChunks; j++) {
+    //             chunksArray[i, j] = new Chunk(new Vector2Int(i, j));
+    //         }
+    //     }
+    // }
 
 
     public Vector2 GetChunkWorldPostion(Vector2Int chunkCoordinates) {
@@ -193,34 +193,36 @@ public class MeshGenerator : MonoBehaviour
     }
 
     public Chunk GetChunk(Vector2Int chunkCoordinates) {
-        return chunksArray[chunkCoordinates.x, chunkCoordinates.y];
+        return chunkTreeRef.CreateOrGetChunk(chunkCoordinates,allowCreation:false);
     }
 
-    private void PromptChunkGeneration(Vector2Int chunkCoordinates) {
+    private void PromptChunkMeshGeneration(Vector2Int chunkCoordinates) {
 
         // check if the chunk is within the bounds of the world
         if (chunkCoordinates.x < 0 || chunkCoordinates.y < 0 || chunkCoordinates.x >= fullWorldSizeChunks || chunkCoordinates.y >= fullWorldSizeChunks) {
             return;
         }
 
-        if (chunksArray[chunkCoordinates.x, chunkCoordinates.y].discovered == false)
+        Chunk chunk = chunkTreeRef.CreateOrGetChunk(chunkCoordinates, allowCreation:true);
+        if (chunk.discovered == false)
         {
-            GenerateChunkAtCoordinates(chunkCoordinates);
+            GenerateChunkMesh(chunk);
         }
     }
 
-    private void GenerateChunkAtCoordinates(Vector2Int chunkCoordinates)
+    private void GenerateChunkMesh(Chunk chunk)
     {
-        Profiler.BeginSample("WorldGeneration/CreateSquareMeshObject");
-        SquareMeshObject newMeshObject = CreateSquareMeshGameObject(GetChunkWorldPostion(chunkCoordinates), (int)maxChunkSize, (int)maxChunkSize, chunkCoordinates);
-        Profiler.EndSample();
+        SquareMeshObject newMeshObject = CreateSquareMeshGameObject(GetChunkWorldPostion(chunk.chunkPosition), (int)maxChunkSize, (int)maxChunkSize, chunk.chunkPosition);
 
-        Profiler.BeginSample("WorldGeneration/GenerateTerrain");
-        GenerateTerrain(newMeshObject);
-        Profiler.EndSample();
-        chunksArray[chunkCoordinates.x, chunkCoordinates.y].squareMeshObject = newMeshObject;
-        chunksArray[chunkCoordinates.x, chunkCoordinates.y].discovered = true;
-        chunksArray[chunkCoordinates.x, chunkCoordinates.y].generated = true;
+        chunk.chunkDataArray.SetValues(); // generate the arrays of data for this chunk
+        chunk.squareMeshObject = newMeshObject;
+        chunk.SetMeshHeights();
+        GenerateChunkTerrain(newMeshObject);
+        chunk.discovered = true;
+        chunk.generated = true;
+
+
+        StartCoroutine(chunk.tC());
 
     }
 
@@ -239,7 +241,7 @@ public class MeshGenerator : MonoBehaviour
                 for (int j = 0; j < sideLength; j++) {
 
                     // Create a chunk if it doesn't exist
-                    PromptChunkGeneration(chunkCoordinates + new Vector2Int(i-(int)Mathf.Floor(sideLength/2), j-(int)Mathf.Floor(sideLength/2)));
+                    PromptChunkMeshGeneration(chunkCoordinates + new Vector2Int(i-(int)Mathf.Floor(sideLength/2), j-(int)Mathf.Floor(sideLength/2)));
 
                 }
             }

@@ -215,6 +215,12 @@ public class SquareMeshObject : MonoBehaviour {
 
     }
 
+    public void SetMeshHeights(float[,] heights, int LOD, bool createMesh) {
+        squareMesh.SetMeshHeights(heights, LOD, createMesh);
+    }
+
+    // sahg
+
 
     
 }

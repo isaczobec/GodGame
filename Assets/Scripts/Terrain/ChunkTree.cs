@@ -30,17 +30,24 @@ class ChunkTree {
         int l = levels;
         ChunkTreeNode node = root;
         while (l > 1) {
-            node = node.GetNodeFromPosition(chunkPosition);
-            if (node == null) {
+
+            ChunkTreeNode newNode = node.GetNodeFromPosition(chunkPosition);
+            if (newNode == null) {
                 if (!allowCreation) {
                     return null;
                 }
-                // create a child at the apropriate position
-                node.CreateChild(chunkPosition.x < (node.topLeftPosition.x + node.bottomRightPosition.x) / 2, chunkPosition.y < (node.topLeftPosition.y + node.bottomRightPosition.y) / 2);
+                // create a child at the apropriate position if it doesn't exist
+                node = node.CreateChild(chunkPosition.x < (node.topLeftPosition.x + node.bottomRightPosition.x) / 2, chunkPosition.y < (node.topLeftPosition.y + node.bottomRightPosition.y) / 2);
             }
-            l -= 1;
+            else {
+                node = newNode; // the node exists, so we can move to it
+            }
+            
+            l -= 1; // go down a level
+
         }
 
+        // create the chunk if it doesn't exist
         if (node.chunk == null) {
             if (!allowCreation) return null;
             node.chunk = new Chunk(chunkPosition);

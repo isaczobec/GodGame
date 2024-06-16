@@ -11,7 +11,7 @@ class WorldDataGenerator: MonoBehaviour {
     [SerializeField] public float quadSize;
 
 
-    private ChunkTree chunkTree;
+    public ChunkTree chunkTree {get; private set;}
 
 
     public static WorldDataGenerator instance {get; private set;}
@@ -19,16 +19,10 @@ class WorldDataGenerator: MonoBehaviour {
     public void Awake()
     {
         if (instance == null)
-        {
-            instance = this;
-        }
+        {instance = this;}
         else
-        {
-            Debug.LogError("There should only be one instance of WorldDataGenerator");
-        }
-
+        {Debug.LogError("There should only be one instance of WorldDataGenerator");}
         CheckValuesValid();
-
     }
 
     private void CheckValuesValid()
@@ -38,7 +32,6 @@ class WorldDataGenerator: MonoBehaviour {
         {
             Debug.LogError("maxChunkSize-1 must be a multiple of 2^LODlevels");
         }
-
         int p = 2;
         bool pow2 = false;
         while (p <= fullWorldSizeChunks)
@@ -60,7 +53,15 @@ class WorldDataGenerator: MonoBehaviour {
         chunkTree = new ChunkTree(new Vector2Int(0,0), new Vector2Int(fullWorldSizeChunks, fullWorldSizeChunks), fullWorldSizeChunks);
     }
 
-    
 
+
+    public Vector2 GetChunkWorldPostion(Vector2Int chunkCoordinates, bool offset = true) {
+        float o = offset? 0.5f : 0f;
+        return new Vector2((chunkCoordinates.x - fullWorldSizeChunks/2 + o) * (maxChunkSize-1) * quadSize, (chunkCoordinates.y - fullWorldSizeChunks/2 + o) * (maxChunkSize-1) * quadSize);
+    }
+
+    public Vector2Int GetChunkCoordinates(Vector2 worldPosition) {
+        return new Vector2Int(Mathf.FloorToInt(worldPosition.x / (maxChunkSize+1) / quadSize + fullWorldSizeChunks/2), Mathf.FloorToInt(worldPosition.y / (maxChunkSize+1) / quadSize + fullWorldSizeChunks/2));
+    }
 
 }

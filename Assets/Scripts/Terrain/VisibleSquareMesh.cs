@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
 
 /// <summary>
@@ -58,8 +59,6 @@ public class VisibleSquareMesh {
             CalculateVerticesArray(quadSize);
         }
 
-        // doesnt work at all
-
     }
 
     public void InitializeVerticiesArray() {
@@ -90,7 +89,7 @@ public class VisibleSquareMesh {
     /// <summary>
     /// Generates the vertices array for this rectangle
     /// </summary>
-    public void CalculateVerticesArray(float quadSize, bool setMeshVertices = false, bool setUVs = true) {
+    public void CalculateVerticesArray(float quadSize, bool setMeshVertices = false, bool setUVs = true) { // if memory becomes a problem this can perhaps be optimised by not generating the full res array at once
         Vector3[] newVertices = new Vector3[sizeX * sizeZ]; // set the size of the array
         Vector2[] newUVs = new Vector2[sizeX * sizeZ]; // create an array for UVs
 
@@ -166,7 +165,7 @@ public class VisibleSquareMesh {
 
     public void GenerateLOD(int LOD) {
         CalculateTrianglesArray(LOD);
-        CreateMesh(LOD);
+        if (generatedLODs[LOD] == false) CreateMesh(LOD);
         generatedLODs[LOD] = true;
     }
 
@@ -196,6 +195,27 @@ public class VisibleSquareMesh {
     meshes[LOD].RecalculateNormals();
     meshes[LOD].RecalculateBounds();
 }
+
+    public void SetMeshHeights(float[,] heights, int LOD, bool createMesh) {
+
+        int inc = (int)Mathf.Pow(2, LOD);
+        int heightSize = heights.GetLength(0);
+
+        for (int i = 0; i < heightSize; i++) {
+            for (int j = 0; j < heightSize; j++) {
+                int vertexIndex = (i * inc) * sizeZ + (j * inc);
+                if (vertexIndex < vertices.Length) {
+                    vertices[vertexIndex].y = heights[i, j];
+                }
+            }
+        }
+
+        if (createMesh) {
+            CreateMesh(LOD);
+        } else {
+            UpdateMesh(LOD);
+        }
+    }
 
 
     public void MoveCenterPosition(int x, int z) {

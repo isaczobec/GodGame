@@ -41,7 +41,19 @@ public class TerrainGenerator: MonoBehaviour
 
 
 
+
+    public static TerrainGenerator Instance {get; private set;}
+
     // -------------------------
+
+    private void Awake() {
+        if (Instance == null) {
+            Instance = this;
+        } else {
+            Debug.LogError("There should only be one instance of TerrainGenerator");
+        }
+    }
+    
 
     public void SetSeed(int seed) {
         this.seed = seed;
@@ -87,25 +99,25 @@ public class TerrainGenerator: MonoBehaviour
 
 
 
-    public void GenerateChunk(
+    public void GenerateChunkTextures(
         SquareMeshObject squareMeshObject,
         int LOD = 0,
         bool setTextures = true
         ) {
         
-        Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunk/SetVertexHeights");
-        // set the height of the verticies
-        for (int i = 0; i < squareMeshObject.squareMesh.vertices.Length; i++) {
+        // Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunkTextures/SetVertexHeights");
+        // // set the height of the verticies
+        // for (int i = 0; i < squareMeshObject.squareMesh.vertices.Length; i++) {
             
-            Vector3 vertex = squareMeshObject.squareMesh.vertices[i];
-            float height = GetHeight(new Vector2(vertex.x, vertex.z));
-            vertex.y = height;
-            squareMeshObject.squareMesh.vertices[i] = vertex;
-        }
-        Profiler.EndSample();
+        //     Vector3 vertex = squareMeshObject.squareMesh.vertices[i];
+        //     float height = GetHeight(new Vector2(vertex.x, vertex.z));
+        //     vertex.y = height;
+        //     squareMeshObject.squareMesh.vertices[i] = vertex;
+        // }
+        // Profiler.EndSample();
 
 
-        Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunk/SetTextures");
+        Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunkTextures/SetTextures");
         // set the textures
         if (setTextures) {
             // SetTexture(squareMeshObject, inlandnessPerlinGenerator, squareMeshObject.inlandnessTexture);
@@ -177,7 +189,10 @@ public class TerrainGenerator: MonoBehaviour
     /// <summary>
     /// Sets all textures for a squareMeshObject. Make sure all textures have the same size.
     /// </summary>
-    private void SetAllTextures(SquareMeshObject squareMeshObject, Texture2D inlHumHeatTexture, Texture2D plainBumpSteepTexture, int textureHeight = 10, int textureWidth = 10) { // THE INTERPOLATEBIOMES IS BEING RAN MULTIPLE TIMES, FIX THIS
+    private void SetAllTextures(SquareMeshObject squareMeshObject, Texture2D inlHumHeatTexture, Texture2D plainBumpSteepTexture, int textureHeight = 10, int textureWidth = 10) {
+
+        // Perhaps this could be optimised if it were to used the precomputed data in the chunkdataarray
+
 
         // get the initial sample positions
         float sampleXFrom = squareMeshObject.squareMesh.vertices[0].x;
@@ -306,26 +321,47 @@ private float SmoothingFunction(float x) {
     /// </summary>
     private float GetHeight(Vector2 position) {
 
-        Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunk/SetVertexHeights/SamplePerlinNoise");
-        float inlandnessHeight = inlandnessPerlinGenerator.SampleNosie(position, clamp: true);
+        Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunkTextures/SetVertexHeights/SamplePerlinNoise");
+        float inlandness = inlandnessPerlinGenerator.SampleNosie(position, clamp: true);
         float humidity = humidityPerlinGenerator.SampleNosie(position, clamp: true);
         float heat = heatPerlinGenerator.SampleNosie(position, clamp: true);
         Profiler.EndSample();
 
-        Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunk/SetVertexHeights/InterpolateBiomes");
-        List<BiomeInterpolationInfo> interpolateBiomes = GetBiomesOnPoint(inlandnessHeight, heat, humidity);
+        Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunkTextures/SetVertexHeights/InterpolateBiomes");
+        List<BiomeInterpolationInfo> interpolateBiomes = GetBiomesOnPoint(inlandness, heat, humidity);
         Profiler.EndSample();
 
-        Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunk/SetVertexHeights/CalculateHeight");
+        Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunkTextures/SetVertexHeights/CalculateHeight");
         float heightSum = 0;
         foreach (BiomeInterpolationInfo interpolateBiome in interpolateBiomes) {
             
-            heightSum += interpolateBiome.biome.GetHeight(position, inlandnessHeight, inlandnessHeightMultiplier) * interpolateBiome.weight;
+            heightSum += interpolateBiome.biome.GetHeight(position, inlandness, inlandnessHeightMultiplier) * interpolateBiome.weight;
         }
         Profiler.EndSample();
 
         return heightSum;
 
+    }
+
+
+    public float GetInlandness(Vector2 position) {
+        return inlandnessPerlinGenerator.SampleNosie(position, clamp: true);
+    }
+    public float GetHumidity(Vector2 position) {
+        return humidityPerlinGenerator.SampleNosie(position, clamp: true);
+    }
+    public float GetHeat(Vector2 position) {
+        return heatPerlinGenerator.SampleNosie(position, clamp: true);
+    }
+
+    public float GetHeight(Vector2 position, float inlandness, float humidity, float heat) {
+
+        List<BiomeInterpolationInfo> interpolateBiomes = GetBiomesOnPoint(inlandness, heat, humidity);
+        float heightSum = 0;
+        foreach (BiomeInterpolationInfo interpolateBiome in interpolateBiomes) {
+            heightSum += interpolateBiome.biome.GetHeight(position, inlandness, inlandnessHeightMultiplier) * interpolateBiome.weight;
+        }
+        return heightSum;
     }
 }
 

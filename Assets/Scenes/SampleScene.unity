@@ -987,8 +987,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxChunkSize: 81
-  initialWorldSize: 5
-  fullWorldSizeChunks: 257
+  initialWorldSize: 1
+  fullWorldSizeChunks: 256
   LODlevels: 4
   quadSize: 10
 --- !u!4 &2005700294
