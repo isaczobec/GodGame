@@ -5,31 +5,6 @@ using UnityEngine;
 using UnityEngine.Profiling;
 
 
-/// <summary>
-/// A class containing a square mesh object and the IRenderAround interfaces that belong to it
-
-
-public class Chunk {
-    public Vector2Int chunkPosition {get; private set;}
-    public SquareMeshObject squareMeshObject;
-
-    public bool generated = false;
-    public bool discovered = false;
-
-    public bool visible {
-    set {
-            squareMeshObject?.SetVisibilityMultiplier(value? 1f : 0f);
-        } 
-    } 
-
-    public Chunk(Vector2Int chunkPosition, SquareMeshObject squareMeshObject = null, bool visible = false) {
-        this.chunkPosition = chunkPosition;
-        this.squareMeshObject = squareMeshObject;
-
-        this.visible = visible;
-    }
-
-}
 
 public class MeshGenerator : MonoBehaviour
 {
@@ -39,16 +14,16 @@ public class MeshGenerator : MonoBehaviour
 
 
     // variables for generating the mesh
-    [SerializeField] private float quadSize = 1f;
-    [SerializeField] private float chunkSize = 50f;
+
+    // theese are gotten from the worldDataGenerator
+    private float quadSize = 1f;
+    private float maxChunkSize = 50f;
+    private int initialWorldSize = 20;
+    private int fullWorldSizeChunks = 256;
+    private int LODlevels = 4;
 
 
-    [SerializeField] private int initialWorldSize = 20;
-
-    [SerializeField] private int fullWorldSizeChunks = 100;
-
-    [SerializeField] private int LODlevels = 4;
-
+    private WorldDataGenerator worldDataGenerator; // used to get data about the world
 
 
     // ------------ MESH GENERATION OBJECTS ------------
@@ -75,6 +50,13 @@ public class MeshGenerator : MonoBehaviour
 
     void Start()
     {
+        
+        worldDataGenerator = WorldDataGenerator.instance;
+        maxChunkSize = worldDataGenerator.maxChunkSize;
+        initialWorldSize = worldDataGenerator.initialWorldSize;
+        fullWorldSizeChunks = worldDataGenerator.fullWorldSizeChunks;
+        LODlevels = worldDataGenerator.LODlevels;
+        quadSize = worldDataGenerator.quadSize;
 
         InitializeChunkArray();
 
@@ -134,20 +116,19 @@ public class MeshGenerator : MonoBehaviour
     /// <summary>
     /// Generates the height of a squareMeshObject using perlin noise. Will be made more elaborate in the future
     /// </summary>
-    private void GenerateTerrain(SquareMeshObject squareMeshObject, int LOD = 3, bool generateMeshCollider = true) {
+    private void GenerateTerrain(SquareMeshObject squareMeshObject, bool generateMeshCollider = true) {
 
         Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunk");
-        terrainGenerator.GenerateChunk(squareMeshObject, LOD: LOD);
+        terrainGenerator.GenerateChunk(squareMeshObject, LOD: LODlevels-1);
         Profiler.EndSample();
 
         Profiler.BeginSample("WorldGeneration/GenerateTerrain/UpdateMesh");
-        squareMeshObject.SetLOD(LOD);
-        squareMeshObject.StartCoroutine(squareMeshObject.testCouroutine());
+        squareMeshObject.SetLOD(LODlevels-1);
         Profiler.EndSample();
 
-        // if (generateMeshCollider) {
-        //     squareMeshObject.AddMeshCollider();
-        // }
+        if (generateMeshCollider) {
+            squareMeshObject.AddMeshCollider();
+        }
     }
 
     /// <summary>
@@ -155,7 +136,7 @@ public class MeshGenerator : MonoBehaviour
     /// </summary>
     private void GenerateAllHeights(bool updateMesh = true) {
         foreach (SquareMeshObject meshObject in squareMeshObjects) {
-            GenerateTerrain(meshObject, LODlevels - 1); // set minimum detail level
+            GenerateTerrain(meshObject); // set minimum detail level
         }
         if(updateMesh) UpdateAllMeshes();
     }
@@ -204,11 +185,11 @@ public class MeshGenerator : MonoBehaviour
 
 
     public Vector2 GetChunkWorldPostion(Vector2Int chunkCoordinates) {
-        return new Vector2((chunkCoordinates.x - fullWorldSizeChunks/2 + 0.5f) * (chunkSize-1) * quadSize, (chunkCoordinates.y - fullWorldSizeChunks/2 + 0.5f) * (chunkSize-1) * quadSize);
+        return new Vector2((chunkCoordinates.x - fullWorldSizeChunks/2 + 0.5f) * (maxChunkSize-1) * quadSize, (chunkCoordinates.y - fullWorldSizeChunks/2 + 0.5f) * (maxChunkSize-1) * quadSize);
     }
 
     public Vector2Int GetChunkCoordinates(Vector2 worldPosition) {
-        return new Vector2Int(Mathf.FloorToInt(worldPosition.x / (chunkSize+1) / quadSize + fullWorldSizeChunks/2), Mathf.FloorToInt(worldPosition.y / (chunkSize+1) / quadSize + fullWorldSizeChunks/2));
+        return new Vector2Int(Mathf.FloorToInt(worldPosition.x / (maxChunkSize+1) / quadSize + fullWorldSizeChunks/2), Mathf.FloorToInt(worldPosition.y / (maxChunkSize+1) / quadSize + fullWorldSizeChunks/2));
     }
 
     public Chunk GetChunk(Vector2Int chunkCoordinates) {
@@ -231,7 +212,7 @@ public class MeshGenerator : MonoBehaviour
     private void GenerateChunkAtCoordinates(Vector2Int chunkCoordinates)
     {
         Profiler.BeginSample("WorldGeneration/CreateSquareMeshObject");
-        SquareMeshObject newMeshObject = CreateSquareMeshGameObject(GetChunkWorldPostion(chunkCoordinates), (int)chunkSize, (int)chunkSize, chunkCoordinates);
+        SquareMeshObject newMeshObject = CreateSquareMeshGameObject(GetChunkWorldPostion(chunkCoordinates), (int)maxChunkSize, (int)maxChunkSize, chunkCoordinates);
         Profiler.EndSample();
 
         Profiler.BeginSample("WorldGeneration/GenerateTerrain");

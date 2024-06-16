@@ -438,11 +438,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 039a998e64b8ce34488810d1d267dc07, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  quadSize: 10
-  chunkSize: 81
-  initialWorldSize: 3
-  fullWorldSizeChunks: 1000
-  LODlevels: 4
   baseMaterial: {fileID: 2100000, guid: 336a8b8df2105e1408f6ba1691e6d477, type: 2}
   basicEntities:
   - {fileID: 1039704458}
@@ -962,6 +957,55 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2005700292
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2005700294}
+  - component: {fileID: 2005700293}
+  m_Layer: 0
+  m_Name: WorldDataGenerator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2005700293
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2005700292}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2ce4a1f23b85444b89a7736403d192f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxChunkSize: 81
+  initialWorldSize: 5
+  fullWorldSizeChunks: 257
+  LODlevels: 4
+  quadSize: 10
+--- !u!4 &2005700294
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2005700292}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -427.08688, y: 314.12845, z: 7.434311}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -969,8 +1013,9 @@ SceneRoots:
   - {fileID: 330585546}
   - {fileID: 410087041}
   - {fileID: 832575519}
-  - {fileID: 644989432}
   - {fileID: 1039704462}
   - {fileID: 1585595521}
   - {fileID: 1443610488}
   - {fileID: 937202887}
+  - {fileID: 2005700294}
+  - {fileID: 644989432}
