@@ -25,6 +25,8 @@ public class MeshGenerator : MonoBehaviour
 
     private WorldDataGenerator worldDataGenerator; // used to get data about the world
 
+    public static MeshGenerator instance {get; private set;}
+
 
     // ------------ MESH GENERATION OBJECTS ------------
 
@@ -50,6 +52,14 @@ public class MeshGenerator : MonoBehaviour
 
 
 
+    private void Awake() {
+        if (instance == null) {
+            instance = this;
+        } else {
+            Debug.LogError("There should only be one instance of MeshGenerator");
+        }
+    }
+
     void Start()
     {
         
@@ -62,36 +72,15 @@ public class MeshGenerator : MonoBehaviour
         LODlevels = worldDataGenerator.LODlevels;
         quadSize = worldDataGenerator.quadSize;
 
-        // InitializeChunkArray();
-
-        // add all the basic entities to the renderArounds list
-        foreach (BasicEntity basicEntity in basicEntities) {
-            renderArounds.Add(basicEntity);
-        }
-
-
-
-        for (int i = -initialWorldSize; i < initialWorldSize; i++) {
-            for (int j = -initialWorldSize; j < initialWorldSize; j++) {
-                PromptChunkMeshGeneration(new Vector2Int(i + fullWorldSizeChunks/2, j + fullWorldSizeChunks/2));
-                
-            }
-        }
-
-        StartCoroutine(UpdateRenderArounds());
 
     }
 
-    private void Update() {
-        // squareMeshObjects[0].squareMesh.verticies[0].y += 2f * Time.deltaTime;
-        // squareMeshObjects[0].UpdateMesh();
-    }
 
 
     /// <summary>
     /// Creates and returns a square mesh at the given position with the given size and an accompaying mesh filter
     /// </summary>
-    private SquareMeshObject CreateSquareMeshGameObject(Vector2 centerPosition, int xSize, int zSize, Vector2Int chunkCoordinates) {
+    public SquareMeshObject CreateSquareMeshGameObject(Vector2 centerPosition, int xSize, int zSize, Vector2Int chunkCoordinates) {
         // GameObject squareMeshObject = Instantiate(GameObject., Vector3.zero, Quaternion.identity, transform);
 
         GameObject squareMeshObject = new GameObject("SquareMeshObject");
@@ -117,71 +106,6 @@ public class MeshGenerator : MonoBehaviour
         Destroy(meshToDelete.gameObject);
     }
 
-    /// <summary>
-    /// Generates the height of a squareMeshObject using perlin noise. Will be made more elaborate in the future
-    /// </summary>
-    private void GenerateChunkTerrain(SquareMeshObject squareMeshObject, bool generateMeshCollider = true) {
-
-        terrainGenerator.GenerateChunkTextures(squareMeshObject, LOD: LODlevels-1);
-
-        squareMeshObject.SetLOD(LODlevels-1);
-
-        if (generateMeshCollider) {
-            squareMeshObject.AddMeshCollider();
-        }
-    }
-
-    /// <summary>
-    /// Generates the height of all squareMeshObjects using GenerateChunkTerrain().
-    /// </summary>
-    private void GenerateAllHeights(bool updateMesh = true) {
-        foreach (SquareMeshObject meshObject in squareMeshObjects) {
-            GenerateChunkTerrain(meshObject); // set minimum detail level
-        }
-        if(updateMesh) UpdateAllMeshes();
-    }
-
-    /// <summary>
-    /// Updates all meshes in the squareMeshObjects list
-    /// </summary>
-    private void UpdateAllMeshes() {
-        foreach (SquareMeshObject meshObject in squareMeshObjects) {
-            meshObject.UpdateMesh();
-        }
-    }
-
-    private void UpdateMesh(SquareMeshObject meshObject) {
-        meshObject.UpdateMesh();
-        
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // ------------ CHUNKS ------------
-
-
-    // ---- chunk array management ----
-
-    // private void InitializeChunkArray() {
-    //     chunksArray = new Chunk[fullWorldSizeChunks, fullWorldSizeChunks];
-
-    //     for (int i = 0; i < fullWorldSizeChunks; i++) {
-    //         for (int j = 0; j < fullWorldSizeChunks; j++) {
-    //             chunksArray[i, j] = new Chunk(new Vector2Int(i, j));
-    //         }
-    //     }
-    // }
 
 
     public Vector2 GetChunkWorldPostion(Vector2Int chunkCoordinates) {
@@ -196,67 +120,5 @@ public class MeshGenerator : MonoBehaviour
         return chunkTreeRef.CreateOrGetChunk(chunkCoordinates,allowCreation:false);
     }
 
-    private void PromptChunkMeshGeneration(Vector2Int chunkCoordinates) {
 
-        // check if the chunk is within the bounds of the world
-        if (chunkCoordinates.x < 0 || chunkCoordinates.y < 0 || chunkCoordinates.x >= fullWorldSizeChunks || chunkCoordinates.y >= fullWorldSizeChunks) {
-            return;
-        }
-
-        Chunk chunk = chunkTreeRef.CreateOrGetChunk(chunkCoordinates, allowCreation:true);
-        if (chunk.discovered == false)
-        {
-            GenerateChunkMesh(chunk);
-        }
-    }
-
-    private void GenerateChunkMesh(Chunk chunk)
-    {
-        SquareMeshObject newMeshObject = CreateSquareMeshGameObject(GetChunkWorldPostion(chunk.chunkPosition), (int)maxChunkSize, (int)maxChunkSize, chunk.chunkPosition);
-
-        chunk.chunkDataArray.SetValues(); // generate the arrays of data for this chunk
-        chunk.squareMeshObject = newMeshObject;
-        chunk.SetMeshHeights();
-        GenerateChunkTerrain(newMeshObject);
-        chunk.discovered = true;
-        chunk.generated = true;
-
-
-        StartCoroutine(chunk.tC());
-
-    }
-
-    private void PromptRenderArounds() {
-
-        Profiler.BeginSample("WorldGeneration/PromptRenderArounds");
-
-        foreach (IRenderAround renderAround in renderArounds) {
-
-            // calculate chunk coordinates
-            Vector2 centerPosition = renderAround.getCenterPosition();
-            Vector2Int chunkCoordinates = GetChunkCoordinates(centerPosition);
-
-            int sideLength = renderAround.getRenderDistanceChunks() * 2 + -1; // only uneven numbers
-            for (int i = 0; i < sideLength; i++) {
-                for (int j = 0; j < sideLength; j++) {
-
-                    // Create a chunk if it doesn't exist
-                    PromptChunkMeshGeneration(chunkCoordinates + new Vector2Int(i-(int)Mathf.Floor(sideLength/2), j-(int)Mathf.Floor(sideLength/2)));
-
-                }
-            }
-        }
-
-        Profiler.EndSample();
-    }
-
-    private IEnumerator UpdateRenderArounds() {
-        while (true) {
-            PromptRenderArounds();
-            yield return new WaitForSeconds(1f);
-        }
-    }
 }
-
-
-

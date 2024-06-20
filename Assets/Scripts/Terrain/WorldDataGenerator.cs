@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 class WorldDataGenerator: MonoBehaviour {
@@ -9,6 +11,12 @@ class WorldDataGenerator: MonoBehaviour {
     [SerializeField] public int fullWorldSizeChunks;
     [SerializeField] public int LODlevels;
     [SerializeField] public float quadSize;
+
+
+    [Header("basic entities")]
+    [SerializeField] private List<BasicEntity> basicEntities = new List<BasicEntity>(); // entities that will be rendered around
+    List<IRenderAround> renderArounds = new List<IRenderAround>();
+
 
 
     public ChunkTree chunkTree {get; private set;}
@@ -51,6 +59,20 @@ class WorldDataGenerator: MonoBehaviour {
 
     public void Start() {
         chunkTree = new ChunkTree(new Vector2Int(0,0), new Vector2Int(fullWorldSizeChunks, fullWorldSizeChunks), fullWorldSizeChunks);
+
+
+        foreach (BasicEntity basicEntity in basicEntities) {
+            renderArounds.Add(basicEntity);
+        }
+
+        // generate initial world
+        for (int i = -initialWorldSize; i < initialWorldSize; i++) {
+            for (int j = -initialWorldSize; j < initialWorldSize; j++) {
+                PromptChunkGeneration(new Vector2Int(i + fullWorldSizeChunks/2, j + fullWorldSizeChunks/2), generateMesh: true);
+            }
+        }
+
+        StartCoroutine(UpdateRenderArounds());
     }
 
 
@@ -62,6 +84,58 @@ class WorldDataGenerator: MonoBehaviour {
 
     public Vector2Int GetChunkCoordinates(Vector2 worldPosition) {
         return new Vector2Int(Mathf.FloorToInt(worldPosition.x / (maxChunkSize+1) / quadSize + fullWorldSizeChunks/2), Mathf.FloorToInt(worldPosition.y / (maxChunkSize+1) / quadSize + fullWorldSizeChunks/2));
+    }
+
+
+
+    private void PromptChunkGeneration(Vector2Int chunkCoordinates, bool generateMesh = false) {
+
+        // check if the chunk is within the bounds of the world
+        if (chunkCoordinates.x < 0 || chunkCoordinates.y < 0 || chunkCoordinates.x >= fullWorldSizeChunks || chunkCoordinates.y >= fullWorldSizeChunks) {
+            return;
+        }
+
+        Chunk chunk = chunkTree.CreateOrGetChunk(chunkCoordinates, allowCreation:true);
+        if (chunk.generated == false)
+        {
+            chunk.GenerateChunk();
+            if (generateMesh)
+            {
+                Vector2 worldPosition = GetChunkWorldPostion(chunkCoordinates); 
+                SquareMeshObject sqr = MeshGenerator.instance.CreateSquareMeshGameObject(worldPosition, maxChunkSize, maxChunkSize, chunkCoordinates);
+                chunk.GenerateMesh(sqr, generateMeshCollider: true);
+            }
+        }
+
+    }
+
+    private void PromptRenderArounds() {
+
+
+        foreach (IRenderAround renderAround in renderArounds) {
+
+            // calculate chunk coordinates
+            Vector2 centerPosition = renderAround.getCenterPosition();
+            Vector2Int chunkCoordinates = GetChunkCoordinates(centerPosition);
+
+            int sideLength = renderAround.getRenderDistanceChunks() * 2 + -1; // only uneven numbers
+            for (int i = 0; i < sideLength; i++) {
+                for (int j = 0; j < sideLength; j++) {
+
+                    // Create a chunk if it doesn't exist
+                    PromptChunkGeneration(chunkCoordinates + new Vector2Int(i-(int)Mathf.Floor(sideLength/2), j-(int)Mathf.Floor(sideLength/2)), generateMesh: true);
+
+                }
+            }
+        }
+
+    }
+
+    private IEnumerator UpdateRenderArounds() {
+        while (true) {
+            PromptRenderArounds();
+            yield return new WaitForSeconds(1f);
+        }
     }
 
 }

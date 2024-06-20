@@ -1,6 +1,7 @@
 
 using System.Collections;
 using Unity.VisualScripting;
+using Unity.VisualScripting.Antlr3.Runtime.Tree;
 using UnityEngine;
 
 /// <summary>
@@ -38,6 +39,35 @@ public class Chunk {
 
     }
 
+    public void GenerateChunk() {
+        if (generated) return;
+        generated = true;
+
+        chunkDataArray.SetValues(); // generate the arrays of data for this chunk
+
+    }
+
+    public void GenerateMesh(SquareMeshObject squareMeshObject, bool generateMeshCollider = true) {
+        if (!generated) {
+            Debug.Log("This chunk has not been generated and its mesh can not be created!");
+            return;
+        }
+
+        this.squareMeshObject = squareMeshObject;
+        SetMeshHeights();
+
+        int LOD = WorldDataGenerator.instance.LODlevels-1;
+        TerrainGenerator.Instance.GenerateChunkTextures(squareMeshObject, LOD: LOD);
+
+        squareMeshObject.SetLOD(LOD);
+
+        if (generateMeshCollider) {
+            squareMeshObject.AddMeshCollider();
+        }
+
+    }
+
+    
 
     public void SetMeshHeights() {
         squareMeshObject.SetMeshHeights(chunkDataArray.heightArray, chunkDataArray.currentLOD, true);
@@ -69,7 +99,7 @@ public class Chunk {
 /// <summary>
 /// A class containing arrays of information about all the tiles/nodes/vertices in a chunk, used for ie pathfinding and other gameplay mechanics
 /// </summary>
-public class ChunkDataArray {
+public struct ChunkDataArray {
     
 
     private int maxSize;
@@ -89,6 +119,11 @@ public class ChunkDataArray {
         this.maxLODs = maxLODs;
         this.chunkPosition = chunkPosition;
         currentLOD = maxLODs - 1;
+
+        inlandnessArray = null;
+        humidityArray = null;
+        heatArray = null;
+        heightArray = null;
 
         InitializeArrays();
     }
