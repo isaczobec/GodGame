@@ -921,7 +921,7 @@ MonoBehaviour:
   maxChunkSize: 81
   initialWorldSize: 1
   fullWorldSizeChunks: 256
-  LODlevels: 4
+  LODlevels: 1
   quadSize: 10
   basicEntities:
   - {fileID: 1039704458}
