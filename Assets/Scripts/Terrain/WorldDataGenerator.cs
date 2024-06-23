@@ -2,10 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Collections;
+using Unity.Jobs;
+using Unity.Burst;
+using Unity.Mathematics;
+using JetBrains.Annotations;
 
-class WorldDataGenerator: MonoBehaviour {
-
-
+class WorldDataGenerator : MonoBehaviour
+{
     [Header("World Generation Settings")]
     [SerializeField] public int maxChunkSize;
     [SerializeField] public int initialWorldSize;
@@ -13,27 +17,36 @@ class WorldDataGenerator: MonoBehaviour {
     [SerializeField] public int LODlevels;
     [SerializeField] public float quadSize;
 
-
     [Header("basic entities")]
     [SerializeField] private List<BasicEntity> basicEntities = new List<BasicEntity>(); // entities that will be rendered around
     List<IRenderAround> renderArounds = new List<IRenderAround>();
 
-    public ChunkTree chunkTree {get; private set;}
-
-
+    public ChunkTree chunkTree { get; private set; }
 
     public List<Chunk> chunkGenerationQueue = new List<Chunk>();
     public List<bool> generateMeshQueue = new List<bool>();
 
-    public static WorldDataGenerator instance {get; private set;}
+    public List<Chunk> upscaleQueue = new List<Chunk>();
 
-    public void Awake()
+    public static WorldDataGenerator instance { get; private set; }
+
+
+
+    private void Awake()
     {
         if (instance == null)
-        {instance = this;}
+        {
+            instance = this;
+        }
         else
-        {Debug.LogError("There should only be one instance of WorldDataGenerator");}
+        {
+            Debug.LogError("There should only be one instance of WorldDataGenerator");
+        }
         CheckValuesValid();
+    }
+
+    private void OnDestroy()
+    {
     }
 
     private void CheckValuesValid()
@@ -60,144 +73,191 @@ class WorldDataGenerator: MonoBehaviour {
         }
     }
 
-    public void Start() {
-        chunkTree = new ChunkTree(new Vector2Int(0,0), new Vector2Int(fullWorldSizeChunks, fullWorldSizeChunks), fullWorldSizeChunks);
+    public void Start()
+    {
+        chunkTree = new ChunkTree(new Vector2Int(0, 0), new Vector2Int(fullWorldSizeChunks, fullWorldSizeChunks), fullWorldSizeChunks);
 
-
-        foreach (BasicEntity basicEntity in basicEntities) {
+        foreach (BasicEntity basicEntity in basicEntities)
+        {
             renderArounds.Add(basicEntity);
         }
 
         // generate initial world
-        for (int i = -initialWorldSize; i < initialWorldSize; i++) {
-            for (int j = -initialWorldSize; j < initialWorldSize; j++) {
-                PromptChunkGeneration(new Vector2Int(i + fullWorldSizeChunks/2, j + fullWorldSizeChunks/2), generateMesh: true);
+        for (int i = -initialWorldSize; i < initialWorldSize; i++)
+        {
+            for (int j = -initialWorldSize; j < initialWorldSize; j++)
+            {
+                PromptChunkGeneration(new Vector2Int(i + fullWorldSizeChunks / 2, j + fullWorldSizeChunks / 2), generateMesh: true);
             }
         }
 
         StartCoroutine(UpdateRenderArounds());
+
+        // work onn this later
+        // StartCoroutine(UpscaleChunksCoroutine());
     }
 
-    private void Update() {
+    private void Update()
+    {
         GenerateChunksQueue();
     }
 
     public Vector2 GetChunkWorldPostion(Vector2Int chunkCoordinates, bool offset = true) {
-        float o = offset? 0.5f : 0f;
-        return new Vector2((chunkCoordinates.x - fullWorldSizeChunks/2 + o) * (maxChunkSize-1) * quadSize, (chunkCoordinates.y - fullWorldSizeChunks/2 + o) * (maxChunkSize-1) * quadSize);
+        float o = offset ? 0.5f : 0f;
+        return new Vector2((chunkCoordinates.x - fullWorldSizeChunks / 2 + o) * (maxChunkSize - 1) * quadSize, (chunkCoordinates.y - fullWorldSizeChunks / 2 + o) * (maxChunkSize - 1) * quadSize);
     }
 
     public Vector2Int GetChunkCoordinates(Vector2 worldPosition) {
-        return new Vector2Int(Mathf.FloorToInt(worldPosition.x / (maxChunkSize+1) / quadSize + fullWorldSizeChunks/2), Mathf.FloorToInt(worldPosition.y / (maxChunkSize+1) / quadSize + fullWorldSizeChunks/2));
+        return new Vector2Int(Mathf.FloorToInt(worldPosition.x / (maxChunkSize + 1) / quadSize + fullWorldSizeChunks / 2), Mathf.FloorToInt(worldPosition.y / (maxChunkSize + 1) / quadSize + fullWorldSizeChunks / 2));
     }
 
-
-
-    private void PromptChunkGeneration(Vector2Int chunkCoordinates, bool generateMesh = false) {
-
+    private void PromptChunkGeneration(Vector2Int chunkCoordinates, bool generateMesh = false)
+    {
         // check if the chunk is within the bounds of the world
-        if (chunkCoordinates.x < 0 || chunkCoordinates.y < 0 || chunkCoordinates.x >= fullWorldSizeChunks || chunkCoordinates.y >= fullWorldSizeChunks) {
+        if (chunkCoordinates.x < 0 || chunkCoordinates.y < 0 || chunkCoordinates.x >= fullWorldSizeChunks || chunkCoordinates.y >= fullWorldSizeChunks)
+        {
             return;
         }
 
-        Chunk chunk = chunkTree.CreateOrGetChunk(chunkCoordinates, allowCreation:true);
-        if (chunk.generated == false)
+        Chunk chunk = chunkTree.CreateOrGetChunk(chunkCoordinates, allowCreation: true);
+        if (chunk.generated == false && chunk.generationPrompted == false)
         {
+            chunk.generationPrompted = true;
             EnqueueChunk(chunk, generateMesh);
         }
-
     }
 
-    private void PromptRenderArounds() {
-
-
-        foreach (IRenderAround renderAround in renderArounds) {
-
+    private void PromptRenderArounds()
+    {
+        foreach (IRenderAround renderAround in renderArounds)
+        {
             // calculate chunk coordinates
             Vector2 centerPosition = renderAround.getCenterPosition();
             Vector2Int chunkCoordinates = GetChunkCoordinates(centerPosition);
 
             int sideLength = renderAround.getRenderDistanceChunks() * 2 + -1; // only uneven numbers
-            for (int i = 0; i < sideLength; i++) {
-                for (int j = 0; j < sideLength; j++) {
-
+            for (int i = 0; i < sideLength; i++)
+            {
+                for (int j = 0; j < sideLength; j++)
+                {
                     // Create a chunk if it doesn't exist
-                    PromptChunkGeneration(chunkCoordinates + new Vector2Int(i-(int)Mathf.Floor(sideLength/2), j-(int)Mathf.Floor(sideLength/2)), generateMesh: true);
-
+                    PromptChunkGeneration(chunkCoordinates + new Vector2Int(i - (int)Mathf.Floor(sideLength / 2), j - (int)Mathf.Floor(sideLength / 2)), generateMesh: true);
                 }
             }
         }
-
     }
 
-    private IEnumerator UpdateRenderArounds() {
-        while (true) {
+    private IEnumerator UpdateRenderArounds()
+    {
+        while (true)
+        {
             PromptRenderArounds();
             yield return new WaitForSeconds(1f);
         }
     }
 
-
     // ----- Generation Queue -----
 
-    public void EnqueueChunk(Chunk chunk, bool generateMesh) {
+    public void EnqueueChunk(Chunk chunk, bool generateMesh)
+    {
         chunkGenerationQueue.Add(chunk);
         generateMeshQueue.Add(generateMesh);
     }
 
-    public void GenerateChunksQueue() {
-
+    public void GenerateChunksQueue()
+    {
         if (chunkGenerationQueue.Count == 0) return;
+        
 
-        for (int i = 0; i < chunkGenerationQueue.Count; i++) {
+        float startTime = Time.realtimeSinceStartup;
+
+        // Debug.Log("Gen queue count: " + chunkGenerationQueue.Count);
+
+        // NativeArray<JobHandle> chunkJobHandles = new NativeArray<JobHandle>(chunkGenerationQueue.Count, Allocator.Temp);
+        // GenerateChunkJob[] chunkJobs = new GenerateChunkJob[chunkGenerationQueue.Count];
+        GenerateChunkJob[] generateChunkJobs = new GenerateChunkJob[chunkGenerationQueue.Count];
+        NativeArray<JobHandle> chunkJobHandles = new NativeArray<JobHandle>(chunkGenerationQueue.Count, Allocator.TempJob);
+
+        for (int i = 0; i < chunkGenerationQueue.Count; i++)
+        {
             Chunk chunk = chunkGenerationQueue[i];
+            chunk.generated = true;
 
-            chunk.GenerateChunk();
+            generateChunkJobs[i] = chunk.GetGenerateChunkJob();
 
+
+            JobHandle jobHandle = generateChunkJobs[i].Schedule(); // Schedule the job
+            chunkJobHandles[i] = jobHandle;
+
+            upscaleQueue.Add(chunk);
+
+            // Debug.Log("index: " + i);
         }
 
 
-        // generate meshes
-        for (int i = 0; i < chunkGenerationQueue.Count; i++) {
+        // Wait for all jobs to finish
+        JobHandle.CompleteAll(chunkJobHandles);
+        chunkJobHandles.Dispose();
 
+        // set the data back to the chunks
+        for (int i = 0; i < chunkGenerationQueue.Count; i++)
+        {
+            Chunk chunk = chunkGenerationQueue[i];
+            chunk.chunkDataArray = generateChunkJobs[i].chunkDataArray; 
+        }
+
+        Debug.Log("Time to generate chunks: " + (Time.realtimeSinceStartup - startTime) * 1000 + "ms");
+        
+
+        // generate meshes
+        for (int i = 0; i < chunkGenerationQueue.Count; i++)
+        {
             bool generateMesh = generateMeshQueue[i];
-            
+
             if (generateMesh)
             {
                 Chunk chunk = chunkGenerationQueue[i];
                 Vector2Int chunkCoordinates = chunk.chunkPosition;
-                
-                Vector2 worldPosition = GetChunkWorldPostion(chunk.chunkPosition); 
+
+                Vector2 worldPosition = GetChunkWorldPostion(chunk.chunkPosition);
                 SquareMeshObject sqr = MeshGenerator.instance.CreateSquareMeshGameObject(worldPosition, maxChunkSize, maxChunkSize, chunkCoordinates);
                 chunk.GenerateMesh(sqr, generateMeshCollider: true);
             }
-
         }
-
 
         chunkGenerationQueue.Clear();
         generateMeshQueue.Clear();
     }
-    // public void GenerateChunksQueue() {
 
-    //     if (chunkGenerationQueue.Count == 0) return;
 
-    //     for (int i = 0; i < chunkGenerationQueue.Count; i++) {
-    //         Chunk chunk = chunkGenerationQueue[i];
-    //         bool generateMesh = generateMeshQueue[i];
-    //         Vector2Int chunkCoordinates = chunk.chunkPosition;
+    private IEnumerator UpscaleChunksCoroutine() {
+        while (true) {
+            yield return new WaitForSeconds(1f);
+            if (upscaleQueue.Count == 0) continue; 
 
-    //         chunk.GenerateChunk();
+            NativeArray<JobHandle> chunkJobHandles = new NativeArray<JobHandle>(upscaleQueue.Count, Allocator.TempJob);
+            UpscaleLODJob[] upscaleJobs = new UpscaleLODJob[upscaleQueue.Count];
 
-    //         // generate mesh
-    //         if (generateMesh)
-    //         {
-    //             Vector2 worldPosition = GetChunkWorldPostion(chunk.chunkPosition); 
-    //             SquareMeshObject sqr = MeshGenerator.instance.CreateSquareMeshGameObject(worldPosition, maxChunkSize, maxChunkSize, chunkCoordinates);
-    //             chunk.GenerateMesh(sqr, generateMeshCollider: true);
-    //         }
-    //     }
-    //     chunkGenerationQueue.Clear();
-    //     generateMeshQueue.Clear();
-    // }
+            for (int i = 0; i < upscaleQueue.Count; i++) {
+                if (upscaleQueue[i].chunkDataArray.currentLOD == 0) continue;
+
+                Chunk chunk = upscaleQueue[i];
+                upscaleJobs[i] = chunk.GetUpscaleLODJob();
+                JobHandle jobHandle = upscaleJobs[i].Schedule();
+                chunkJobHandles[i] = jobHandle;
+            }
+
+            JobHandle.CompleteAll(chunkJobHandles);
+            chunkJobHandles.Dispose();
+
+            for (int i = 0; i < upscaleQueue.Count; i++) {
+                if (upscaleQueue[i].chunkDataArray.currentLOD == 0) continue;
+
+                Chunk chunk = upscaleQueue[i];
+                chunk.chunkDataArray = upscaleJobs[i].chunkDataArray; // set back the data
+                chunk.UpscaleLOD(updateMesh: true, needToUpscaleDataArray: false);
+            }
+
+        }
+    }
 }

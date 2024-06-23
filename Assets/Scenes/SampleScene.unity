@@ -919,13 +919,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxChunkSize: 81
-  initialWorldSize: 1
+  initialWorldSize: 4
   fullWorldSizeChunks: 256
   LODlevels: 4
   quadSize: 10
   basicEntities:
-  - {fileID: 1039704458}
   - {fileID: 1585595517}
+  - {fileID: 1039704458}
   generateMeshQueue: 
 --- !u!4 &2005700294
 Transform:
