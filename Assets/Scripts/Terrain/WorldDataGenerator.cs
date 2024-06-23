@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,10 +18,12 @@ class WorldDataGenerator: MonoBehaviour {
     [SerializeField] private List<BasicEntity> basicEntities = new List<BasicEntity>(); // entities that will be rendered around
     List<IRenderAround> renderArounds = new List<IRenderAround>();
 
-
-
     public ChunkTree chunkTree {get; private set;}
 
+
+
+    public List<Chunk> chunkGenerationQueue = new List<Chunk>();
+    public List<bool> generateMeshQueue = new List<bool>();
 
     public static WorldDataGenerator instance {get; private set;}
 
@@ -75,7 +78,9 @@ class WorldDataGenerator: MonoBehaviour {
         StartCoroutine(UpdateRenderArounds());
     }
 
-
+    private void Update() {
+        GenerateChunksQueue();
+    }
 
     public Vector2 GetChunkWorldPostion(Vector2Int chunkCoordinates, bool offset = true) {
         float o = offset? 0.5f : 0f;
@@ -98,13 +103,7 @@ class WorldDataGenerator: MonoBehaviour {
         Chunk chunk = chunkTree.CreateOrGetChunk(chunkCoordinates, allowCreation:true);
         if (chunk.generated == false)
         {
-            chunk.GenerateChunk();
-            if (generateMesh)
-            {
-                Vector2 worldPosition = GetChunkWorldPostion(chunkCoordinates); 
-                SquareMeshObject sqr = MeshGenerator.instance.CreateSquareMeshGameObject(worldPosition, maxChunkSize, maxChunkSize, chunkCoordinates);
-                chunk.GenerateMesh(sqr, generateMeshCollider: true);
-            }
+            EnqueueChunk(chunk, generateMesh);
         }
 
     }
@@ -138,4 +137,67 @@ class WorldDataGenerator: MonoBehaviour {
         }
     }
 
+
+    // ----- Generation Queue -----
+
+    public void EnqueueChunk(Chunk chunk, bool generateMesh) {
+        chunkGenerationQueue.Add(chunk);
+        generateMeshQueue.Add(generateMesh);
+    }
+
+    public void GenerateChunksQueue() {
+
+        if (chunkGenerationQueue.Count == 0) return;
+
+        for (int i = 0; i < chunkGenerationQueue.Count; i++) {
+            Chunk chunk = chunkGenerationQueue[i];
+
+            chunk.GenerateChunk();
+
+        }
+
+
+        // generate meshes
+        for (int i = 0; i < chunkGenerationQueue.Count; i++) {
+
+            bool generateMesh = generateMeshQueue[i];
+            
+            if (generateMesh)
+            {
+                Chunk chunk = chunkGenerationQueue[i];
+                Vector2Int chunkCoordinates = chunk.chunkPosition;
+                
+                Vector2 worldPosition = GetChunkWorldPostion(chunk.chunkPosition); 
+                SquareMeshObject sqr = MeshGenerator.instance.CreateSquareMeshGameObject(worldPosition, maxChunkSize, maxChunkSize, chunkCoordinates);
+                chunk.GenerateMesh(sqr, generateMeshCollider: true);
+            }
+
+        }
+
+
+        chunkGenerationQueue.Clear();
+        generateMeshQueue.Clear();
+    }
+    // public void GenerateChunksQueue() {
+
+    //     if (chunkGenerationQueue.Count == 0) return;
+
+    //     for (int i = 0; i < chunkGenerationQueue.Count; i++) {
+    //         Chunk chunk = chunkGenerationQueue[i];
+    //         bool generateMesh = generateMeshQueue[i];
+    //         Vector2Int chunkCoordinates = chunk.chunkPosition;
+
+    //         chunk.GenerateChunk();
+
+    //         // generate mesh
+    //         if (generateMesh)
+    //         {
+    //             Vector2 worldPosition = GetChunkWorldPostion(chunk.chunkPosition); 
+    //             SquareMeshObject sqr = MeshGenerator.instance.CreateSquareMeshGameObject(worldPosition, maxChunkSize, maxChunkSize, chunkCoordinates);
+    //             chunk.GenerateMesh(sqr, generateMeshCollider: true);
+    //         }
+    //     }
+    //     chunkGenerationQueue.Clear();
+    //     generateMeshQueue.Clear();
+    // }
 }

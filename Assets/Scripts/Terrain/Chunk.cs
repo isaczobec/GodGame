@@ -1,8 +1,10 @@
 
 using System.Collections;
+using Unity.Jobs;
 using Unity.VisualScripting;
 using Unity.VisualScripting.Antlr3.Runtime.Tree;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 /// <summary>
 /// A class containing a square mesh object and the IRenderAround interfaces that belong to it
@@ -182,7 +184,7 @@ public struct ChunkDataArray {
 
     public void SetValues(bool upscaling = false) {
     int s = GetArraySizeLOD();
-    Vector2 origin = WorldDataGenerator.instance.GetChunkWorldPostion(chunkPosition);
+    Vector2 origin = WorldDataGenerator.instance.GetChunkWorldPostion(chunkPosition, offset: false);
     float quadSize = WorldDataGenerator.instance.quadSize;
     float LODmultiplier = Mathf.Pow(2, currentLOD); // Adjust for LOD
 
@@ -206,11 +208,18 @@ public struct ChunkDataArray {
                 yIndex = j / 2; // Correctly map the yIndex for the upscaled grid
             }
 
+            Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunkTextures/SetVertexHeights/SamplePerlinNoise");
+
             // Set the values of the arrays
             float inlandness = TerrainGenerator.Instance.GetInlandness(pos);
             float humidity = TerrainGenerator.Instance.GetHumidity(pos);
             float heat = TerrainGenerator.Instance.GetHeat(pos);
+
+            Profiler.EndSample();
+
+            Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunkTextures/SetVertexHeights/CalculateHeights");
             float height = TerrainGenerator.Instance.GetHeight(pos, inlandness, humidity, heat);
+            Profiler.EndSample();
 
             inlandnessArray[xIndex, yIndex] = inlandness;
             humidityArray[xIndex, yIndex] = humidity;
@@ -219,5 +228,14 @@ public struct ChunkDataArray {
         }
     }
 }
+
+    public struct GenerateChunkJob : IJob
+    {
+        public ChunkDataArray chunkDataArray;
+        public void Execute()
+        {
+            chunkDataArray.SetValues();
+        }
+    }
 
 }

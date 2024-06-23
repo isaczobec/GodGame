@@ -105,35 +105,13 @@ public class TerrainGenerator: MonoBehaviour
         bool setTextures = true
         ) {
         
-        // Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunkTextures/SetVertexHeights");
-        // // set the height of the verticies
-        // for (int i = 0; i < squareMeshObject.squareMesh.vertices.Length; i++) {
-            
-        //     Vector3 vertex = squareMeshObject.squareMesh.vertices[i];
-        //     float height = GetHeight(new Vector2(vertex.x, vertex.z));
-        //     vertex.y = height;
-        //     squareMeshObject.squareMesh.vertices[i] = vertex;
-        // }
-        // Profiler.EndSample();
-
-
         Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunkTextures/SetTextures");
         // set the textures
         if (setTextures) {
-            // SetTexture(squareMeshObject, inlandnessPerlinGenerator, squareMeshObject.inlandnessTexture);
-            // SetTexture(squareMeshObject, humidityPerlinGenerator, squareMeshObject.humidityTexture);
-            // SetTexture(squareMeshObject, heatPerlinGenerator, squareMeshObject.heatTexture);
-
-            // SetBiomeInterpolatedTexture(squareMeshObject, squareMeshObject.plainnessTexture, BiomeTextureType.Plainness);
-            // SetBiomeInterpolatedTexture(squareMeshObject, squareMeshObject.bumpinessTexture, BiomeTextureType.Bumpiness);
-            // SetBiomeInterpolatedTexture(squareMeshObject, squareMeshObject.steepnessTexture, BiomeTextureType.Steepness);
 
             SetAllTextures(squareMeshObject, squareMeshObject.inlandnessHumidityHeatTexture, squareMeshObject.plainnessBumpinessSteepnessTexture, squareMeshObject.plainnessBumpinessSteepnessTexture.height, squareMeshObject.plainnessBumpinessSteepnessTexture.width);
-            SetInlandnessHumidityHeatTexture(squareMeshObject, squareMeshObject.inlandnessHumidityHeatTexture);
+            // SetInlandnessHumidityHeatTexture(squareMeshObject, squareMeshObject.inlandnessHumidityHeatTexture);
 
-            // SetBiomeInterpolatedTexture(squareMeshObject, squareMeshObject.colorTexture, BiomeTextureType.Color);
-            // SetBiomeInterpolatedTexture(squareMeshObject, null, BiomeTextureType.BiomeMask, squareMeshObject.biomeMaskTextures.textureSize, squareMeshObject.biomeMaskTextures.textureSize);
-            
         }
         Profiler.EndSample();
 
@@ -327,17 +305,13 @@ private float SmoothingFunction(float x) {
         float heat = heatPerlinGenerator.SampleNosie(position, clamp: true);
         Profiler.EndSample();
 
-        Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunkTextures/SetVertexHeights/InterpolateBiomes");
         List<BiomeInterpolationInfo> interpolateBiomes = GetBiomesOnPoint(inlandness, heat, humidity);
-        Profiler.EndSample();
 
-        Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunkTextures/SetVertexHeights/CalculateHeight");
         float heightSum = 0;
         foreach (BiomeInterpolationInfo interpolateBiome in interpolateBiomes) {
             
             heightSum += interpolateBiome.biome.GetHeight(position, inlandness, inlandnessHeightMultiplier) * interpolateBiome.weight;
         }
-        Profiler.EndSample();
 
         return heightSum;
 
@@ -356,11 +330,21 @@ private float SmoothingFunction(float x) {
 
     public float GetHeight(Vector2 position, float inlandness, float humidity, float heat) {
 
+        Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunkTextures/SetVertexHeights/InterpolateBiomes");
+
         List<BiomeInterpolationInfo> interpolateBiomes = GetBiomesOnPoint(inlandness, heat, humidity);
+
+        Profiler.EndSample();
+
+
+        Profiler.BeginSample("WorldGeneration/GenerateTerrain/GenerateChunkTextures/SetVertexHeights/CalculateHeight");
+
         float heightSum = 0;
         foreach (BiomeInterpolationInfo interpolateBiome in interpolateBiomes) {
             heightSum += interpolateBiome.biome.GetHeight(position, inlandness, inlandnessHeightMultiplier) * interpolateBiome.weight;
         }
+        
+        Profiler.EndSample();
         return heightSum;
     }
 }

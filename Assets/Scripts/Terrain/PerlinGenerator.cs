@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Jobs;
 using UnityEngine;
 
 [Serializable]
@@ -65,3 +66,4 @@ public class PerlinFractalSettings
     public float amplitudeMultiplier;
     public float frequencyMultiplier;
 }
+
