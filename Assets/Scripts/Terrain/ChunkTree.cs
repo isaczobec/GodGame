@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using JetBrains.Annotations;
 using UnityEngine;
 
 class ChunkTree {
@@ -55,6 +58,7 @@ class ChunkTree {
         return node.chunk;
 
     }
+
 }
 
 
@@ -65,6 +69,8 @@ class ChunkTreeNode {
     public ChunkTreeNode topRight;
     public ChunkTreeNode bottomLeft;
     public ChunkTreeNode bottomRight;
+
+    public ChunkTreeNode parent;
 
     public Vector2Int topLeftPosition;
     public Vector2Int bottomRightPosition;
@@ -114,7 +120,8 @@ class ChunkTreeNode {
             {
                 topLeftPosition = newTopLeft,
                 bottomRightPosition = newBottomRight,
-                level = level - 1
+                level = level - 1,
+                parent = this
             };
             return topLeft;
         } else if (left && !top) {
@@ -122,7 +129,8 @@ class ChunkTreeNode {
             {
                 topLeftPosition = newTopLeft,
                 bottomRightPosition = newBottomRight,
-                level = level - 1
+                level = level - 1,
+                parent = this
             };
             return bottomLeft;
         } else if (!left && top) {
@@ -130,7 +138,8 @@ class ChunkTreeNode {
             {
                 topLeftPosition = newTopLeft,
                 bottomRightPosition = newBottomRight,
-                level = level - 1
+                level = level - 1,
+                parent = this
             };
             return topRight;
         } else {
@@ -138,7 +147,8 @@ class ChunkTreeNode {
             {
                 topLeftPosition = newTopLeft,
                 bottomRightPosition = newBottomRight,
-                level = level - 1
+                level = level - 1,
+                parent = this
             };
             return bottomRight;
         }

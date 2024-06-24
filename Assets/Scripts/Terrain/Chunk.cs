@@ -1,4 +1,5 @@
 
+using System;
 using System.Collections;
 using System.Data;
 using TMPro;
@@ -44,8 +45,10 @@ public class Chunk {
 
         this.visible = visible;
 
+        WorldDataGenerator.instance.OnBeforeDestroy += Dispose;
 
     }
+
 
     public void GenerateChunk() {
         if (generated) return;
@@ -148,6 +151,10 @@ public class Chunk {
             yield return new WaitForSeconds(1f);
             UpscaleLOD(updateMesh: true);
         }
+    }
+
+    private void Dispose(object sender, EventArgs e) {
+        chunkDataArray.Dispose();
     }
 
 

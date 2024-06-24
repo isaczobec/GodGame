@@ -8,6 +8,7 @@ using Unity.Burst;
 using Unity.Mathematics;
 using JetBrains.Annotations;
 using UnityEngine.Profiling;
+using Unity.VisualScripting;
 
 class WorldDataGenerator : MonoBehaviour
 {
@@ -33,6 +34,10 @@ class WorldDataGenerator : MonoBehaviour
 
 
 
+    public event EventHandler<EventArgs> OnBeforeDestroy;
+
+
+
     private void Awake()
     {
         if (instance == null)
@@ -46,9 +51,10 @@ class WorldDataGenerator : MonoBehaviour
         CheckValuesValid();
     }
 
-    private void OnDestroy()
-    {
+    private void OnDestroy() {
+        OnBeforeDestroy?.Invoke(this, EventArgs.Empty);
     }
+
 
     private void CheckValuesValid()
     {
@@ -301,4 +307,6 @@ class WorldDataGenerator : MonoBehaviour
 
         }
     }
+
+    
 }
