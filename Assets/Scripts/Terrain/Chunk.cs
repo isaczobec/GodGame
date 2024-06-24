@@ -5,6 +5,7 @@ using TMPro;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
+using Unity.Mathematics;
 using Unity.VisualScripting;
 using Unity.VisualScripting.Antlr3.Runtime.Tree;
 using UnityEngine;
@@ -62,8 +63,8 @@ public class Chunk {
         return job;
     }
 
-    public GenerateChunkJobParallel GetGenerateChunkJobParallel() {
-        GenerateChunkJobParallel job = new GenerateChunkJobParallel(chunkDataArray);
+    public GenerateChunkJobParallel GetGenerateChunkJobParallel(bool upscale = false) {
+        GenerateChunkJobParallel job = new GenerateChunkJobParallel(chunkDataArray, upscale: upscale);
         return job;
     }
 
@@ -71,6 +72,22 @@ public class Chunk {
         UpscaleLODJob job = new UpscaleLODJob {
             chunkDataArray = chunkDataArray
         };
+
+        return job;
+    }
+
+    public SetAllTexturesJob GetSetAllTexturesJob(int textureSize) {
+
+        SetAllTexturesJob job = new SetAllTexturesJob (
+            textureHeight: textureSize,
+            textureWidth: textureSize,
+            sampleXFrom: squareMeshObject.squareMesh.vertices[0].x,
+            sampleZFrom: squareMeshObject.squareMesh.vertices[0].z,
+            quadSize: squareMeshObject.squareMesh.quadSize,
+            sizeX: squareMeshObject.squareMesh.sizeX,
+            sizeZ: squareMeshObject.squareMesh.sizeZ,
+            inlandnessHeightMultiplier: TerrainGenerator.Instance.inlandnessHeightMultiplier
+        );
 
         return job;
     }
@@ -85,7 +102,7 @@ public class Chunk {
         SetMeshHeights();
 
         int LOD = WorldDataGenerator.instance.LODlevels-1;
-        // TerrainGenerator.Instance.GenerateChunkTextures(squareMeshObject, LOD: LOD);
+        TerrainGenerator.Instance.GenerateChunkTextures(squareMeshObject, LOD: LOD);
 
         squareMeshObject.SetLOD(LOD);
 
@@ -235,14 +252,10 @@ public ChunkDataArray(int size, int maxLODs, Vector2Int chunkPosition)
             int i = index % size;
             int j = index / size;
 
-            if (i % 2 == 1 || j % 2 == 1) { // New points condition
+            if (i % 2 == 1 || j % 2 == 1)
+            { // New points condition
                 Vector2 pos = new Vector2(i, j) * quadSize * LODmultiplier + origin;
-
-                // Recalculate values for new points
-                inlandnessArray[index] = TerrainGenerator.Instance.GetInlandness(pos);
-                humidityArray[index] = TerrainGenerator.Instance.GetHumidity(pos);
-                heatArray[index] = TerrainGenerator.Instance.GetHeat(pos);
-                heightArray[index] = TerrainGenerator.Instance.GetHeight(pos, inlandnessArray[index], humidityArray[index], heatArray[index]);
+                SetArrayValuesAtIndex(index, pos);
             }
 
         } else {
@@ -253,13 +266,23 @@ public ChunkDataArray(int size, int maxLODs, Vector2Int chunkPosition)
             // Original full calculation for non-upscaling scenario
             Vector2 pos = new Vector2(i, j) * quadSize * LODmultiplier + origin;
 
-            inlandnessArray[index] = TerrainGenerator.Instance.GetInlandness(pos);
-            humidityArray[index] = TerrainGenerator.Instance.GetHumidity(pos);
-            heatArray[index] = TerrainGenerator.Instance.GetHeat(pos);
-            heightArray[index] = TerrainGenerator.Instance.GetHeight(pos, inlandnessArray[index], humidityArray[index], heatArray[index]);
+            SetArrayValuesAtIndex(index,pos);
+
+
         }
     }
-    
+
+    private void SetArrayValuesAtIndex(int index, Vector2 pos)
+    {
+
+        // Recalculate values for new points
+        inlandnessArray[index] = TerrainGenerator.Instance.GetInlandness(pos);
+        humidityArray[index] = TerrainGenerator.Instance.GetHumidity(pos);
+        heatArray[index] = TerrainGenerator.Instance.GetHeat(pos);
+        heightArray[index] = TerrainGenerator.Instance.GetHeight(pos, inlandnessArray[index], humidityArray[index], heatArray[index]);
+        // heightArray[index] = math.sin((pos.x + pos.y) * 0.01f) * 100;
+    }
+
 
 
     /// <summary>
@@ -337,18 +360,24 @@ public struct GenerateChunkJobParallel : IJobParallelFor {
     public Vector2 origin;
     public float quadSize;
     public float LODmultiplier;
+    public bool upscaling;
 
-    public GenerateChunkJobParallel(ChunkDataArray chunkDataArray) {
+    public GenerateChunkJobParallel(ChunkDataArray chunkDataArray, bool upscale = false) {
         this.chunkDataArray = chunkDataArray;
         size = chunkDataArray.GetArraySizeLOD();
         origin = WorldDataGenerator.instance.GetChunkWorldPostion(chunkDataArray.chunkPosition, offset: false);
         quadSize = WorldDataGenerator.instance.quadSize;
         LODmultiplier = Mathf.Pow(2, chunkDataArray.currentLOD); // Adjust for LOD
+        upscaling = upscale;
     }
 
     public void Execute(int index) {
 
-        chunkDataArray.SetSingleValue(index, size, origin, quadSize, LODmultiplier);
+        chunkDataArray.SetSingleValue(index, size, origin, quadSize, LODmultiplier, upscaling: upscaling);
+    }
+
+    public int GetJobLength() {
+        return size * size;
     }
 
 }

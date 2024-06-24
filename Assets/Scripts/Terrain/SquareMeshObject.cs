@@ -16,7 +16,7 @@ public class BiomeMaskTextures {
 
     private Texture2D[] biomeMaskTextures;
 
-    public int textureSize = 32;
+    public int textureSize = 20;
 
     public float[,,,] biomeMaskValues;
 
@@ -80,7 +80,7 @@ public class SquareMeshObject : MonoBehaviour {
 
 
     // ----- TEXTURE SETTINGS -----
-    private int textureSize = 32;
+    private int textureSize = 20;
 
     public Texture2D inlandnessTexture;
     public string inlandnessTextureName = "_InlandnessTexture";
@@ -220,6 +220,27 @@ public class SquareMeshObject : MonoBehaviour {
     }
 
     // sahg
+
+    public void CopyTextureDataFromJob(SetAllTexturesJob setAllTexturesJob) {
+        for (int i = 0; i < setAllTexturesJob.textureWidth * setAllTexturesJob.textureHeight; i++) {
+            int x = i % setAllTexturesJob.sizeX;
+            int z = i / setAllTexturesJob.sizeX;
+
+            Color inlHumHeatColor = new Color(setAllTexturesJob.inlHumHeatRed[i], setAllTexturesJob.inlHumHeatGreen[i], setAllTexturesJob.inlHumHeatBlue[i], 1f);
+            Color plainBumpSteepColor = new Color(setAllTexturesJob.plainBumpSteepRed[i], setAllTexturesJob.plainBumpSteepGreen[i], setAllTexturesJob.plainBumpSteepBlue[i], 1f);
+
+
+            inlandnessHumidityHeatTexture.SetPixel(x, z, inlHumHeatColor);
+            plainnessBumpinessSteepnessTexture.SetPixel(x, z, plainBumpSteepColor);
+
+            // for (int j = 0; j < setAllTexturesJob.biomeMaskColors.Length; j++) {
+            //     biomeMaskTextures.SetBiomeMask(j, x, z, setAllTexturesJob.biomeMaskColors[j][i]);
+            // }
+        }
+
+        inlandnessHumidityHeatTexture.Apply();
+        plainnessBumpinessSteepnessTexture.Apply();
+    }
 
 
     

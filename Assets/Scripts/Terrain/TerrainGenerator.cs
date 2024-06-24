@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections;
+using Unity.Jobs;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -28,16 +30,16 @@ public class TerrainGenerator: MonoBehaviour
     [Header("WORLD GENERATION SETTINGS")]
 
     [Header("Perlin generator settings")]
-    [SerializeField] private PerlinGenerator inlandnessPerlinGenerator; // a perlin generator for the inlandness of the terrain, ie how elevated and mountainous it is
-    [SerializeField] private float inlandnessHeightMultiplier = 300f;
+    [SerializeField] public PerlinGenerator inlandnessPerlinGenerator; // a perlin generator for the inlandness of the terrain, ie how elevated and mountainous it is
+    [SerializeField] public float inlandnessHeightMultiplier = 300f;
 
-    [SerializeField] private PerlinGenerator humidityPerlinGenerator; // a perlin generator for the humidity of the terrain. for instance used for biome generation
-    [SerializeField] private PerlinGenerator heatPerlinGenerator; // a perlin generator for the heat of the terrain. for instance used for biome generation
+    [SerializeField] public PerlinGenerator humidityPerlinGenerator; // a perlin generator for the humidity of the terrain. for instance used for biome generation
+    [SerializeField] public PerlinGenerator heatPerlinGenerator; // a perlin generator for the heat of the terrain. for instance used for biome generation
 
     // all biomes that can be generated
 
     [SerializeField] private BiomeSO[] biomeSOs;
-    private List<Biome> biomes = new List<Biome>();
+    public List<Biome> biomes = new List<Biome>();
 
 
 
@@ -284,7 +286,7 @@ public class TerrainGenerator: MonoBehaviour
 }
 
 
-private float SmoothingFunction(float x) {
+public float SmoothingFunction(float x) {
     return x * x * (3 - 2 * x);
  }
 
@@ -347,5 +349,149 @@ private float SmoothingFunction(float x) {
         Profiler.EndSample();
         return heightSum;
     }
+}
+
+
+
+
+
+
+
+
+
+
+
+public struct SetAllTexturesJob : IJob {
+    public NativeArray<float> inlHumHeatRed;
+    public NativeArray<float> inlHumHeatGreen;
+    public NativeArray<float> inlHumHeatBlue;
+    public NativeArray<float> plainBumpSteepRed;
+    public NativeArray<float> plainBumpSteepGreen;
+    public NativeArray<float> plainBumpSteepBlue;
+
+    public int textureHeight;
+    public int textureWidth;
+
+    public float sampleXFrom;
+    public float sampleZFrom;
+
+    public float quadSize;
+    public int sizeX;
+    public int sizeZ;
+
+    public float inlandnessHeightMultiplier;
+
+    public SetAllTexturesJob(
+        int textureHeight,
+        int textureWidth,
+        float sampleXFrom,
+        float sampleZFrom,
+        float quadSize,
+        int sizeX,
+        int sizeZ,
+        float inlandnessHeightMultiplier
+    ) {
+        this.textureHeight = textureHeight;
+        this.textureWidth = textureWidth;
+        this.sampleXFrom = sampleXFrom;
+        this.sampleZFrom = sampleZFrom;
+        this.quadSize = quadSize;
+        this.sizeX = sizeX;
+        this.sizeZ = sizeZ;
+        this.inlandnessHeightMultiplier = inlandnessHeightMultiplier;
+
+        int texSize = textureHeight * textureWidth;
+        inlHumHeatRed = new NativeArray<float>(texSize, Allocator.TempJob);
+        inlHumHeatGreen = new NativeArray<float>(texSize, Allocator.TempJob);
+        inlHumHeatBlue = new NativeArray<float>(texSize, Allocator.TempJob);
+        plainBumpSteepRed = new NativeArray<float>(texSize, Allocator.TempJob);
+        plainBumpSteepGreen = new NativeArray<float>(texSize, Allocator.TempJob);
+        plainBumpSteepBlue = new NativeArray<float>(texSize, Allocator.TempJob);
+
+    }
+
+
+    public void Execute() {
+
+        for (int i = 0; i < textureHeight * textureWidth; i++) {
+            int x = i % textureWidth;
+            int y = i / textureHeight;
+
+            float sampleX = sampleXFrom + x * quadSize * sizeX / textureWidth;
+            float sampleZ = sampleZFrom + y * quadSize * sizeZ / textureHeight;
+
+            float inlandness = TerrainGenerator.Instance.inlandnessPerlinGenerator.SampleNosie(new Vector2(sampleX, sampleZ), clamp: true);
+            float humidity = TerrainGenerator.Instance.humidityPerlinGenerator.SampleNosie(new Vector2(sampleX, sampleZ), clamp: true);
+            float heat = TerrainGenerator.Instance.heatPerlinGenerator.SampleNosie(new Vector2(sampleX, sampleZ), clamp: true);
+
+
+            
+            List<BiomeInterpolationInfo> interpolateBiomes = GetBiomesOnPoint(inlandness, heat, humidity);
+
+
+            inlHumHeatRed[i] = inlandness;
+            inlHumHeatGreen[i] = humidity;
+            inlHumHeatBlue[i] = heat;
+
+            float r = 0f;
+            float g = 0f;
+            float b = 0f;
+            foreach (BiomeInterpolationInfo interpolateBiome in interpolateBiomes) {
+
+                        r += interpolateBiome.biome.plainnessPerlinGenerator.SampleNosie(new Vector2(sampleX, sampleZ), clamp: true, runThroughCurve: false, multiplyWithHeightMultiplier: false) * interpolateBiome.weight;
+                        g += interpolateBiome.biome.bumpinessPerlinGenerator.SampleNosie(new Vector2(sampleX, sampleZ), clamp: true, runThroughCurve: false, multiplyWithHeightMultiplier: false) * interpolateBiome.weight;
+                        b += interpolateBiome.biome.GetHeightGradient(new Vector2(sampleX, sampleZ), inlandness, inlandnessHeightMultiplier,raw:false).magnitude * interpolateBiome.weight; // feels a little bit stupid that this has to be interpolated between biomes, but kinda makes sense
+
+                        // squareMeshObject.biomeMaskTextures.SetBiomeMask(interpolateBiome.biome.biomeMaskIndex, x, y, interpolateBiome.weight);
+
+            }
+            plainBumpSteepRed[i] = r;
+            plainBumpSteepGreen[i] = g;
+            plainBumpSteepBlue[i] = b;
+
+            }
+        }
+
+            // Interpolates between the biomes on a given point
+    private List<BiomeInterpolationInfo> GetBiomesOnPoint(float inlandness, float heat, float humidity, bool smoothInterpolation = true) {
+    List<BiomeInterpolationInfo> interpolateBiomes = new List<BiomeInterpolationInfo>();
+
+    Vector3 location = new Vector3(inlandness, heat, humidity);
+    float totalWeight = 0f;
+
+    foreach (Biome biome in TerrainGenerator.Instance.biomes) {
+        float padding = biome.linearPadding / 2;
+        float weight = 1f;
+
+        // Calculate the weight based on distance to biome center
+        Vector3 biomeCenter = (biome.bound0 + biome.bound1) / 2;
+        Vector3 biomeExtents = (biome.bound1 - biome.bound0) / 2;
+
+        for (int i = 0; i < 3; i++) {
+            float distanceToCenter = Mathf.Abs(location[i] - biomeCenter[i]);
+            float biomeSizeWithPadding = biomeExtents[i] + padding;
+            weight *= Mathf.Clamp01(1 - (distanceToCenter / biomeSizeWithPadding));
+        }
+
+        if (smoothInterpolation) weight = TerrainGenerator.Instance.SmoothingFunction(weight);
+        totalWeight += weight;
+        interpolateBiomes.Add(new BiomeInterpolationInfo() { biome = biome, weight = weight });
+    }
+
+    // Normalize the weights if totalWeight > 0 to ensure they sum to 1
+    if (!smoothInterpolation && totalWeight > 0) {
+        for (int i = 0; i < interpolateBiomes.Count; i++) {
+            interpolateBiomes[i].weight /= totalWeight;
+        }
+    }
+    if (smoothInterpolation) {
+        for (int i = 0; i < interpolateBiomes.Count; i++) {
+            interpolateBiomes[i].weight /= totalWeight;
+        }
+    }
+
+    return interpolateBiomes;
+}
+
 }
 

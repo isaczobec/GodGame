@@ -169,13 +169,13 @@ class WorldDataGenerator : MonoBehaviour
         if (chunkGenerationQueue.Count == 0) return;
         
 
-        float startTime = Time.realtimeSinceStartup;
+        // float startTime = Time.realtimeSinceStartup;
 
         // Debug.Log("Gen queue count: " + chunkGenerationQueue.Count);
 
         // NativeArray<JobHandle> chunkJobHandles = new NativeArray<JobHandle>(chunkGenerationQueue.Count, Allocator.Temp);
         // GenerateChunkJob[] chunkJobs = new GenerateChunkJob[chunkGenerationQueue.Count];
-        GenerateChunkJob[] generateChunkJobs = new GenerateChunkJob[chunkGenerationQueue.Count];
+        GenerateChunkJobParallel[] generateChunkJobs = new GenerateChunkJobParallel[chunkGenerationQueue.Count];
         NativeArray<JobHandle> chunkJobHandles = new NativeArray<JobHandle>(chunkGenerationQueue.Count, Allocator.TempJob);
 
         for (int i = 0; i < chunkGenerationQueue.Count; i++)
@@ -183,10 +183,10 @@ class WorldDataGenerator : MonoBehaviour
             Chunk chunk = chunkGenerationQueue[i];
             chunk.generated = true;
 
-            generateChunkJobs[i] = chunk.GetGenerateChunkJob();
+            generateChunkJobs[i] = chunk.GetGenerateChunkJobParallel();
 
 
-            JobHandle jobHandle = generateChunkJobs[i].Schedule(); // Schedule the job
+            JobHandle jobHandle = generateChunkJobs[i].Schedule(generateChunkJobs[i].GetJobLength(),1); // Schedule the job
             chunkJobHandles[i] = jobHandle;
 
             upscaleQueue.Add(chunk);
@@ -206,8 +206,10 @@ class WorldDataGenerator : MonoBehaviour
             chunk.chunkDataArray = generateChunkJobs[i].chunkDataArray; 
         }
 
-        Debug.Log("Time to generate chunks: " + (Time.realtimeSinceStartup - startTime) * 1000 + "ms");
+        // Debug.Log("Time to generate chunks: " + (Time.realtimeSinceStartup - startTime) * 1000 + "ms");
         
+        // SetAllTexturesJob[] setAllTexturesJobs = new SetAllTexturesJob[chunkGenerationQueue.Count];
+        // NativeArray<JobHandle> setAllTexturesJobHandles = new NativeArray<JobHandle>(chunkGenerationQueue.Count, Allocator.TempJob);
 
         // generate meshes
         for (int i = 0; i < chunkGenerationQueue.Count; i++)
@@ -222,8 +224,30 @@ class WorldDataGenerator : MonoBehaviour
                 Vector2 worldPosition = GetChunkWorldPostion(chunk.chunkPosition);
                 SquareMeshObject sqr = MeshGenerator.instance.CreateSquareMeshGameObject(worldPosition, maxChunkSize, maxChunkSize, chunkCoordinates);
                 chunk.GenerateMesh(sqr, generateMeshCollider: true);
+
+                // SetAllTexturesJob setAllTexturesJob = chunk.GetSetAllTexturesJob(32);
+                // setAllTexturesJobs[i] = setAllTexturesJob;
+                // JobHandle jobHandle = setAllTexturesJob.Schedule();
+                // setAllTexturesJobHandles[i] = jobHandle;
             }
         }
+
+        // Wait for all jobs to finish
+        // JobHandle.CompleteAll(setAllTexturesJobHandles);
+        // setAllTexturesJobHandles.Dispose();
+
+        // copy over texture data to the meshes
+        // for (int i = 0; i < chunkGenerationQueue.Count; i++) // this mioght not necesarily be the correct size because not all chunks to generate might need textures
+        // {
+        //     bool generateMesh = generateMeshQueue[i];
+
+        //     if (generateMesh)
+        //     {
+        //         Chunk chunk = chunkGenerationQueue[i];
+        //         SquareMeshObject sqr = chunk.squareMeshObject;
+        //         sqr.CopyTextureDataFromJob(setAllTexturesJobs[i]);
+        //     }
+        // }
 
         chunkGenerationQueue.Clear();
         generateMeshQueue.Clear();
@@ -232,13 +256,13 @@ class WorldDataGenerator : MonoBehaviour
 
     private IEnumerator UpscaleChunksCoroutine() {
         while (true) {
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(0.3f);
             if (upscaleQueue.Count == 0) continue; 
 
             NativeArray<JobHandle> chunkJobHandles = new NativeArray<JobHandle>(upscaleQueue.Count, Allocator.TempJob);
-            UpscaleLODJob[] upscaleJobs = new UpscaleLODJob[upscaleQueue.Count];
+            GenerateChunkJobParallel[] upscaleJobs = new GenerateChunkJobParallel[upscaleQueue.Count];
 
-            float time = Time.realtimeSinceStartup;
+            // float time = Time.realtimeSinceStartup;
 
             Profiler.BeginSample("UpscaleDataArrays");
 
@@ -250,8 +274,8 @@ class WorldDataGenerator : MonoBehaviour
                 chunk.chunkDataArray.UpscaleArraysLOD(); // upscale the data arrays. new memory cannot be allocated in jobs, so we need to do it here
 
                 // get and schedule the jobs
-                upscaleJobs[i] = chunk.GetUpscaleLODJob();
-                JobHandle jobHandle = upscaleJobs[i].Schedule();
+                upscaleJobs[i] = chunk.GetGenerateChunkJobParallel(upscale: true);
+                JobHandle jobHandle = upscaleJobs[i].Schedule(upscaleJobs[i].GetJobLength(),1);
                 chunkJobHandles[i] = jobHandle;
             }
             Profiler.EndSample();
@@ -273,7 +297,7 @@ class WorldDataGenerator : MonoBehaviour
                 chunk.UpscaleLOD(updateMesh: true, needToUpscaleDataArray: false);
             }
 
-            Debug.Log("Time to upscale chunks: " + (Time.realtimeSinceStartup - time) * 1000 + "ms");
+            // Debug.Log("Time to upscale chunks: " + (Time.realtimeSinceStartup - time) * 1000 + "ms");
 
         }
     }
