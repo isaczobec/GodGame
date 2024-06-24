@@ -62,6 +62,11 @@ public class Chunk {
         return job;
     }
 
+    public GenerateChunkJobParallel GetGenerateChunkJobParallel() {
+        GenerateChunkJobParallel job = new GenerateChunkJobParallel(chunkDataArray);
+        return job;
+    }
+
     public UpscaleLODJob GetUpscaleLODJob() {
         UpscaleLODJob job = new UpscaleLODJob {
             chunkDataArray = chunkDataArray
@@ -110,7 +115,10 @@ public class Chunk {
     }
 
     public void UpscaleLOD(bool updateMesh = false, bool needToUpscaleDataArray = true) {
-        if (needToUpscaleDataArray) chunkDataArray.UpscaleLOD();
+        if (needToUpscaleDataArray) {
+            chunkDataArray.UpscaleArraysLOD();
+            chunkDataArray.SetValues(upscaling: true);
+        } 
         if (updateMesh) {
 
         SetMeshHeights();
@@ -180,106 +188,129 @@ public ChunkDataArray(int size, int maxLODs, Vector2Int chunkPosition)
     }
 
     public void SetValues(bool upscaling = false) {
-        int s = GetArraySizeLOD();
-        Vector2 origin = WorldDataGenerator.instance.GetChunkWorldPostion(chunkPosition, offset: false);
-        float quadSize = WorldDataGenerator.instance.quadSize;
-        float LODmultiplier = Mathf.Pow(2, currentLOD); // Adjust for LOD
+    int s = GetArraySizeLOD();
+    Vector2 origin = WorldDataGenerator.instance.GetChunkWorldPostion(chunkPosition, offset: false);
+    float quadSize = WorldDataGenerator.instance.quadSize;
+    float LODmultiplier = Mathf.Pow(2, currentLOD); // Adjust for LOD
 
+    if (upscaling) {
+        // Only calculate for new points introduced by upscaling
         for (int i = 0; i < s; i++) {
-            int js = s; // Default sampling rate
+            for (int j = 0; j < s; j++) {
+                if (i % 2 == 1 || j % 2 == 1) { // New points condition
+                    Vector2 pos = new Vector2(i, j) * quadSize * LODmultiplier + origin;
+                    int index = GetIndex(i, j, s);
 
-            if (upscaling && i % 2 == 0) {
-                js *= 2; // Double the sampling rate for every other row when upscaling
-            }
-
-            for (int j = 0; j < js; j++) {
-                Vector2 pos = new Vector2(i, j / (upscaling && i % 2 == 0 ? 2.0f : 1.0f)) * quadSize * LODmultiplier + origin;
-
-                int xIndex = i;
-                int yIndex = j;
-                if (upscaling && i % 2 == 0) {
-                    yIndex = j / 2;
+                    // Recalculate values for new points
+                    inlandnessArray[index] = TerrainGenerator.Instance.GetInlandness(pos);
+                    humidityArray[index] = TerrainGenerator.Instance.GetHumidity(pos);
+                    heatArray[index] = TerrainGenerator.Instance.GetHeat(pos);
+                    heightArray[index] = TerrainGenerator.Instance.GetHeight(pos, inlandnessArray[index], humidityArray[index], heatArray[index]);
                 }
-
-                int index = GetIndex(xIndex, yIndex, s);
-
-                float inlandness = TerrainGenerator.Instance.GetInlandness(pos);
-                float humidity = TerrainGenerator.Instance.GetHumidity(pos);
-                float heat = TerrainGenerator.Instance.GetHeat(pos);
-                float height = TerrainGenerator.Instance.GetHeight(pos, inlandness, humidity, heat);
-
-                inlandnessArray[index] = inlandness;
-                humidityArray[index] = humidity;
-                heatArray[index] = heat;
-                heightArray[index] = height;
+                // Existing points are already copied in UpscaleArraysLOD method
             }
         }
-    }
+    } else {
+        // Original full calculation for non-upscaling scenario
+        for (int i = 0; i < s; i++) {
+            for (int j = 0; j < s; j++) {
+                Vector2 pos = new Vector2(i, j) * quadSize * LODmultiplier + origin;
+                int index = GetIndex(i, j, s);
 
-    public void UpscaleLOD() {
-        if (currentLOD > 0) {
-            currentLOD--;
-
-            int newSize = GetArraySizeLOD();
-            NativeArray<float> newInlandnessArray = new NativeArray<float>(newSize * newSize, Allocator.Persistent);
-            NativeArray<float> newHumidityArray = new NativeArray<float>(newSize * newSize, Allocator.Persistent);
-            NativeArray<float> newHeatArray = new NativeArray<float>(newSize * newSize, Allocator.Persistent);
-            NativeArray<float> newHeightArray = new NativeArray<float>(newSize * newSize, Allocator.Persistent);
-
-            int oldSize = newSize / 2 + 1;
-
-            for (int i = 0; i < oldSize; i++) {
-                for (int j = 0; j < oldSize; j++) {
-                    int oldIndex = GetIndex(i, j, oldSize);
-                    int newIndex1 = GetIndex(i * 2, j * 2, newSize);
-                    int newIndex2 = GetIndex(i * 2 + 1, j * 2, newSize);
-                    int newIndex3 = GetIndex(i * 2, j * 2 + 1, newSize);
-                    int newIndex4 = GetIndex(i * 2 + 1, j * 2 + 1, newSize);
-
-                    float oldInlandness = inlandnessArray[oldIndex];
-                    float oldHumidity = humidityArray[oldIndex];
-                    float oldHeat = heatArray[oldIndex];
-                    float oldHeight = heightArray[oldIndex];
-
-                    newInlandnessArray[newIndex1] = oldInlandness;
-                    newHumidityArray[newIndex1] = oldHumidity;
-                    newHeatArray[newIndex1] = oldHeat;
-                    newHeightArray[newIndex1] = oldHeight;
-
-                    newInlandnessArray[newIndex2] = oldInlandness;
-                    newHumidityArray[newIndex2] = oldHumidity;
-                    newHeatArray[newIndex2] = oldHeat;
-                    newHeightArray[newIndex2] = oldHeight;
-
-                    newInlandnessArray[newIndex3] = oldInlandness;
-                    newHumidityArray[newIndex3] = oldHumidity;
-                    newHeatArray[newIndex3] = oldHeat;
-                    newHeightArray[newIndex3] = oldHeight;
-
-                    newInlandnessArray[newIndex4] = oldInlandness;
-                    newHumidityArray[newIndex4] = oldHumidity;
-                    newHeatArray[newIndex4] = oldHeat;
-                    newHeightArray[newIndex4] = oldHeight;
-                }
+                inlandnessArray[index] = TerrainGenerator.Instance.GetInlandness(pos);
+                humidityArray[index] = TerrainGenerator.Instance.GetHumidity(pos);
+                heatArray[index] = TerrainGenerator.Instance.GetHeat(pos);
+                heightArray[index] = TerrainGenerator.Instance.GetHeight(pos, inlandnessArray[index], humidityArray[index], heatArray[index]);
             }
-
-            inlandnessArray.Dispose();
-            humidityArray.Dispose();
-            heatArray.Dispose();
-            heightArray.Dispose();
-
-            inlandnessArray = newInlandnessArray;
-            humidityArray = newHumidityArray;
-            heatArray = newHeatArray;
-            heightArray = newHeightArray;
-
-            SetValues(upscaling: true);
         }
     }
 }
 
 
-[BurstCompile]
+        public void SetSingleValue(int index, int size, Vector2 origin, float quadSize, float LODmultiplier, bool upscaling = false) {
+
+        if (upscaling) {
+            // Only calculate for new points introduced by upscaling
+
+            int i = index % size;
+            int j = index / size;
+
+            if (i % 2 == 1 || j % 2 == 1) { // New points condition
+                Vector2 pos = new Vector2(i, j) * quadSize * LODmultiplier + origin;
+
+                // Recalculate values for new points
+                inlandnessArray[index] = TerrainGenerator.Instance.GetInlandness(pos);
+                humidityArray[index] = TerrainGenerator.Instance.GetHumidity(pos);
+                heatArray[index] = TerrainGenerator.Instance.GetHeat(pos);
+                heightArray[index] = TerrainGenerator.Instance.GetHeight(pos, inlandnessArray[index], humidityArray[index], heatArray[index]);
+            }
+
+        } else {
+
+            int i = index % size;
+            int j = index / size;
+
+            // Original full calculation for non-upscaling scenario
+            Vector2 pos = new Vector2(i, j) * quadSize * LODmultiplier + origin;
+
+            inlandnessArray[index] = TerrainGenerator.Instance.GetInlandness(pos);
+            humidityArray[index] = TerrainGenerator.Instance.GetHumidity(pos);
+            heatArray[index] = TerrainGenerator.Instance.GetHeat(pos);
+            heightArray[index] = TerrainGenerator.Instance.GetHeight(pos, inlandnessArray[index], humidityArray[index], heatArray[index]);
+        }
+    }
+    
+
+
+    /// <summary>
+    /// upscales the arrays and copies over the values from the previous LOD. Does NOT generate new values. To do this, call SetValues(upscaling: true) after upscaling.
+    /// </summary>
+    public void UpscaleArraysLOD() {
+    if (currentLOD > 0) {
+        currentLOD--;
+
+        int newSize = GetArraySizeLOD();
+        NativeArray<float> newInlandnessArray = new NativeArray<float>(newSize * newSize, Allocator.Persistent);
+        NativeArray<float> newHumidityArray = new NativeArray<float>(newSize * newSize, Allocator.Persistent);
+        NativeArray<float> newHeatArray = new NativeArray<float>(newSize * newSize, Allocator.Persistent);
+        NativeArray<float> newHeightArray = new NativeArray<float>(newSize * newSize, Allocator.Persistent);
+
+        int oldSize = newSize / 2 + 1;
+
+        // Copy old values and leave gaps for new values
+        for (int i = 0; i < oldSize; i++) {
+            for (int j = 0; j < oldSize; j++) {
+                int oldIndex = GetIndex(i, j, oldSize);
+                int newIndex = GetIndex(i * 2, j * 2, newSize);
+
+                float oldInlandness = inlandnessArray[oldIndex];
+                float oldHumidity = humidityArray[oldIndex];
+                float oldHeat = heatArray[oldIndex];
+                float oldHeight = heightArray[oldIndex];
+
+                newInlandnessArray[newIndex] = oldInlandness;
+                newHumidityArray[newIndex] = oldHumidity;
+                newHeatArray[newIndex] = oldHeat;
+                newHeightArray[newIndex] = oldHeight;
+
+            }
+        }
+
+        inlandnessArray.Dispose();
+        humidityArray.Dispose();
+        heatArray.Dispose();
+        heightArray.Dispose();
+
+        inlandnessArray = newInlandnessArray;
+        humidityArray = newHumidityArray;
+        heatArray = newHeatArray;
+        heightArray = newHeightArray;
+    }
+}
+
+}
+
+
 public struct GenerateChunkJob : IJob
 {
     public ChunkDataArray chunkDataArray;
@@ -289,12 +320,35 @@ public struct GenerateChunkJob : IJob
     }
 }
 
-[BurstCompile]
 public struct UpscaleLODJob : IJob
 {
     public ChunkDataArray chunkDataArray;
     public void Execute()
     {
-        chunkDataArray.UpscaleLOD();
+        chunkDataArray.SetValues(upscaling:true);
     }
+}
+
+public struct GenerateChunkJobParallel : IJobParallelFor {
+
+    public ChunkDataArray chunkDataArray;
+
+    public int size;
+    public Vector2 origin;
+    public float quadSize;
+    public float LODmultiplier;
+
+    public GenerateChunkJobParallel(ChunkDataArray chunkDataArray) {
+        this.chunkDataArray = chunkDataArray;
+        size = chunkDataArray.GetArraySizeLOD();
+        origin = WorldDataGenerator.instance.GetChunkWorldPostion(chunkDataArray.chunkPosition, offset: false);
+        quadSize = WorldDataGenerator.instance.quadSize;
+        LODmultiplier = Mathf.Pow(2, chunkDataArray.currentLOD); // Adjust for LOD
+    }
+
+    public void Execute(int index) {
+
+        chunkDataArray.SetSingleValue(index, size, origin, quadSize, LODmultiplier);
+    }
+
 }

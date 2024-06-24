@@ -7,6 +7,7 @@ using Unity.Jobs;
 using Unity.Burst;
 using Unity.Mathematics;
 using JetBrains.Annotations;
+using UnityEngine.Profiling;
 
 class WorldDataGenerator : MonoBehaviour
 {
@@ -93,8 +94,7 @@ class WorldDataGenerator : MonoBehaviour
 
         StartCoroutine(UpdateRenderArounds());
 
-        // work onn this later
-        // StartCoroutine(UpscaleChunksCoroutine());
+        StartCoroutine(UpscaleChunksCoroutine());
     }
 
     private void Update()
@@ -238,25 +238,42 @@ class WorldDataGenerator : MonoBehaviour
             NativeArray<JobHandle> chunkJobHandles = new NativeArray<JobHandle>(upscaleQueue.Count, Allocator.TempJob);
             UpscaleLODJob[] upscaleJobs = new UpscaleLODJob[upscaleQueue.Count];
 
+            float time = Time.realtimeSinceStartup;
+
+            Profiler.BeginSample("UpscaleDataArrays");
+
             for (int i = 0; i < upscaleQueue.Count; i++) {
                 if (upscaleQueue[i].chunkDataArray.currentLOD == 0) continue;
 
                 Chunk chunk = upscaleQueue[i];
+
+                chunk.chunkDataArray.UpscaleArraysLOD(); // upscale the data arrays. new memory cannot be allocated in jobs, so we need to do it here
+
+                // get and schedule the jobs
                 upscaleJobs[i] = chunk.GetUpscaleLODJob();
                 JobHandle jobHandle = upscaleJobs[i].Schedule();
                 chunkJobHandles[i] = jobHandle;
             }
+            Profiler.EndSample();
 
+            Profiler.BeginSample("CompleteUpscaleJobs");
+
+            // wait for jobs to finnish
             JobHandle.CompleteAll(chunkJobHandles);
             chunkJobHandles.Dispose();
 
+            Profiler.EndSample();
+
+            // set back the data and upscale the mesh
             for (int i = 0; i < upscaleQueue.Count; i++) {
                 if (upscaleQueue[i].chunkDataArray.currentLOD == 0) continue;
 
                 Chunk chunk = upscaleQueue[i];
-                chunk.chunkDataArray = upscaleJobs[i].chunkDataArray; // set back the data
+                chunk.chunkDataArray = upscaleJobs[i].chunkDataArray; 
                 chunk.UpscaleLOD(updateMesh: true, needToUpscaleDataArray: false);
             }
+
+            Debug.Log("Time to upscale chunks: " + (Time.realtimeSinceStartup - time) * 1000 + "ms");
 
         }
     }

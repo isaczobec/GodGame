@@ -635,7 +635,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e88193dfc48774e45a11604cf9877035, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  renderDistance: 2
+  renderDistance: 3
 --- !u!136 &1039704459
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -918,7 +918,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2ce4a1f23b85444b89a7736403d192f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxChunkSize: 81
+  maxChunkSize: 65
   initialWorldSize: 4
   fullWorldSizeChunks: 256
   LODlevels: 4
