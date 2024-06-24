@@ -210,6 +210,8 @@ class WorldDataGenerator : MonoBehaviour
         {
             Chunk chunk = chunkGenerationQueue[i];
             chunk.chunkDataArray = generateChunkJobs[i].chunkDataArray; 
+
+            chunk.chunkTiles = chunk.chunkDataArray.CreateChunkTiles(); // create the tiles from the data array. Do this only for the lowest LOD
         }
 
         // Debug.Log("Time to generate chunks: " + (Time.realtimeSinceStartup - startTime) * 1000 + "ms");

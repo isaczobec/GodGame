@@ -26,6 +26,7 @@ public class Biome
     [Header("BIOME SETTINGS")]
     [Header("Inlandness")]
     public AnimationCurve inlandnessHeightCurve;
+    private AnimationCurveInterpolator inlandnessHeightInterpolator;
     [Header("Plainness")]
     public PerlinGenerator plainnessPerlinGenerator;
     [Header("Bumpiness")]
@@ -43,6 +44,13 @@ public class Biome
     public float waterPlainnessSmoothness = 5f; // exponent for how quickly the water appears as plainness decreases
     public float waterDepthMultiplier = 20f;
     public AnimationCurve waterDepthProfile;
+    private AnimationCurveInterpolator waterDepthInterpolator;
+
+
+    public void Initialize() {
+        inlandnessHeightInterpolator = new AnimationCurveInterpolator(inlandnessHeightCurve, 20);
+        waterDepthInterpolator = new AnimationCurveInterpolator(waterDepthProfile, 20);
+    }
 
     public void InitializePerlinGenerators(Vector2 pos1, Vector2 pos2, Vector2 pos3) { 
 
@@ -60,9 +68,9 @@ public class Biome
 
         // limit the inlandness to the bounds so the curve is smoothly evaluated
         inlandness -= bound0.x;
-        inlandness /= (bound1.x - bound0.x);
+        inlandness /= bound1.x - bound0.x;
 
-        float inl = inlandnessHeightCurve.Evaluate(inlandness);
+        float inl = inlandnessHeightInterpolator.Sample(inlandness);
         return inl;
     }
 
@@ -71,6 +79,7 @@ public class Biome
     /// Returns the height at a given position
     /// </summary>
     public float GetHeight(Vector2 position, float inlandness, float inlandnessHeightMultiplier, bool normalized = false) {
+
 
         inlandness = EvaluateInlandness(inlandness);
         if (!normalized) inlandness *= inlandnessHeightMultiplier;
@@ -103,7 +112,7 @@ public class Biome
         raw = Mathf.Max(0,raw - waterThreshold);
         raw /= (1 - waterThreshold); // normalize
 
-        raw = waterDepthProfile.Evaluate(raw);
+        raw = waterDepthInterpolator.Sample(raw);
         
         return raw;
     }

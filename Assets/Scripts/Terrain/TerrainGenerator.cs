@@ -72,7 +72,10 @@ public class TerrainGenerator: MonoBehaviour
     {
         foreach (BiomeSO biomeSO in biomeSOs)
         {
-            biomes.Add(biomeSO.biome);
+            Biome biome = biomeSO.biome;
+            biomes.Add(biome);
+            biome.Initialize();
+
         }
     }
 

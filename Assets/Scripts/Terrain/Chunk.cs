@@ -30,6 +30,8 @@ public class Chunk {
     public bool discovered = false;
     public bool generationPrompted = false;
 
+    public ChunkTiles chunkTiles; // a class containing arrays of information about all the tiles in a chunk, used for ie pathfinding and other gameplay mechanics
+
     public bool visible {
     set {
             squareMeshObject?.SetVisibilityMultiplier(value? 1f : 0f);
@@ -287,7 +289,6 @@ public ChunkDataArray(int size, int maxLODs, Vector2Int chunkPosition)
         humidityArray[index] = TerrainGenerator.Instance.GetHumidity(pos);
         heatArray[index] = TerrainGenerator.Instance.GetHeat(pos);
         heightArray[index] = TerrainGenerator.Instance.GetHeight(pos, inlandnessArray[index], humidityArray[index], heatArray[index]);
-        // heightArray[index] = math.sin((pos.x + pos.y) * 0.01f) * 100;
     }
 
 
@@ -337,6 +338,28 @@ public ChunkDataArray(int size, int maxLODs, Vector2Int chunkPosition)
         heightArray = newHeightArray;
     }
 }
+
+    public ChunkTiles CreateChunkTiles() {
+        ChunkTiles chunkTiles = new ChunkTiles {
+            heightMap = new float[GetArraySizeLOD(), GetArraySizeLOD()],
+            inlandnessMap = new float[GetArraySizeLOD(), GetArraySizeLOD()],
+            humididtyMap = new float[GetArraySizeLOD(), GetArraySizeLOD()],
+            heatMap = new float[GetArraySizeLOD(), GetArraySizeLOD()]
+        };
+
+        for (int i = 0; i < GetArraySizeLOD(); i++) {
+            for (int j = 0; j < GetArraySizeLOD(); j++) {
+                int index = GetIndex(i, j, GetArraySizeLOD());
+                chunkTiles.heightMap[i, j] = heightArray[index];
+                chunkTiles.inlandnessMap[i, j] = inlandnessArray[index];
+                chunkTiles.humididtyMap[i, j] = humidityArray[index];
+                chunkTiles.heatMap[i, j] = heatArray[index];
+            }
+        }
+
+        return chunkTiles;
+    
+    }
 
 }
 
