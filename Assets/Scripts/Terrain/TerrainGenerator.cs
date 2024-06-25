@@ -6,6 +6,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
+using UnityEngine.UIElements;
 
 /// <summary>
 /// A class containing information about a chunk that has been generated. Returned by GenerateTerrain()
@@ -351,6 +352,94 @@ public float SmoothingFunction(float x) {
         
         Profiler.EndSample();
         return heightSum;
+    }
+
+
+    public void GenerateTerrainObjects(Chunk chunk, bool generateGameObjects = true) {
+
+        // get a random but deterministic number from the chunk coordinates
+        System.Random posRandom = new System.Random(chunk.chunkPosition.GetHashCode());
+        System.Random choiceRandom = new System.Random(chunk.chunkPosition.GetHashCode());
+        System.Random visualRandom = new System.Random(chunk.chunkPosition.GetHashCode());
+
+        for (int c = 0; c < 3; c++) {
+
+            Vector2Int rPos = GetRandomTilePosition(posRandom, chunk.chunkTiles.sideLength);
+
+            if (chunk.chunkTiles.terrainObjects[rPos.x, rPos.y] != null) continue; // there is already an object here
+
+            // get biome at the random position
+            float inlandness = chunk.chunkTiles.inlandnessMap[rPos.x, rPos.y];
+            float humidity = chunk.chunkTiles.humididtyMap[rPos.x, rPos.y];
+            float heat = chunk.chunkTiles.heatMap[rPos.x, rPos.y];
+
+            List<BiomeInterpolationInfo> interpolateBiomes = GetBiomesOnPoint(inlandness, heat, humidity);
+
+            List<TerrainObject> possibleObjects = new List<TerrainObject>();
+            List<float> objectChances = new List<float>();
+
+            float totalRange = 0f;
+
+            foreach (BiomeInterpolationInfo interpolateBiome in interpolateBiomes) {
+                foreach (TerrainObjectSO tObjSO in interpolateBiome.biome.terrainObjectSOs) {
+                    TerrainObject tObj = tObjSO.terrainObject;
+
+                    if (tObj.biomeThreshold > interpolateBiome.weight) continue; // the biome threshold is not met, skip this object
+
+                    // add up chances to spawn
+                    possibleObjects.Add(tObj);
+                    float range = tObj.spawnWeight * interpolateBiome.weight; // weight it with the biome weight
+                    objectChances.Add(range); 
+                    totalRange += range;
+                    
+                }
+            }
+
+            float randomValue = (float)choiceRandom.NextDouble() * totalRange;
+            for (int i = 0; i < objectChances.Count; i++) {
+                if (randomValue < objectChances[i]) {
+                    if ((float)choiceRandom.NextDouble() < possibleObjects[i].chanceToSpawn) {
+
+                        TerrainObject objToSpawn = possibleObjects[i];
+                        // spawn the object
+                        chunk.chunkTiles.terrainObjects[rPos.x, rPos.y] = objToSpawn;
+
+                        if (generateGameObjects) {
+
+                            // instantiate the object
+                            GameObject prefab = objToSpawn.prefab;
+                            Vector3 pos = chunk.chunkTiles.GetTileWorldPosition(rPos.x, rPos.y);
+                            GameObject obj = Instantiate(prefab, pos, Quaternion.identity, transform); // parent it to the terrain generator object
+
+                            // set random rotation and scale
+                            if (objToSpawn.randomRotation)
+                            {
+                                float randomRotation = (float)visualRandom.NextDouble() * 360f;
+                                obj.transform.Rotate(new Vector3(0, randomRotation, 0));
+                            }
+                            if (objToSpawn.randomScale) {
+                                float randomScale = (float)visualRandom.NextDouble() * objToSpawn.scaleRandomNess * 2 - objToSpawn.scaleRandomNess + 1;
+                                obj.transform.localScale = new Vector3(randomScale, randomScale, randomScale);
+                            }
+
+                            Debug.Log("Spawned object at " + rPos.x + ", " + rPos.y + " with position " + pos);
+                        }
+
+
+                    }
+                    break;
+                }
+                randomValue -= objectChances[i];
+            }
+            
+        }
+
+
+    }
+
+
+    private Vector2Int GetRandomTilePosition(System.Random random, int sideLength) {
+        return new Vector2Int(random.Next(sideLength), random.Next(sideLength));
     }
 }
 

@@ -184,3 +184,6 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+    terrainObjectSOs:
+    - {fileID: 11400000, guid: ba5dcdc11cd76ee4db732e05f31a4799, type: 2}
+    - {fileID: 11400000, guid: c9e36723b5839bc458b6b293a0325da9, type: 2}

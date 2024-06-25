@@ -240,6 +240,10 @@ class WorldDataGenerator : MonoBehaviour
             }
         }
 
+        for (int i = 0; i < chunkGenerationQueue.Count; i++) {
+            TerrainGenerator.Instance.GenerateTerrainObjects(chunkGenerationQueue[i]);
+        }
+
         // Wait for all jobs to finish
         // JobHandle.CompleteAll(setAllTexturesJobHandles);
         // setAllTexturesJobHandles.Dispose();

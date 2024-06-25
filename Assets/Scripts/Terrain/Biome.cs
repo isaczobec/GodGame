@@ -47,6 +47,10 @@ public class Biome
     private AnimationCurveInterpolator waterDepthInterpolator;
 
 
+    [Header("TerrainObjects")] // terrain objects that can be spawned in this biome
+    public List<TerrainObjectSO> terrainObjectSOs;
+
+
     public void Initialize() {
         inlandnessHeightInterpolator = new AnimationCurveInterpolator(inlandnessHeightCurve, 20);
         waterDepthInterpolator = new AnimationCurveInterpolator(waterDepthProfile, 20);

@@ -340,16 +340,22 @@ public ChunkDataArray(int size, int maxLODs, Vector2Int chunkPosition)
 }
 
     public ChunkTiles CreateChunkTiles() {
+
+        int s = GetArraySizeLOD() - 1; // dont need the edge points, they are contained in adjacent chunks
+
         ChunkTiles chunkTiles = new ChunkTiles {
-            heightMap = new float[GetArraySizeLOD(), GetArraySizeLOD()],
-            inlandnessMap = new float[GetArraySizeLOD(), GetArraySizeLOD()],
-            humididtyMap = new float[GetArraySizeLOD(), GetArraySizeLOD()],
-            heatMap = new float[GetArraySizeLOD(), GetArraySizeLOD()]
+            sideLength = s,
+            heightMap = new float[s, s],
+            inlandnessMap = new float[s, s],
+            humididtyMap = new float[s, s],
+            heatMap = new float[s, s],
+            chunkPos = chunkPosition,
+            terrainObjects = new TerrainObject[s, s]
         };
 
-        for (int i = 0; i < GetArraySizeLOD(); i++) {
-            for (int j = 0; j < GetArraySizeLOD(); j++) {
-                int index = GetIndex(i, j, GetArraySizeLOD());
+        for (int i = 0; i < s; i++) {
+            for (int j = 0; j < s; j++) {
+                int index = GetIndex(i, j, s);
                 chunkTiles.heightMap[i, j] = heightArray[index];
                 chunkTiles.inlandnessMap[i, j] = inlandnessArray[index];
                 chunkTiles.humididtyMap[i, j] = humidityArray[index];
