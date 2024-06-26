@@ -4,6 +4,7 @@ using Unity.Collections;
 using Unity.Jobs;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 using UnityEngine.UIElements;
@@ -361,17 +362,22 @@ public float SmoothingFunction(float x) {
         System.Random posRandom = new System.Random(chunk.chunkPosition.GetHashCode());
         System.Random choiceRandom = new System.Random(chunk.chunkPosition.GetHashCode());
         System.Random visualRandom = new System.Random(chunk.chunkPosition.GetHashCode());
+        System.Random clusterRandom = new System.Random(chunk.chunkPosition.GetHashCode());
 
-        for (int c = 0; c < 3; c++) {
+        for (int c = 0; c < 10; c++)
+        {
 
             Vector2Int rPos = GetRandomTilePosition(posRandom, chunk.chunkTiles.sideLength);
 
-            if (chunk.chunkTiles.terrainObjects[rPos.x, rPos.y] != null) continue; // there is already an object here
+
+            ChunkTile tile = chunk.chunkTiles.tiles[rPos.x, rPos.y];
+
+            if (tile.terrainObject != null) continue; // there is already an object here
 
             // get biome at the random position
-            float inlandness = chunk.chunkTiles.inlandnessMap[rPos.x, rPos.y];
-            float humidity = chunk.chunkTiles.humididtyMap[rPos.x, rPos.y];
-            float heat = chunk.chunkTiles.heatMap[rPos.x, rPos.y];
+            float inlandness = tile.inlandness;
+            float humidity = tile.humidity;
+            float heat = tile.heat;
 
             List<BiomeInterpolationInfo> interpolateBiomes = GetBiomesOnPoint(inlandness, heat, humidity);
 
@@ -380,8 +386,10 @@ public float SmoothingFunction(float x) {
 
             float totalRange = 0f;
 
-            foreach (BiomeInterpolationInfo interpolateBiome in interpolateBiomes) {
-                foreach (TerrainObjectSO tObjSO in interpolateBiome.biome.terrainObjectSOs) {
+            foreach (BiomeInterpolationInfo interpolateBiome in interpolateBiomes)
+            {
+                foreach (TerrainObjectSO tObjSO in interpolateBiome.biome.terrainObjectSOs)
+                {
                     TerrainObject tObj = tObjSO.terrainObject;
 
                     if (tObj.biomeThreshold > interpolateBiome.weight) continue; // the biome threshold is not met, skip this object
@@ -389,57 +397,164 @@ public float SmoothingFunction(float x) {
                     // add up chances to spawn
                     possibleObjects.Add(tObj);
                     float range = tObj.spawnWeight * interpolateBiome.weight; // weight it with the biome weight
-                    objectChances.Add(range); 
+                    objectChances.Add(range);
                     totalRange += range;
-                    
+
                 }
             }
 
-            float randomValue = (float)choiceRandom.NextDouble() * totalRange;
-            for (int i = 0; i < objectChances.Count; i++) {
-                if (randomValue < objectChances[i]) {
-                    if ((float)choiceRandom.NextDouble() < possibleObjects[i].chanceToSpawn) {
+            // try to spawn an object
+            TerrainObject spawnedObject = TryGenerateTerrainObjectAt(chunk, generateGameObjects, choiceRandom, visualRandom, rPos, possibleObjects, objectChances, totalRange);
 
-                        TerrainObject objToSpawn = possibleObjects[i];
-                        // spawn the object
-                        chunk.chunkTiles.terrainObjects[rPos.x, rPos.y] = objToSpawn;
+            // clustering objects
+            if (spawnedObject != null) {
+                if (spawnedObject.clusterableTerrainObjects.Length > 0) {
+                // try to cluster objects
 
-                        if (generateGameObjects) {
-
-                            // instantiate the object
-                            GameObject prefab = objToSpawn.prefab;
-                            Vector3 pos = chunk.chunkTiles.GetTileWorldPosition(rPos.x, rPos.y);
-                            GameObject obj = Instantiate(prefab, pos, Quaternion.identity, transform); // parent it to the terrain generator object
-
-                            // set random rotation and scale
-                            if (objToSpawn.randomRotation)
-                            {
-                                float randomRotation = (float)visualRandom.NextDouble() * 360f;
-                                obj.transform.Rotate(new Vector3(0, randomRotation, 0));
+                    for (int i = 0; i <  spawnedObject.maxClusteredObjects; i++) {
+                        ClusterableTerrainObject clusterableTerrainObject = spawnedObject.clusterableTerrainObjects[clusterRandom.Next(spawnedObject.clusterableTerrainObjects.Length)];
+                        if (clusterRandom.NextDouble() < clusterableTerrainObject.chanceToCluster) {
+                            // move a random distance and see if the position is within the bounds of the chunk
+                            rPos += new Vector2Int(clusterRandom.Next(-clusterableTerrainObject.clusterDistanceTiles, clusterableTerrainObject.clusterDistanceTiles), clusterRandom.Next(-clusterableTerrainObject.clusterDistanceTiles, clusterableTerrainObject.clusterDistanceTiles));
+                            if (rPos.x >= 1 && rPos.x < chunk.chunkTiles.sideLength-1 && rPos.y >= 1 && rPos.y < chunk.chunkTiles.sideLength-1) { // cannot spawn on chunk edges
+                                // try to spawn the object
+                                TryGenerateTerrainObjectAt(chunk, generateGameObjects, choiceRandom, visualRandom, rPos, new List<TerrainObject>() { clusterableTerrainObject.terrainObjectSO.terrainObject }, new List<float>() { 1f }, 1f, dontRollSpawnChance: true);
                             }
-                            if (objToSpawn.randomScale) {
-                                float randomScale = (float)visualRandom.NextDouble() * objToSpawn.scaleRandomNess * 2 - objToSpawn.scaleRandomNess + 1;
-                                obj.transform.localScale = new Vector3(randomScale, randomScale, randomScale);
-                            }
-
-                            Debug.Log("Spawned object at " + rPos.x + ", " + rPos.y + " with position " + pos);
+                        } else {
+                            break;
                         }
-
-
                     }
-                    break;
+
                 }
-                randomValue -= objectChances[i];
             }
-            
+
         }
 
 
     }
 
+    private TerrainObject TryGenerateTerrainObjectAt(Chunk chunk, bool generateGameObjects, System.Random choiceRandom, System.Random visualRandom, Vector2Int rPos, List<TerrainObject> possibleObjects, List<float> objectChances, float totalRange, bool dontRollSpawnChance = false)
+    {
+        TerrainObject t = null;
+        float randomValue = (float)choiceRandom.NextDouble() * totalRange;
+        for (int i = 0; i < objectChances.Count; i++)
+        {
+            if (randomValue < objectChances[i])
+            {
+                if ((float)choiceRandom.NextDouble() < possibleObjects[i].chanceToSpawn || dontRollSpawnChance)
+                { // roll to see if we spawn this object
 
-    private Vector2Int GetRandomTilePosition(System.Random random, int sideLength) {
-        return new Vector2Int(random.Next(sideLength), random.Next(sideLength));
+                    TerrainObject objToSpawn = possibleObjects[i];
+
+                    // calculate the positions of the surrounding tiles. Make sure the object fits in the chunk
+                    int xMultiplier = (rPos.x < chunk.chunkTiles.sideLength / 2) ? 1 : -1;
+                    int yMultiplier = (rPos.y < chunk.chunkTiles.sideLength / 2) ? 1 : -1;
+
+                    // check if we can create an object here
+                    // check if another object is overlapped by this one
+                    bool overlapping = false;
+                    bool tooSteep = false;
+                    for (int x = 0; x < objToSpawn.xSize; x++)
+                    {
+                        if (overlapping) break;
+                        if (tooSteep) break;
+                        for (int y = 0; y < objToSpawn.ySize; y++)
+                        {
+
+                            // check the tile
+                            ChunkTile checkTile = chunk.chunkTiles.tiles[rPos.x + x * xMultiplier, rPos.y + y * yMultiplier];
+
+                            if (checkTile.terrainObject != null)
+                            {
+                                overlapping = true;
+                                break;
+                            }
+
+                            // only check steepness in even tiles and on the edges
+                            if ((y % 2 == 0 && x % 2 == 0) || x == 0 || y == 0 || x == objToSpawn.xSize - 1 || y == objToSpawn.ySize - 1)
+                            {
+                                float steep = checkTile.GetMaxSteepness();
+                                if (steep > objToSpawn.steepnessLimit)
+                                {
+                                    tooSteep = true;
+                                    break;
+                                }
+                            }
+
+
+                        }
+                    }
+
+                    if (overlapping) break; // dont spawn if were overlapping another object
+                    if (tooSteep) break; // dont spawn if the terrain is too steep
+
+                    // spawn the object in all the tiles it sbould occupy
+                    for (int x = 0; x < objToSpawn.xSize; x++)
+                    {
+                        for (int y = 0; y < objToSpawn.ySize; y++)
+                        {
+                            chunk.chunkTiles.tiles[rPos.x + x * xMultiplier, rPos.y + y * yMultiplier].terrainObject = objToSpawn;
+                        }
+                    }
+
+                    if (generateGameObjects)
+                    {
+
+                        // instantiate the object
+                        int randomIndex = visualRandom.Next(objToSpawn.prefabs.Length);
+                        GameObject prefab = objToSpawn.prefabs[randomIndex];
+                        Vector3 pos1 = chunk.chunkTiles.GetTileWorldPosition(rPos.x, rPos.y);
+                        Vector3 pos2 = chunk.chunkTiles.GetTileWorldPosition(rPos.x + (objToSpawn.xSize - 1) * xMultiplier, rPos.y + (objToSpawn.ySize - 1) * yMultiplier);
+
+                        Vector3 pos = (pos1 + pos2) / 2; // center of the object
+
+                        GameObject obj = Instantiate(prefab, pos, Quaternion.identity, transform); // parent it to the terrain generator object
+                        objToSpawn.createdObject = obj;
+
+                        // set random rotation and scale
+                        if (objToSpawn.randomRotation)
+                        {
+                            float randomRotation = (float)visualRandom.NextDouble() * 360f;
+                            obj.transform.Rotate(new Vector3(0, randomRotation, 0));
+                        }
+
+                        if (objToSpawn.randomScale)
+                        {
+                            float randomScale = (float)visualRandom.NextDouble() * objToSpawn.scaleRandomNess * 2 - objToSpawn.scaleRandomNess + 1;
+                            float scale = objToSpawn.scale * randomScale;
+                            obj.transform.localScale = new Vector3(scale, scale, scale);
+                        }
+                        else
+                        {
+                            obj.transform.localScale = new Vector3(objToSpawn.scale, objToSpawn.scale, objToSpawn.scale);
+                        }
+
+                    }
+
+                    t = objToSpawn; // save the object to return it
+
+                }
+                break;
+            }
+            randomValue -= objectChances[i];
+        }
+
+        return t;
+    }
+
+
+    /// <summary>
+    /// Returns a random tile position in the chunk. 
+    /// </summary>
+    /// <param name="random"></param>
+    /// <param name="sideLength"></param>
+    /// <returns></returns>
+    private Vector2Int GetRandomTilePosition(System.Random random, int sideLength, bool allowEdge = false) {
+        if (allowEdge) {
+            return new Vector2Int(random.Next(sideLength), random.Next(sideLength));
+        } else {
+            return new Vector2Int(random.Next(1, sideLength-1), random.Next(1, sideLength-1));
+        }
     }
 }
 

@@ -13,13 +13,22 @@ MonoBehaviour:
   m_Name: OakTree
   m_EditorClassIdentifier: 
   terrainObject:
-    name: oakTree
-    prefab: {fileID: 100000, guid: ac57d0a1435aef945b362f2a21ad26b4, type: 3}
-    xSize: 1
-    ySize: 1
-    spawnWeight: 1
-    chanceToSpawn: 0.4
-    biomeThreshold: 0.9
+    name: OakTree
+    prefabs:
+    - {fileID: 100000, guid: ac57d0a1435aef945b362f2a21ad26b4, type: 3}
+    scale: 1
     randomRotation: 1
     randomScale: 1
     scaleRandomNess: 0.2
+    xSize: 3
+    ySize: 3
+    spawnWeight: 1
+    chanceToSpawn: 0.02
+    biomeThreshold: 0.9
+    steepnessLimit: 1.5
+    maxClusteredObjects: 20
+    clusterableTerrainObjects:
+    - terrainObjectSO: {fileID: 11400000}
+      chanceToCluster: 0.9
+      clusterDistanceTiles: 5
+    createdObject: {fileID: 0}

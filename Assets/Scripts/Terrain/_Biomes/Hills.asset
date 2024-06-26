@@ -43,7 +43,7 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
     plainnessPerlinGenerator:
-      scale: 0.004
+      scale: 0.001
       valMultiplier: 1
       valCurve:
         serializedVersion: 2
@@ -51,24 +51,24 @@ MonoBehaviour:
         - serializedVersion: 3
           time: 0
           value: 0
-          inSlope: 0.19109416
-          outSlope: 0.19109416
+          inSlope: 0.15021117
+          outSlope: 0.15021117
           tangentMode: 34
           weightedMode: 0
           inWeight: 0
           outWeight: 0.33333334
         - serializedVersion: 3
-          time: 0.4157724
-          value: 0.07945168
-          inSlope: 0.4154255
-          outSlope: 0.4154255
+          time: 0.60743904
+          value: 0.09124413
+          inSlope: 0.6188309
+          outSlope: 0.6188309
           tangentMode: 0
           weightedMode: 0
           inWeight: 0.33333334
-          outWeight: 0.26541185
+          outWeight: 1
         - serializedVersion: 3
-          time: 0.667346
-          value: 0.8496499
+          time: 0.72151273
+          value: 0.9109706
           inSlope: 0.89273834
           outSlope: 0.89273834
           tangentMode: 0
@@ -78,8 +78,8 @@ MonoBehaviour:
         - serializedVersion: 3
           time: 1
           value: 1
-          inSlope: 0.4519714
-          outSlope: 0.4519714
+          inSlope: 0.3196892
+          outSlope: 0.3196892
           tangentMode: 34
           weightedMode: 0
           inWeight: 0.33333334
@@ -93,7 +93,7 @@ MonoBehaviour:
       constantValue: 0
     bumpinessPerlinGenerator:
       scale: 0.01
-      valMultiplier: 80
+      valMultiplier: 120
       valCurve:
         serializedVersion: 2
         m_Curve:

@@ -32,6 +32,11 @@ public class Chunk {
 
     public ChunkTiles chunkTiles; // a class containing arrays of information about all the tiles in a chunk, used for ie pathfinding and other gameplay mechanics
 
+    /// <summary>
+    /// The node in the chunk tree that this chunk belongs to
+    /// </summary>
+    public ChunkTreeNode chunkTreeNode;
+
     public bool visible {
     set {
             squareMeshObject?.SetVisibilityMultiplier(value? 1f : 0f);
@@ -39,7 +44,7 @@ public class Chunk {
     } 
 
 
-    public Chunk(Vector2Int chunkPosition, SquareMeshObject squareMeshObject = null, bool visible = false) {
+    public Chunk(Vector2Int chunkPosition, SquareMeshObject squareMeshObject = null, bool visible = false, ChunkTreeNode chunkTreeNode = null) {
         this.chunkPosition = chunkPosition;
 
         chunkDataArray = new ChunkDataArray(WorldDataGenerator.instance.maxChunkSize, WorldDataGenerator.instance.LODlevels, chunkPosition: chunkPosition);
@@ -48,6 +53,8 @@ public class Chunk {
         this.visible = visible;
 
         WorldDataGenerator.instance.OnBeforeDestroy += Dispose;
+
+        this.chunkTreeNode = chunkTreeNode;
 
     }
 
@@ -158,6 +165,44 @@ public class Chunk {
     private void Dispose(object sender, EventArgs e) {
         chunkDataArray.Dispose();
     }
+
+    public Chunk GetRelativeChunk(Vector2Int direction) {
+    // Calculate the target position by adding the direction to the current chunk position
+    Vector2Int targetPosition = chunkPosition + direction;
+
+    // Start at the current node
+    ChunkTreeNode currentNode = chunkTreeNode;
+
+    // Traverse up the tree until we find a node that contains the target position
+    while (currentNode != null) {
+        if (currentNode.topLeftPosition.x <= targetPosition.x && currentNode.bottomRightPosition.x > targetPosition.x &&
+            currentNode.topLeftPosition.y <= targetPosition.y && currentNode.bottomRightPosition.y > targetPosition.y) {
+            break;
+        }
+        currentNode = currentNode.parent;
+    }
+
+    // If we didn't find such a node, return null (this shouldn't happen if the tree is well-formed)
+    if (currentNode == null) {
+        return null;
+    }
+
+    // Traverse back down the tree to find the chunk at the target position
+    while (currentNode.level > 1) {
+        currentNode = currentNode.GetNodeFromPosition(targetPosition);
+        if (currentNode == null) {
+            return null;
+        }
+    }
+
+    // If the chunk doesn't exist, return null
+    if (currentNode.chunk == null) {
+        return null;
+    }
+
+    // Return the chunk
+    return currentNode.chunk;
+}
 
 
 }
@@ -345,21 +390,22 @@ public ChunkDataArray(int size, int maxLODs, Vector2Int chunkPosition)
 
         ChunkTiles chunkTiles = new ChunkTiles {
             sideLength = s,
-            heightMap = new float[s, s],
-            inlandnessMap = new float[s, s],
-            humididtyMap = new float[s, s],
-            heatMap = new float[s, s],
             chunkPos = chunkPosition,
-            terrainObjects = new TerrainObject[s, s]
+            tiles = new ChunkTile[s, s]
         };
 
         for (int i = 0; i < s; i++) {
             for (int j = 0; j < s; j++) {
-                int index = GetIndex(i, j, s);
-                chunkTiles.heightMap[i, j] = heightArray[index];
-                chunkTiles.inlandnessMap[i, j] = inlandnessArray[index];
-                chunkTiles.humididtyMap[i, j] = humidityArray[index];
-                chunkTiles.heatMap[i, j] = heatArray[index];
+                int index = GetIndex(i, j, s + 1);
+                ChunkTile tile = new ChunkTile {
+                    height = heightArray[index],
+                    inlandness = inlandnessArray[index],
+                    humidity = humidityArray[index],
+                    heat = heatArray[index],
+                    posInChunk = new Vector2Int(i, j),
+                    chunkTiles = chunkTiles
+                };
+                chunkTiles.tiles[i, j] = tile;
             }
         }
 

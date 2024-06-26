@@ -25,6 +25,7 @@ class ChunkTree {
             bottomRightPosition = bottomRightPosition,
             level = levels
         };
+        root.Initialize();
     }
     
 
@@ -53,7 +54,7 @@ class ChunkTree {
         // create the chunk if it doesn't exist
         if (node.chunk == null) {
             if (!allowCreation) return null;
-            node.chunk = new Chunk(chunkPosition);
+            node.chunk = new Chunk(chunkPosition,chunkTreeNode: node);
         }
         return node.chunk;
 
@@ -62,7 +63,7 @@ class ChunkTree {
 }
 
 
-class ChunkTreeNode {
+public class ChunkTreeNode {
 
     // child nodes
     public ChunkTreeNode topLeft;
@@ -70,14 +71,26 @@ class ChunkTreeNode {
     public ChunkTreeNode bottomLeft;
     public ChunkTreeNode bottomRight;
 
+    public Dictionary<Vector2Int,ChunkTreeNode> children = new Dictionary<Vector2Int, ChunkTreeNode>();
+
     public ChunkTreeNode parent;
 
     public Vector2Int topLeftPosition;
     public Vector2Int bottomRightPosition;
+    public Vector2Int posInParent;
 
     public Chunk chunk;
 
     public int level;
+
+    public void Initialize() {
+        children = new Dictionary<Vector2Int, ChunkTreeNode>() {
+            {new Vector2Int(0,0), bottomLeft},
+            {new Vector2Int(1,0), bottomRight},	
+            {new Vector2Int(0,1), topLeft},
+            {new Vector2Int(1,1), topRight}
+        };
+    }
 
 
     /// <summary>
@@ -121,8 +134,10 @@ class ChunkTreeNode {
                 topLeftPosition = newTopLeft,
                 bottomRightPosition = newBottomRight,
                 level = level - 1,
-                parent = this
+                parent = this,
+                posInParent = new Vector2Int(0,1)
             };
+            topLeft.Initialize();
             return topLeft;
         } else if (left && !top) {
             bottomLeft = new ChunkTreeNode
@@ -130,8 +145,10 @@ class ChunkTreeNode {
                 topLeftPosition = newTopLeft,
                 bottomRightPosition = newBottomRight,
                 level = level - 1,
-                parent = this
+                parent = this,
+                posInParent = new Vector2Int(0,0)
             };
+            bottomLeft.Initialize();
             return bottomLeft;
         } else if (!left && top) {
             topRight = new ChunkTreeNode
@@ -139,8 +156,10 @@ class ChunkTreeNode {
                 topLeftPosition = newTopLeft,
                 bottomRightPosition = newBottomRight,
                 level = level - 1,
-                parent = this
+                parent = this,
+                posInParent = new Vector2Int(1,1)
             };
+            topRight.Initialize();
             return topRight;
         } else {
             bottomRight = new ChunkTreeNode
@@ -148,8 +167,10 @@ class ChunkTreeNode {
                 topLeftPosition = newTopLeft,
                 bottomRightPosition = newBottomRight,
                 level = level - 1,
-                parent = this
+                parent = this,
+                posInParent = new Vector2Int(1,0)
             };
+            bottomRight.Initialize();
             return bottomRight;
         }
     }
