@@ -3,3 +3,7 @@ Terrain textures: https://assetstore.unity.com/packages/2d/textures-materials/na
 More terrain textures: (Screaming brain studios): https://screamingbrainstudios.itch.io/base-material-pack
 
 Forrest assets: https://assetstore.unity.com/packages/3d/vegetation/lowpoly-forest-pack-42578
+
+Oasis assets: https://assetstore.unity.com/packages/3d/vegetation/stylized-oasis-194606
+
+Cactus assets: https://assetstore.unity.com/packages/3d/vegetation/stylized-oasis-194606

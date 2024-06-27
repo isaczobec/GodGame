@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Data;
 using TMPro;
 using Unity.Burst;
@@ -11,12 +12,6 @@ using Unity.VisualScripting;
 using Unity.VisualScripting.Antlr3.Runtime.Tree;
 using UnityEngine;
 using UnityEngine.Profiling;
-
-/// <summary>
-/// A class containing a square mesh object and the IRenderAround interfaces that belong to it
-/// </summary>
-
-
 
 public class Chunk {
 
@@ -30,12 +25,25 @@ public class Chunk {
     public bool discovered = false;
     public bool generationPrompted = false;
 
-    public ChunkTiles chunkTiles; // a class containing arrays of information about all the tiles in a chunk, used for ie pathfinding and other gameplay mechanics
+    public ChunkTiles tiles; // a class containing arrays of information about all the tiles in a chunk, used for ie pathfinding and other gameplay mechanics
 
     /// <summary>
     /// The node in the chunk tree that this chunk belongs to
     /// </summary>
     public ChunkTreeNode chunkTreeNode;
+    
+
+
+    /// <summary>
+    /// A list of all the terrain objects that exist in this chunk.
+    /// </summary>
+    public List<TerrainObject> terrainObjects = new List<TerrainObject>();
+
+    /// <summary>
+    /// A list of all the NPCs that are currently in this chunk.
+    /// </summary>
+    public List<NPC> nPCs = new List<NPC>();
+    
 
     public bool visible {
     set {
@@ -388,7 +396,7 @@ public ChunkDataArray(int size, int maxLODs, Vector2Int chunkPosition)
 
         int s = GetArraySizeLOD() - 1; // dont need the edge points, they are contained in adjacent chunks
 
-        ChunkTiles chunkTiles = new ChunkTiles {
+        ChunkTiles tiles = new ChunkTiles {
             sideLength = s,
             chunkPos = chunkPosition,
             tiles = new ChunkTile[s, s]
@@ -403,13 +411,13 @@ public ChunkDataArray(int size, int maxLODs, Vector2Int chunkPosition)
                     humidity = humidityArray[index],
                     heat = heatArray[index],
                     posInChunk = new Vector2Int(i, j),
-                    chunkTiles = chunkTiles
+                    chunkTiles = tiles
                 };
-                chunkTiles.tiles[i, j] = tile;
+                tiles.tiles[i, j] = tile;
             }
         }
 
-        return chunkTiles;
+        return tiles;
     
     }
 

@@ -12,6 +12,9 @@ using Unity.VisualScripting;
 
 class WorldDataGenerator : MonoBehaviour
 {
+
+    [SerializeField] private NPCSO testNPCSO;
+
     [Header("World Generation Settings")]
     [SerializeField] public int maxChunkSize;
     [SerializeField] public int initialWorldSize;
@@ -19,8 +22,19 @@ class WorldDataGenerator : MonoBehaviour
     [SerializeField] public int LODlevels;
     [SerializeField] public float quadSize;
 
+    /// <summary>
+    /// How many world units a tile is wide and high.
+    /// </summary>
+    [HideInInspector] public float tileSize;
+
+    /// <summary>
+    /// How many tiles there are on one side of a the grid of tiles in a chunk.
+    /// </summary>
+    [HideInInspector] public int chunkTilesSideLength { get; private set; }
+
     [Header("basic entities")]
     [SerializeField] private List<BasicEntity> basicEntities = new List<BasicEntity>(); // entities that will be rendered around
+    private List<NPC> NPCs = new List<NPC>(); // entities that will be rendered around
     List<IRenderAround> renderArounds = new List<IRenderAround>();
 
     public ChunkTree chunkTree { get; private set; }
@@ -37,9 +51,15 @@ class WorldDataGenerator : MonoBehaviour
     public event EventHandler<EventArgs> OnBeforeDestroy;
 
 
+    bool testSpawnedNPC = false;
 
     private void Awake()
     {
+        int pow = (int)Mathf.Pow(2, LODlevels - 1);
+        tileSize = quadSize * pow;
+
+        chunkTilesSideLength = (int)((maxChunkSize-1) / pow);
+
         if (instance == null)
         {
             instance = this;
@@ -80,6 +100,11 @@ class WorldDataGenerator : MonoBehaviour
         }
     }
 
+    public void AddRenderAround(IRenderAround renderAround)
+    {
+        renderArounds.Add(renderAround);
+    }
+
     public void Start()
     {
         chunkTree = new ChunkTree(new Vector2Int(0, 0), new Vector2Int(fullWorldSizeChunks, fullWorldSizeChunks), fullWorldSizeChunks);
@@ -103,9 +128,21 @@ class WorldDataGenerator : MonoBehaviour
         StartCoroutine(UpscaleChunksCoroutine());
     }
 
+    private void TestSpawnNPC() {
+        Chunk chunk = chunkTree.CreateOrGetChunk(new Vector2Int(fullWorldSizeChunks / 2, fullWorldSizeChunks / 2), allowCreation: false);
+        ChunkTile tile = chunk.tiles.tiles[chunk.tiles.sideLength / 2, chunk.tiles.sideLength / 2];
+        NPC npc = NpcManager.instance.SpawnNPC(testNPCSO, tile);
+        testSpawnedNPC = true;
+    }
+
+
     private void Update()
     {
         GenerateChunksQueue();
+        // test
+        if (testSpawnedNPC == false) {
+            TestSpawnNPC();
+        }
     }
 
     public Vector2 GetChunkWorldPostion(Vector2Int chunkCoordinates, bool offset = true) {
@@ -173,14 +210,7 @@ class WorldDataGenerator : MonoBehaviour
     public void GenerateChunksQueue()
     {
         if (chunkGenerationQueue.Count == 0) return;
-        
 
-        // float startTime = Time.realtimeSinceStartup;
-
-        // Debug.Log("Gen queue count: " + chunkGenerationQueue.Count);
-
-        // NativeArray<JobHandle> chunkJobHandles = new NativeArray<JobHandle>(chunkGenerationQueue.Count, Allocator.Temp);
-        // GenerateChunkJob[] chunkJobs = new GenerateChunkJob[chunkGenerationQueue.Count];
         GenerateChunkJobParallel[] generateChunkJobs = new GenerateChunkJobParallel[chunkGenerationQueue.Count];
         NativeArray<JobHandle> chunkJobHandles = new NativeArray<JobHandle>(chunkGenerationQueue.Count, Allocator.TempJob);
 
@@ -209,15 +239,11 @@ class WorldDataGenerator : MonoBehaviour
         for (int i = 0; i < chunkGenerationQueue.Count; i++)
         {
             Chunk chunk = chunkGenerationQueue[i];
-            chunk.chunkDataArray = generateChunkJobs[i].chunkDataArray; 
+            chunk.chunkDataArray = generateChunkJobs[i].chunkDataArray;
 
-            chunk.chunkTiles = chunk.chunkDataArray.CreateChunkTiles(); // create the tiles from the data array. Do this only for the lowest LOD
+            chunk.tiles = chunk.chunkDataArray.CreateChunkTiles(); // create the tiles from the data array. Do this only for the lowest LOD
         }
 
-        // Debug.Log("Time to generate chunks: " + (Time.realtimeSinceStartup - startTime) * 1000 + "ms");
-        
-        // SetAllTexturesJob[] setAllTexturesJobs = new SetAllTexturesJob[chunkGenerationQueue.Count];
-        // NativeArray<JobHandle> setAllTexturesJobHandles = new NativeArray<JobHandle>(chunkGenerationQueue.Count, Allocator.TempJob);
 
         // generate meshes
         for (int i = 0; i < chunkGenerationQueue.Count; i++)
@@ -233,10 +259,6 @@ class WorldDataGenerator : MonoBehaviour
                 SquareMeshObject sqr = MeshGenerator.instance.CreateSquareMeshGameObject(worldPosition, maxChunkSize, maxChunkSize, chunkCoordinates);
                 chunk.GenerateMesh(sqr, generateMeshCollider: true);
 
-                // SetAllTexturesJob setAllTexturesJob = chunk.GetSetAllTexturesJob(32);
-                // setAllTexturesJobs[i] = setAllTexturesJob;
-                // JobHandle jobHandle = setAllTexturesJob.Schedule();
-                // setAllTexturesJobHandles[i] = jobHandle;
             }
         }
 
@@ -244,22 +266,6 @@ class WorldDataGenerator : MonoBehaviour
             TerrainGenerator.Instance.GenerateTerrainObjects(chunkGenerationQueue[i]);
         }
 
-        // Wait for all jobs to finish
-        // JobHandle.CompleteAll(setAllTexturesJobHandles);
-        // setAllTexturesJobHandles.Dispose();
-
-        // copy over texture data to the meshes
-        // for (int i = 0; i < chunkGenerationQueue.Count; i++) // this mioght not necesarily be the correct size because not all chunks to generate might need textures
-        // {
-        //     bool generateMesh = generateMeshQueue[i];
-
-        //     if (generateMesh)
-        //     {
-        //         Chunk chunk = chunkGenerationQueue[i];
-        //         SquareMeshObject sqr = chunk.squareMeshObject;
-        //         sqr.CopyTextureDataFromJob(setAllTexturesJobs[i]);
-        //     }
-        // }
 
         chunkGenerationQueue.Clear();
         generateMeshQueue.Clear();
@@ -269,7 +275,7 @@ class WorldDataGenerator : MonoBehaviour
     private IEnumerator UpscaleChunksCoroutine() {
         while (true) {
             yield return new WaitForSeconds(0.3f);
-            if (upscaleQueue.Count == 0) continue; 
+            if (upscaleQueue.Count == 0) continue;
 
             NativeArray<JobHandle> chunkJobHandles = new NativeArray<JobHandle>(upscaleQueue.Count, Allocator.TempJob);
             GenerateChunkJobParallel[] upscaleJobs = new GenerateChunkJobParallel[upscaleQueue.Count];
@@ -305,7 +311,7 @@ class WorldDataGenerator : MonoBehaviour
                 if (upscaleQueue[i].chunkDataArray.currentLOD == 0) continue;
 
                 Chunk chunk = upscaleQueue[i];
-                chunk.chunkDataArray = upscaleJobs[i].chunkDataArray; 
+                chunk.chunkDataArray = upscaleJobs[i].chunkDataArray;
                 chunk.UpscaleLOD(updateMesh: true, needToUpscaleDataArray: false);
             }
 
@@ -314,5 +320,5 @@ class WorldDataGenerator : MonoBehaviour
         }
     }
 
-    
+
 }

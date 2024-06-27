@@ -1,6 +1,9 @@
 using System;
 using UnityEngine;
 
+/// <summary>
+/// A class that holds all the tiles of a chunk. The tiles are stored in a 2D array.
+/// </summary>
 public class ChunkTiles {
 
     public int sideLength;
@@ -40,7 +43,15 @@ public class ChunkTile {
 
     public float heat;
 
+    /// <summary>
+    /// The terrain object that is currently standing on this tile. Null if no terrain object is standing on this tile.
+    /// </summary>
     public TerrainObject terrainObject;
+
+    /// <summary>
+    /// The NPC that is currently standing on this tile. Null if no NPC is standing on this tile.
+    /// </summary>
+    public NPC npc;
 
     public Vector2Int posInChunk;
 
@@ -56,7 +67,7 @@ public class ChunkTile {
         Vector2Int newPos = posInChunk + offset;
 
         // check if we are still in the chunk
-        if (newPos.x >= 0 || newPos.x <= chunkTiles.sideLength || newPos.y >= 0 || newPos.y <= chunkTiles.sideLength) {
+        if (newPos.x >= 0 && newPos.x < chunkTiles.sideLength && newPos.y >= 0 && newPos.y < chunkTiles.sideLength) {
             return chunkTiles.tiles[newPos.x, newPos.y];
         }
 
@@ -66,9 +77,11 @@ public class ChunkTile {
 
         Chunk chunk = WorldDataGenerator.instance.chunkTree.CreateOrGetChunk(chunkTiles.chunkPos + chunkOffset, allowCreation: false);
         if (chunk == null) return null;
-        ChunkTiles tiles = chunk.chunkTiles;
+        ChunkTiles tiles = chunk.tiles;
 
-        Vector2Int newTilePos = new Vector2Int(newPos.x % chunkTiles.sideLength, newPos.y % chunkTiles.sideLength);
+        Vector2Int newTilePos = new Vector2Int(
+        (newPos.x % chunkTiles.sideLength + chunkTiles.sideLength) % chunkTiles.sideLength, 
+        (newPos.y % chunkTiles.sideLength + chunkTiles.sideLength) % chunkTiles.sideLength);
         return tiles.tiles[newTilePos.x, newTilePos.y];
     }
 

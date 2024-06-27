@@ -367,10 +367,10 @@ public float SmoothingFunction(float x) {
         for (int c = 0; c < 10; c++)
         {
 
-            Vector2Int rPos = GetRandomTilePosition(posRandom, chunk.chunkTiles.sideLength);
+            Vector2Int rPos = GetRandomTilePosition(posRandom, chunk.tiles.sideLength);
 
 
-            ChunkTile tile = chunk.chunkTiles.tiles[rPos.x, rPos.y];
+            ChunkTile tile = chunk.tiles.tiles[rPos.x, rPos.y];
 
             if (tile.terrainObject != null) continue; // there is already an object here
 
@@ -407,7 +407,7 @@ public float SmoothingFunction(float x) {
             TerrainObject spawnedObject = TryGenerateTerrainObjectAt(chunk, generateGameObjects, choiceRandom, visualRandom, rPos, possibleObjects, objectChances, totalRange);
 
             // clustering objects
-            if (spawnedObject != null) {
+            if (spawnedObject != null) { // if we spawned an object
                 if (spawnedObject.clusterableTerrainObjects.Length > 0) {
                 // try to cluster objects
 
@@ -416,7 +416,7 @@ public float SmoothingFunction(float x) {
                         if (clusterRandom.NextDouble() < clusterableTerrainObject.chanceToCluster) {
                             // move a random distance and see if the position is within the bounds of the chunk
                             rPos += new Vector2Int(clusterRandom.Next(-clusterableTerrainObject.clusterDistanceTiles, clusterableTerrainObject.clusterDistanceTiles), clusterRandom.Next(-clusterableTerrainObject.clusterDistanceTiles, clusterableTerrainObject.clusterDistanceTiles));
-                            if (rPos.x >= 1 && rPos.x < chunk.chunkTiles.sideLength-1 && rPos.y >= 1 && rPos.y < chunk.chunkTiles.sideLength-1) { // cannot spawn on chunk edges
+                            if (rPos.x >= 1 && rPos.x < chunk.tiles.sideLength-1 && rPos.y >= 1 && rPos.y < chunk.tiles.sideLength-1) { // cannot spawn on chunk edges
                                 // try to spawn the object
                                 TryGenerateTerrainObjectAt(chunk, generateGameObjects, choiceRandom, visualRandom, rPos, new List<TerrainObject>() { clusterableTerrainObject.terrainObjectSO.terrainObject }, new List<float>() { 1f }, 1f, dontRollSpawnChance: true);
                             }
@@ -447,8 +447,8 @@ public float SmoothingFunction(float x) {
                     TerrainObject objToSpawn = possibleObjects[i];
 
                     // calculate the positions of the surrounding tiles. Make sure the object fits in the chunk
-                    int xMultiplier = (rPos.x < chunk.chunkTiles.sideLength / 2) ? 1 : -1;
-                    int yMultiplier = (rPos.y < chunk.chunkTiles.sideLength / 2) ? 1 : -1;
+                    int xMultiplier = (rPos.x < chunk.tiles.sideLength / 2) ? 1 : -1;
+                    int yMultiplier = (rPos.y < chunk.tiles.sideLength / 2) ? 1 : -1;
 
                     // check if we can create an object here
                     // check if another object is overlapped by this one
@@ -462,7 +462,7 @@ public float SmoothingFunction(float x) {
                         {
 
                             // check the tile
-                            ChunkTile checkTile = chunk.chunkTiles.tiles[rPos.x + x * xMultiplier, rPos.y + y * yMultiplier];
+                            ChunkTile checkTile = chunk.tiles.tiles[rPos.x + x * xMultiplier, rPos.y + y * yMultiplier];
 
                             if (checkTile.terrainObject != null)
                             {
@@ -488,12 +488,18 @@ public float SmoothingFunction(float x) {
                     if (overlapping) break; // dont spawn if were overlapping another object
                     if (tooSteep) break; // dont spawn if the terrain is too steep
 
+                    Vector2Int coordinates = rPos + chunk.chunkPosition * WorldDataGenerator.instance.chunkTilesSideLength; // calculate the coordinates of the object in the world
+
+                    objToSpawn = new TerrainObject(objToSpawn, coordinates); // create a copied object so we dont modify the original
+
+                    chunk.terrainObjects.Add(objToSpawn); // add the object to the chunk so it can easily be found by npcs
+
                     // spawn the object in all the tiles it sbould occupy
                     for (int x = 0; x < objToSpawn.xSize; x++)
                     {
                         for (int y = 0; y < objToSpawn.ySize; y++)
                         {
-                            chunk.chunkTiles.tiles[rPos.x + x * xMultiplier, rPos.y + y * yMultiplier].terrainObject = objToSpawn;
+                            chunk.tiles.tiles[rPos.x + x * xMultiplier, rPos.y + y * yMultiplier].terrainObject = objToSpawn;
                         }
                     }
 
@@ -503,8 +509,8 @@ public float SmoothingFunction(float x) {
                         // instantiate the object
                         int randomIndex = visualRandom.Next(objToSpawn.prefabs.Length);
                         GameObject prefab = objToSpawn.prefabs[randomIndex];
-                        Vector3 pos1 = chunk.chunkTiles.GetTileWorldPosition(rPos.x, rPos.y);
-                        Vector3 pos2 = chunk.chunkTiles.GetTileWorldPosition(rPos.x + (objToSpawn.xSize - 1) * xMultiplier, rPos.y + (objToSpawn.ySize - 1) * yMultiplier);
+                        Vector3 pos1 = chunk.tiles.GetTileWorldPosition(rPos.x, rPos.y);
+                        Vector3 pos2 = chunk.tiles.GetTileWorldPosition(rPos.x + (objToSpawn.xSize - 1) * xMultiplier, rPos.y + (objToSpawn.ySize - 1) * yMultiplier);
 
                         Vector3 pos = (pos1 + pos2) / 2; // center of the object
 

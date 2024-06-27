@@ -30,12 +30,39 @@ public class TerrainObject {
 
     public int maxClusteredObjects = 0; // the maximum number of objects that can be spawned in a cluster with this object
     public ClusterableTerrainObject[] clusterableTerrainObjects; // objects that can be spawned within a cluster with this object
-    
 
 
+    /// <summary>
+    /// The associated gameobject that was created when this object was spawned
+    /// </summary>
+    [HideInInspector] public GameObject createdObject;
+
+
+    /// <summary>
+    /// The coordinates of the BOTTOM LEFT corner of the object (objects can be more than 1 tile in size)
+    /// </summary>
+    [HideInInspector] public Vector2Int coordinates {get; private set;}
     
-    [HideInInspector]
-    public GameObject createdObject;
+
+    // create a new terrain object, copying all values from the original terrain object
+    public TerrainObject(TerrainObject originalTerrainObject, Vector2Int coordinates) {
+        name = originalTerrainObject.name;
+        prefabs = originalTerrainObject.prefabs;
+        scale = originalTerrainObject.scale;
+        randomRotation = originalTerrainObject.randomRotation;
+        randomScale = originalTerrainObject.randomScale;
+        scaleRandomNess = originalTerrainObject.scaleRandomNess;
+        xSize = originalTerrainObject.xSize;
+        ySize = originalTerrainObject.ySize;
+        spawnWeight = originalTerrainObject.spawnWeight;
+        chanceToSpawn = originalTerrainObject.chanceToSpawn;
+        biomeThreshold = originalTerrainObject.biomeThreshold;
+        steepnessLimit = originalTerrainObject.steepnessLimit;
+        maxClusteredObjects = originalTerrainObject.maxClusteredObjects;
+        clusterableTerrainObjects = originalTerrainObject.clusterableTerrainObjects;
+        this.coordinates = coordinates;
+    }
+
 }
 
 
