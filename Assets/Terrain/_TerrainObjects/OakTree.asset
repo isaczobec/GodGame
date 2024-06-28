@@ -16,14 +16,14 @@ MonoBehaviour:
     name: OakTree
     prefabs:
     - {fileID: 100000, guid: ac57d0a1435aef945b362f2a21ad26b4, type: 3}
-    scale: 1
+    scale: 0.7
     randomRotation: 1
     randomScale: 1
     scaleRandomNess: 0.2
     xSize: 3
     ySize: 3
     spawnWeight: 1
-    chanceToSpawn: 0.02
+    chanceToSpawn: 0.05
     biomeThreshold: 0.9
     steepnessLimit: 1.5
     maxClusteredObjects: 20

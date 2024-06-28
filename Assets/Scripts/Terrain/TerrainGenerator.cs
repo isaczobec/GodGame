@@ -26,6 +26,10 @@ public class TerrainGenerator: MonoBehaviour
 
 
     private int seed = 0;
+    /// <summary>
+    /// Random instance used for ie seeding the perlin generators
+    /// </summary>
+    private System.Random seedRandom;
     [SerializeField] private float multiplyRandomNumbersWith = 10000f;
     [SerializeField] private float addRandomNumbersWith = 10000f; // add this to the random numbers to avoid negative numbers, which give symmetric noise
 
@@ -33,7 +37,7 @@ public class TerrainGenerator: MonoBehaviour
 
     [Header("Perlin generator settings")]
     [SerializeField] public PerlinGenerator inlandnessPerlinGenerator; // a perlin generator for the inlandness of the terrain, ie how elevated and mountainous it is
-    [SerializeField] public float inlandnessHeightMultiplier = 300f;
+    [SerializeField] public float inlandnessHeightMultiplier = 30f;
 
     [SerializeField] public PerlinGenerator humidityPerlinGenerator; // a perlin generator for the humidity of the terrain. for instance used for biome generation
     [SerializeField] public PerlinGenerator heatPerlinGenerator; // a perlin generator for the heat of the terrain. for instance used for biome generation
@@ -56,6 +60,8 @@ public class TerrainGenerator: MonoBehaviour
         } else {
             Debug.LogError("There should only be one instance of TerrainGenerator");
         }
+
+        seedRandom = new System.Random(seed);
     }
     
 
@@ -99,7 +105,7 @@ public class TerrainGenerator: MonoBehaviour
     }
 
     private Vector2 GetPseudoRandomVector2() {
-        Vector2 rand = new Vector2(Random.Range(1f,2f), Random.Range(1f,2f)) * multiplyRandomNumbersWith; // random between 1 and 2 because sampling negative numbers gives symmetric noise
+        Vector2 rand = new Vector2((float)seedRandom.NextDouble()+1, (float)seedRandom.NextDouble()+1) * multiplyRandomNumbersWith; // random between 1 and 2 because sampling negative numbers gives symmetric noise
         rand += new Vector2(addRandomNumbersWith, addRandomNumbersWith);
         return rand;
     }
@@ -117,7 +123,6 @@ public class TerrainGenerator: MonoBehaviour
         if (setTextures) {
 
             SetAllTextures(squareMeshObject, squareMeshObject.inlandnessHumidityHeatTexture, squareMeshObject.plainnessBumpinessSteepnessTexture, squareMeshObject.plainnessBumpinessSteepnessTexture.height, squareMeshObject.plainnessBumpinessSteepnessTexture.width);
-            // SetInlandnessHumidityHeatTexture(squareMeshObject, squareMeshObject.inlandnessHumidityHeatTexture);
 
         }
         Profiler.EndSample();

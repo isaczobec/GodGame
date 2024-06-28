@@ -5,6 +5,8 @@ using UnityEngine;
 public class NpcManager : MonoBehaviour
 {
 
+    [SerializeField] private GameObject npcSelectedDecalPrefab;
+
     public static NpcManager instance;
 
     private void Awake()
@@ -45,11 +47,19 @@ public class NpcManager : MonoBehaviour
 
         spawnedNPC.stats = new NPCstats(npcso.npcStats); // create a copy of the npc stats
 
-        Instantiate(npcso.prefab, Vector3.zero, Quaternion.identity, gameObject.transform); // spawn the NPC prefab
+        GameObject npcGameObject = Instantiate(npcso.prefab, Vector3.zero, Quaternion.identity, gameObject.transform); // spawn the NPC prefab
+
 
         spawnedNPC.SetChunkTileAndCoordinates(chunkTile);
 
         spawnedNPC.Initialize();
+
+        // instantiate and initialize the NPC selected decal
+        GameObject decalObject = Instantiate(npcSelectedDecalPrefab, Vector3.zero, Quaternion.identity, gameObject.transform); // spawn the selected decal and parent it to the npc
+        decalObject.transform.localPosition = new Vector3(0, 0.1f, 0);
+        NPCSelctedDecal decal = decalObject.GetComponent<NPCSelctedDecal>();
+        decal.SetNPC(spawnedNPC);
+
 
         WorldDataGenerator.instance.AddRenderAround(spawnedNPC);
 

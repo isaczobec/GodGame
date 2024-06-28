@@ -43,7 +43,7 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
     plainnessPerlinGenerator:
-      scale: 0.005
+      scale: 0.05
       valMultiplier: 1
       valCurve:
         serializedVersion: 2
@@ -94,8 +94,8 @@ MonoBehaviour:
         frequencyMultiplier: 4
       constantValue: 0
     bumpinessPerlinGenerator:
-      scale: 0.004
-      valMultiplier: 200
+      scale: 0.04
+      valMultiplier: 20
       valCurve:
         serializedVersion: 2
         m_Curve:
@@ -211,3 +211,4 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+    terrainObjectSOs: []

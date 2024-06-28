@@ -43,7 +43,7 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
     plainnessPerlinGenerator:
-      scale: 0.001
+      scale: 0.01
       valMultiplier: 1
       valCurve:
         serializedVersion: 2
@@ -51,15 +51,15 @@ MonoBehaviour:
         - serializedVersion: 3
           time: 0
           value: 0
-          inSlope: 0.15021117
-          outSlope: 0.15021117
+          inSlope: 0.1595634
+          outSlope: 0.1595634
           tangentMode: 34
           weightedMode: 0
           inWeight: 0
           outWeight: 0.33333334
         - serializedVersion: 3
-          time: 0.60743904
-          value: 0.09124413
+          time: 0.5866108
+          value: 0.093601614
           inSlope: 0.6188309
           outSlope: 0.6188309
           tangentMode: 0
@@ -67,8 +67,8 @@ MonoBehaviour:
           inWeight: 0.33333334
           outWeight: 1
         - serializedVersion: 3
-          time: 0.72151273
-          value: 0.9109706
+          time: 0.7006845
+          value: 0.90153563
           inSlope: 0.89273834
           outSlope: 0.89273834
           tangentMode: 0
@@ -78,8 +78,8 @@ MonoBehaviour:
         - serializedVersion: 3
           time: 1
           value: 1
-          inSlope: 0.3196892
-          outSlope: 0.3196892
+          inSlope: 0.32896513
+          outSlope: 0.32896513
           tangentMode: 34
           weightedMode: 0
           inWeight: 0.33333334
@@ -93,7 +93,7 @@ MonoBehaviour:
       constantValue: 0
     bumpinessPerlinGenerator:
       scale: 0.01
-      valMultiplier: 120
+      valMultiplier: 45
       valCurve:
         serializedVersion: 2
         m_Curve:
@@ -129,7 +129,7 @@ MonoBehaviour:
     color: {r: 0.4094887, g: 1, b: 0.2783019, a: 1}
     generateWater: 1
     lakePerlinGenerator:
-      scale: 0.001
+      scale: 0.01
       valMultiplier: 1
       valCurve:
         serializedVersion: 2
@@ -159,7 +159,7 @@ MonoBehaviour:
       constantValue: 0
     waterThreshold: 0.7
     waterPlainnessSmoothness: 5
-    waterDepthMultiplier: 1200
+    waterDepthMultiplier: 120
     waterDepthProfile:
       serializedVersion: 2
       m_Curve:

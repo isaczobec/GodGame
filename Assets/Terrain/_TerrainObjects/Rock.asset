@@ -16,7 +16,7 @@ MonoBehaviour:
     name: Rock
     prefabs:
     - {fileID: 100000, guid: 0fcb14ba14faa6548bfc56c99b9f416f, type: 3}
-    scale: 1.33
+    scale: 1
     randomRotation: 1
     randomScale: 1
     scaleRandomNess: 0.3
@@ -26,4 +26,6 @@ MonoBehaviour:
     chanceToSpawn: 0.1
     biomeThreshold: 0.9
     steepnessLimit: 0.5
+    maxClusteredObjects: 0
+    clusterableTerrainObjects: []
     createdObject: {fileID: 0}
