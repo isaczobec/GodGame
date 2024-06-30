@@ -19,6 +19,8 @@ public class NpcManager : MonoBehaviour
         {
             Destroy(this);
         }
+
+        NPCPathfinding.instance = new NPCPathfinding(); // initialize the NPC pathfinding class
     }
 
 

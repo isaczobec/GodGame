@@ -19,6 +19,11 @@ public class NPCstats {
     /// </summary>
     public float movementSpeed = 1;
 
+    /// <summary>
+    /// The maximum steepness of the terrain the NPC can walk on. 1 means 45 degrees (calculus style lets go).
+    /// </summary>
+    public float maxWalkableSteepness = 1f;
+
 
 
 
@@ -26,6 +31,7 @@ public class NPCstats {
     public NPCstats(NPCstats original) {
         renderDistance = original.renderDistance;
         movementSpeed = original.movementSpeed;
+        maxWalkableSteepness = original.maxWalkableSteepness;
     }
 
 }

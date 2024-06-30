@@ -15,4 +15,5 @@ MonoBehaviour:
   prefab: {fileID: 100000, guid: cf6ef605756407349b16cd2d710302fd, type: 3}
   npcStats:
     renderDistance: 2
-    movementSpeed: 7
+    movementSpeed: 1.5
+    maxWalkableSteepness: 6

@@ -31,6 +31,10 @@ public class TerrainObject {
     public int maxClusteredObjects = 0; // the maximum number of objects that can be spawned in a cluster with this object
     public ClusterableTerrainObject[] clusterableTerrainObjects; // objects that can be spawned within a cluster with this object
 
+    [Header("can be passed through by NPCs?")]
+    public bool blocksMovement = true;
+
+
 
     /// <summary>
     /// The associated gameobject that was created when this object was spawned

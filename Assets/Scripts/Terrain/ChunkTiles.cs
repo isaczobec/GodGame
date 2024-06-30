@@ -54,6 +54,7 @@ public class ChunkTile {
     public NPC npc;
 
     public Vector2Int posInChunk;
+    public Vector2Int coordinates;
 
     public ChunkTiles chunkTiles;
 
@@ -63,27 +64,39 @@ public class ChunkTile {
     /// <param name="offset"></param>
     /// <returns></returns>
     public ChunkTile GetChunkTileFromRelativePosition(Vector2Int offset) {
+    Vector2Int newPos = posInChunk + offset;
 
-        Vector2Int newPos = posInChunk + offset;
-
-        // check if we are still in the chunk
-        if (newPos.x >= 0 && newPos.x < chunkTiles.sideLength && newPos.y >= 0 && newPos.y < chunkTiles.sideLength) {
-            return chunkTiles.tiles[newPos.x, newPos.y];
-        }
-
-        int chunkXMove = offset.x > 0 ? 1 : -1;
-        int chunkYMove = offset.y > 0 ? 1 : -1;
-        Vector2Int chunkOffset = offset / chunkTiles.sideLength + new Vector2Int(chunkXMove, chunkYMove);
-
-        Chunk chunk = WorldDataGenerator.instance.chunkTree.CreateOrGetChunk(chunkTiles.chunkPos + chunkOffset, allowCreation: false);
-        if (chunk == null) return null;
-        ChunkTiles tiles = chunk.tiles;
-
-        Vector2Int newTilePos = new Vector2Int(
-        (newPos.x % chunkTiles.sideLength + chunkTiles.sideLength) % chunkTiles.sideLength, 
-        (newPos.y % chunkTiles.sideLength + chunkTiles.sideLength) % chunkTiles.sideLength);
-        return tiles.tiles[newTilePos.x, newTilePos.y];
+    // Check if the new position is within the current chunk
+    if (newPos.x >= 0 && newPos.x < chunkTiles.sideLength && newPos.y >= 0 && newPos.y < chunkTiles.sideLength) {
+        return chunkTiles.tiles[newPos.x, newPos.y];
     }
+
+
+    int chunkX = newPos.x < 0 ? -1 + newPos.x / chunkTiles.sideLength : newPos.x / chunkTiles.sideLength;
+    int chunkY = newPos.y < 0 ? -1 + newPos.y / chunkTiles.sideLength : newPos.y / chunkTiles.sideLength;
+
+    // Calculate the chunk offset based on the relative position
+    Vector2Int chunkOffset = new Vector2Int(
+        chunkX,
+        chunkY
+    );
+
+    // Adjust the chunk position to get the correct chunk
+    Vector2Int newChunkPos = chunkTiles.chunkPos + chunkOffset;
+
+    // Get the chunk from the world data generator
+    Chunk chunk = WorldDataGenerator.instance.chunkTree.CreateOrGetChunk(newChunkPos, allowCreation: false);
+    if (chunk == null) return null; // Return null if the chunk does not exist
+
+    // Calculate the position within the new chunk
+    Vector2Int newTilePos = new Vector2Int(
+        (newPos.x % chunkTiles.sideLength + chunkTiles.sideLength) % chunkTiles.sideLength,
+        (newPos.y % chunkTiles.sideLength + chunkTiles.sideLength) % chunkTiles.sideLength
+    );
+
+    // Return the tile from the new chunk
+    return chunk.tiles.tiles[newTilePos.x, newTilePos.y];
+}
 
     /// <summary>
     /// returns the maximum steepness of the terrain around this tile. Ignores tiles that havent been generated yet.
@@ -98,8 +111,8 @@ public class ChunkTile {
                 ChunkTile tile = GetChunkTileFromRelativePosition(new Vector2Int(x, y));
                 if (tile == null) continue;
 
-                float xLen = x * WorldDataGenerator.instance.quadSize;
-                float yLen = y * WorldDataGenerator.instance.quadSize;
+                float xLen = x * WorldDataGenerator.instance.tileSize;
+                float yLen = y * WorldDataGenerator.instance.tileSize;
                 float steepness = Mathf.Abs(tile.height - height) / Mathf.Sqrt(xLen * xLen + yLen * yLen);
                 if (steepness > max) max = steepness;
             }

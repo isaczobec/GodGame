@@ -967,7 +967,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   testNPCSO: {fileID: 11400000, guid: e4571384a4f69b9449352a1a4f51a893, type: 2}
   maxChunkSize: 65
-  initialWorldSize: 3
+  initialWorldSize: 5
   fullWorldSizeChunks: 256
   LODlevels: 3
   quadSize: 1

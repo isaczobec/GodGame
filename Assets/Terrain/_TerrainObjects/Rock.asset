@@ -28,4 +28,5 @@ MonoBehaviour:
     steepnessLimit: 0.5
     maxClusteredObjects: 0
     clusterableTerrainObjects: []
+    blocksMovement: 1
     createdObject: {fileID: 0}

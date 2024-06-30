@@ -402,6 +402,9 @@ public ChunkDataArray(int size, int maxLODs, Vector2Int chunkPosition)
             tiles = new ChunkTile[s, s]
         };
 
+
+        Vector2Int coordinatesOrigin = chunkPosition * s;
+
         for (int i = 0; i < s; i++) {
             for (int j = 0; j < s; j++) {
                 int index = GetIndex(i, j, s + 1);
@@ -411,7 +414,8 @@ public ChunkDataArray(int size, int maxLODs, Vector2Int chunkPosition)
                     humidity = humidityArray[index],
                     heat = heatArray[index],
                     posInChunk = new Vector2Int(i, j),
-                    chunkTiles = tiles
+                    chunkTiles = tiles,
+                    coordinates = coordinatesOrigin + new Vector2Int(i, j)
                 };
                 tiles.tiles[i, j] = tile;
             }

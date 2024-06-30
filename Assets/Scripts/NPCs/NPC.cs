@@ -40,6 +40,11 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     /// </summary>
     public event EventHandler<ChunkTile> OnMovementFinished;
 
+    /// <summary>
+    /// The queue of tiles the NPC is currently moving to. The first tile in the list is the tile the NPC is currently moving to.
+    /// </summary>
+    public List<ChunkTile> movementQueue = new List<ChunkTile>();
+
 
 
     // ------- INITIALIZATION --------
@@ -74,9 +79,15 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     }
 
     public void Initialize() {
+
+        Debug.Log("reuslt" + -1/16);
+
         SetWorldPosition();
-        MoveToRandomTile();
-        OnMovementFinished += (sender, tile) => MoveToRandomTile();
+
+        // test movement, not final
+        SetMovementTarget(coordinates + new Vector2Int(2, -10));
+        MoveToNextTileInQueue();
+        OnMovementFinished += (sender, tile) => MoveToNextTileInQueue();
     }
 
 
@@ -100,16 +111,49 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     /// Starts a coroutine of movement That updates this NPC's chunkTile once finnished.
     /// </summary>
     /// <param name="relativePosition"></param>
-    private void MoveToAdjacentTile(Vector2Int relativePosition) {
-        if (Mathf.Abs(relativePosition.x) > 1 || Mathf.Abs(relativePosition.y) > 1) {
+    private void MoveToAdjacentTile(Vector2Int relativePosition)
+    {
+        if (Mathf.Abs(relativePosition.x) > 1 || Mathf.Abs(relativePosition.y) > 1)
+        {
             Debug.LogError("Can only move to adjacent tiles");
             return;
         }
 
+        if (relativePosition == Vector2Int.zero) return; // cant move to the same tile
+
         if (currentlyMoving) return;
 
         ChunkTile tileToMoveTo = chunkTile.GetChunkTileFromRelativePosition(relativePosition);
-        if (tileToMoveTo.terrainObject != null || tileToMoveTo.npc != null) { // check if the tile is occupied
+        AdministerChunkTileMovement(tileToMoveTo);
+
+    }
+
+    /// <summary>
+    /// Moves the NPC to the given chunkTile, given that that chunktile is adjacent to the one the npc is currently standing on.  
+    /// Throws an error if that is not the case.
+    /// Starts a coroutine of movement That updates this NPC's chunkTile once finnished.
+    /// </summary>
+    /// <param name="relativePosition"></param>
+    private void MoveToAdjacentTile(ChunkTile chunkTile) {
+        Vector2Int relativePosition = chunkTile.coordinates - this.chunkTile.coordinates;
+        if (Mathf.Abs(relativePosition.x) > 1 || Mathf.Abs(relativePosition.y) > 1) {
+            Debug.Log(relativePosition);
+            Debug.LogError("Can only move to adjacent tiles");
+            return;
+        }
+
+        if (relativePosition == Vector2Int.zero) {
+            Debug.LogError("Can't move to the same tile");
+            return; // cant move to the same tile
+        } 
+        AdministerChunkTileMovement(chunkTile);
+    }
+
+    private void AdministerChunkTileMovement(ChunkTile tileToMoveTo)
+    {
+        if (tileToMoveTo.terrainObject != null || tileToMoveTo.npc != null)
+        { // check if the tile is occupied
+            OnMovementWasBlocked();
             return; // cant move to a tile with a terrain object
         }
 
@@ -119,13 +163,48 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
         chunkTile = tileToMoveTo;
 
         // start the coroutine
-        if (movementCoroutine != null) {
+        if (movementCoroutine != null)
+        {
             StopCoroutine(movementCoroutine);
         }
         movementCoroutine = StartCoroutine(MoveToTileCoroutine(tileToMoveTo));
-
     }
 
+    /// <summary>
+    /// Called when the NPC tries to move to a tile but is blocked by an object or another NPC.
+    /// </summary>
+    private void OnMovementWasBlocked() {
+        movementQueue.Clear(); // remove all tiles from the movement queue
+    }
+
+    /// <summary>
+    /// Sets the movement target of the NPC to the given coordinates. The NPC will then automatically try to move to that position.
+    /// The resulting path will be stored in the movementQueue list, which is then walked through by the NPC using the MoveToNextTileInQueue method.
+    /// </summary>
+    public void SetMovementTarget(Vector2Int destination) {
+        List<ChunkTile> path = NPCPathfinding.instance.NPCGetPathTo(this, destination);
+        if (path != null) {
+            movementQueue = path;
+        }
+    }
+
+    /// <summary>
+    /// Moves the NPC to the next tile in the movement queue, that was calculated by SetMovementTarget.
+    /// </summary>
+    private void MoveToNextTileInQueue() {
+        if (movementQueue.Count == 0) return;
+
+        ChunkTile nextTile = movementQueue[0];
+        movementQueue.RemoveAt(0);
+
+        MoveToAdjacentTile(nextTile);
+    }
+
+    /// <summary>
+    /// Coroutine that moves the NPC to a given adjacent tile. Started by the MoveToAdjacentTile method.
+    /// </summary>
+    /// <param name="tileToMoveTo"></param>
+    /// <returns></returns>
     private IEnumerator MoveToTileCoroutine(ChunkTile tileToMoveTo) {
         Vector3 worldPos1 = transform.position;
         Vector3 worldPos2 = tileToMoveTo.chunkTiles.GetTileWorldPosition(tileToMoveTo.posInChunk.x, tileToMoveTo.posInChunk.y);

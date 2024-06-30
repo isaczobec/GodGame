@@ -31,4 +31,5 @@ MonoBehaviour:
     - terrainObjectSO: {fileID: 11400000}
       chanceToCluster: 0.9
       clusterDistanceTiles: 5
+    blocksMovement: 1
     createdObject: {fileID: 0}
