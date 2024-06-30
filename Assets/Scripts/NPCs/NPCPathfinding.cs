@@ -22,7 +22,7 @@ class NPCPathfinding {
 
         PathFindingNode currentNode = startNode;
 
-        int maxIterations = 1000;
+        int maxIterations = 10000;
 
         int iterations = 0;
         while (true) {
@@ -75,7 +75,6 @@ class NPCPathfinding {
             }
 
 
-            Debug.Log(queue.Count);
             queue.Remove(currentNode); // remove the current node from the queue
 
             // find the node with the lowest fCost in the queue
@@ -93,13 +92,6 @@ class NPCPathfinding {
                     nextNode = node;
                     break; // use the first one we find
                 }
-            }
-
-            if (currentNode.tile.chunkTiles.chunkPos != nextNode.tile.chunkTiles.chunkPos) {
-                Debug.Log("iter" + iterations);
-                Debug.Log("distance" + Vector2Int.Distance(nextNode.tile.coordinates, currentNode.tile.coordinates));
-                Debug.Log("firstNodeCoordinates: " + currentNode.tile.coordinates + " secondNodeCoordinates: " + nextNode.tile.coordinates);
-                Debug.Log("firstNodeChunkCoordinates: " + currentNode.tile.chunkTiles.chunkPos + " secondNodeChunkCoordinates: " + nextNode.tile.chunkTiles.chunkPos);
             }
 
             currentNode.visited = true;

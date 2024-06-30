@@ -24,6 +24,8 @@ public class PlayerCamera : MonoBehaviour
         Cursor.lockState = CursorLockMode.Confined;
         PlayerInputHandler.Instance.OnMouse2 += Mouse2Click;
         PlayerInputHandler.Instance.OnMouse2Released += Mouse2Released;
+
+        PlayerInputHandler.Instance.OnMouse1 += Mouse1Click;
     }
 
 
@@ -81,9 +83,9 @@ public class PlayerCamera : MonoBehaviour
     private void Mouse2Click(object sender, InputAction.CallbackContext e)
     {
         // check if we clicked on terrain and get the point that was clicked to enable orbiting
-        OrbitData orbitData = GetClickedTerrainPosition();
+        WorldClickData orbitData = GetClickedTerrainPosition();
         if (orbitData.hit) {
-            orbitPoint = orbitData.orbitPoint;
+            orbitPoint = orbitData.hitPoint;
             isOrbiting = true;
         }
     }
@@ -94,21 +96,32 @@ public class PlayerCamera : MonoBehaviour
     }
 
 
-    private class OrbitData {
-        public Vector3 orbitPoint;
+    private class WorldClickData {
+        public Vector3 hitPoint;
         public bool hit;
     }
 
 
-    private OrbitData GetClickedTerrainPosition() {
+    private WorldClickData GetClickedTerrainPosition() {
 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
 
         if (Physics.Raycast(ray, out hit)) {
-            return new OrbitData { orbitPoint = hit.point, hit = true };
+            return new WorldClickData { hitPoint = hit.point, hit = true };
         } else {
-            return new OrbitData { hit = false };
+            return new WorldClickData { hit = false };
+        }
+    }
+    private void Mouse1Click(object sender, InputAction.CallbackContext e)
+    {
+        WorldClickData data = GetClickedTerrainPosition();
+        if (data.hit) {
+            Vector2Int coords = WorldDataGenerator.instance.GetWorldCoordinates(data.hitPoint);
+            foreach (NPC npc in NpcManager.instance.npcs) {
+                npc.SetMovementTarget(coords);
+                npc.MoveToNextTileInQueue();
+            }
         }
     }
 }

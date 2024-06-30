@@ -153,6 +153,17 @@ class WorldDataGenerator : MonoBehaviour
     public Vector2Int GetChunkCoordinates(Vector2 worldPosition) {
         return new Vector2Int(Mathf.FloorToInt(worldPosition.x / (maxChunkSize + 1) / quadSize + fullWorldSizeChunks / 2), Mathf.FloorToInt(worldPosition.y / (maxChunkSize + 1) / quadSize + fullWorldSizeChunks / 2));
     }
+    public Vector2Int GetChunkCoordinates(Vector3 worldPosition) {
+        return new Vector2Int(Mathf.FloorToInt(worldPosition.x / (maxChunkSize + 1) / quadSize + fullWorldSizeChunks / 2), Mathf.FloorToInt(worldPosition.z / (maxChunkSize + 1) / quadSize + fullWorldSizeChunks / 2));
+    }
+
+    
+
+public Vector2Int GetWorldCoordinates(Vector3 worldPosition) {
+    // Get the chunk coordinates
+    Vector2Int chunkPos = new Vector2Int(Mathf.FloorToInt(worldPosition.x/tileSize  + fullWorldSizeChunks / 2 * chunkTilesSideLength), Mathf.FloorToInt(worldPosition.z/tileSize + fullWorldSizeChunks / 2 * chunkTilesSideLength));
+    return chunkPos;
+}
 
     private void PromptChunkGeneration(Vector2Int chunkCoordinates, bool generateMesh = false)
     {

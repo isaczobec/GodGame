@@ -9,6 +9,8 @@ public class NpcManager : MonoBehaviour
 
     public static NpcManager instance;
 
+    public List<NPC> npcs = new List<NPC>(); // for debbuyding?
+
     private void Awake()
     {
         if (instance == null)
@@ -64,6 +66,9 @@ public class NpcManager : MonoBehaviour
 
 
         WorldDataGenerator.instance.AddRenderAround(spawnedNPC);
+
+
+        npcs.Add(spawnedNPC);
 
         return spawnedNPC;
         

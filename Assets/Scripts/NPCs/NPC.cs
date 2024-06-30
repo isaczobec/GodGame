@@ -79,14 +79,11 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     }
 
     public void Initialize() {
-
-        Debug.Log("reuslt" + -1/16);
-
         SetWorldPosition();
 
         // test movement, not final
-        SetMovementTarget(coordinates + new Vector2Int(2, -10));
-        MoveToNextTileInQueue();
+        // SetMovementTarget(coordinates + new Vector2Int(2, -25));
+        // MoveToNextTileInQueue();
         OnMovementFinished += (sender, tile) => MoveToNextTileInQueue();
     }
 
@@ -191,7 +188,7 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     /// <summary>
     /// Moves the NPC to the next tile in the movement queue, that was calculated by SetMovementTarget.
     /// </summary>
-    private void MoveToNextTileInQueue() {
+    public void MoveToNextTileInQueue() { // public for debbuging
         if (movementQueue.Count == 0) return;
 
         ChunkTile nextTile = movementQueue[0];
