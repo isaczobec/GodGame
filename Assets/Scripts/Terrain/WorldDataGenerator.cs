@@ -130,8 +130,8 @@ class WorldDataGenerator : MonoBehaviour
 
     private void TestSpawnNPC() {
         Chunk chunk = chunkTree.CreateOrGetChunk(new Vector2Int(fullWorldSizeChunks / 2, fullWorldSizeChunks / 2), allowCreation: false);
-        for (int i = 0; i < 5; i++) {
-            for (int j = 0; j<5; j++) {
+        for (int i = 0; i < 1; i++) {
+            for (int j = 0; j<1; j++) {
 
         ChunkTile tile = chunk.tiles.tiles[i, j];
         NPC npc = NpcManager.instance.SpawnNPC(testNPCSO, tile);
