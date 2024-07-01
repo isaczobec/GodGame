@@ -24,6 +24,7 @@ public class NpcManager : MonoBehaviour
 
         NPCPathfinding.instance = new NPCPathfinding(); // initialize the NPC pathfinding class
         NPCPathfinding.bigPathFinding = new BigPathFinding();
+        NPCPathfinding.angledPathfinding = new AngledPathfinding();
     }
 
 
