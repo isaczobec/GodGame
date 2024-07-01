@@ -98,6 +98,7 @@ public class ChunkTile {
     return chunk.tiles.tiles[newTilePos.x, newTilePos.y];
 }
 
+
     /// <summary>
     /// returns the maximum steepness of the terrain around this tile. Ignores tiles that havent been generated yet.
     /// </summary>

@@ -159,11 +159,30 @@ class WorldDataGenerator : MonoBehaviour
 
     
 
+    
+
 public Vector2Int GetWorldCoordinates(Vector3 worldPosition) {
     // Get the chunk coordinates
     Vector2Int chunkPos = new Vector2Int(Mathf.FloorToInt(worldPosition.x/tileSize  + fullWorldSizeChunks / 2 * chunkTilesSideLength), Mathf.FloorToInt(worldPosition.z/tileSize + fullWorldSizeChunks / 2 * chunkTilesSideLength));
     return chunkPos;
+
 }
+
+/// <summary>
+/// Returns the ChunkTile at the given coordinates. Returns null if the chunk does not exist.
+/// </summary>
+/// <param name="coordinates"></param>
+/// <returns></returns>
+public ChunkTile GetChunkTileFromCoordinates(Vector2Int coordinates) {
+    int chunkX = coordinates.x / chunkTilesSideLength;
+    int chunkY = coordinates.y / chunkTilesSideLength;
+    int tileX = coordinates.x % chunkTilesSideLength;
+    int tileY = coordinates.y % chunkTilesSideLength;
+    Chunk chunk = chunkTree.CreateOrGetChunk(new Vector2Int(chunkX, chunkY), allowCreation: false);
+    if (chunk == null) return null; // chunk does not exist
+    return chunk.tiles.tiles[tileX, tileY];
+}
+
 
     private void PromptChunkGeneration(Vector2Int chunkCoordinates, bool generateMesh = false)
     {

@@ -179,7 +179,7 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     /// The resulting path will be stored in the movementQueue list, which is then walked through by the NPC using the MoveToNextTileInQueue method.
     /// </summary>
     public void SetMovementTarget(Vector2Int destination) {
-        List<ChunkTile> path = NPCPathfinding.instance.NPCGetPathTo(this, destination);
+        List<ChunkTile> path = NPCPathfinding.bigPathFinding.GetNPCPathFindingBig(chunkTile, this, destination);
         if (path != null) {
             movementQueue = path;
         }

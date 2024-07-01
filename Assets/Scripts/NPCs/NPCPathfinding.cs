@@ -9,28 +9,40 @@ class NPCPathfinding {
 
 
     public static NPCPathfinding instance;    
+    public static BigPathFinding bigPathFinding;
+    public static AngledPathfinding angledPathfinding;
 
 
     /// <summary>
     /// Returns a list of chunkTiles that the NPC should move to in order to reach the destination. Returns null if there is no path to the destination.
     /// </summary>
-    public List<ChunkTile> NPCGetPathTo(NPC npc, Vector2Int destinationCoordinates) {
+    public List<ChunkTile> NPCGetPathTo(ChunkTile startTile, NPC npc, Vector2Int destinationCoordinates, int maxIterations = 1000) {
 
-        PathFindingNode startNode = new PathFindingNode(npc.chunkTile);
+        PathFindingNode startNode = new PathFindingNode(startTile);
+
+        // check if the destination is walkable
+        ChunkTile endTile = WorldDataGenerator.instance.GetChunkTileFromCoordinates(destinationCoordinates);
+        if (endTile.GetMaxSteepness() > npc.stats.maxWalkableSteepness || (endTile.terrainObject != null && endTile.terrainObject.blocksMovement) || endTile == null) {
+            Debug.Log("Destination is not walkable");
+            return null;
+        }
 
         List<PathFindingNode> queue = new List<PathFindingNode>() {startNode};
 
-        PathFindingNode currentNode = startNode;
+        List<PathFindingNode> visitedNodes = new List<PathFindingNode>();
 
-        int maxIterations = 10000;
+        List<PathFindingNode> unVisitedNodes = new List<PathFindingNode>() {startNode};
+
+        PathFindingNode currentNode = startNode;
 
         int iterations = 0;
         while (true) {
 
-            CalculateAdjacentNodes(destinationCoordinates, currentNode, npc);
+            if (!currentNode.visited) CalculateAdjacentNodes(destinationCoordinates, currentNode, npc);
 
-            PathFindingNode[] neighbourNodes = currentNode.GetNeighbours();
-
+            PathFindingNode[] neighbourNodes = currentNode.GetNeighbours(); // doesnt return visited, null or unwalkable nodes
+            unVisitedNodes.AddRange(neighbourNodes);
+            
             // find the minimum fCost of the neighbours
             float lowestFCost = Mathf.Infinity;
             foreach (PathFindingNode neighbour in neighbourNodes) {
@@ -38,6 +50,7 @@ class NPCPathfinding {
                     continue;
                 }
                 if (!neighbour.walkable) continue; // if the neighbour is not walkable, skip it
+                if (neighbour.visited) continue; // if the neighbour has already been visited, skip it
 
                 if (neighbour.fCost < lowestFCost) {
                     lowestFCost = neighbour.fCost;
@@ -51,13 +64,15 @@ class NPCPathfinding {
                     continue;
                 }
                 if (!neighbour.walkable) continue; // if the neighbour is not walkable, skip it
+                if (neighbour.visited) continue; // if the neighbour has already been visited, skip it
+
                 if (neighbour.fCost <= lowestFCost) {
                     lowestFCostNodes.Add(neighbour);
                 }
             }
 
             if (lowestFCostNodes.Count == 1) { // if there was only one node with the lowest fCost we can just add it to the queue
-                queue.Add(lowestFCostNodes[0]);
+                queue.Insert(0,lowestFCostNodes[0]);
             } else { // find the ones with the lowest hCost and add them to the queue
                 float lowestHCost = Mathf.Infinity;
                 foreach (PathFindingNode node in lowestFCostNodes) {
@@ -68,7 +83,7 @@ class NPCPathfinding {
 
                 foreach (PathFindingNode node in lowestFCostNodes) {
                     if (node.hCost <= lowestHCost) {
-                        queue.Add(node);
+                        queue.Insert(0,node);
                     }
                 } 
 
@@ -76,29 +91,54 @@ class NPCPathfinding {
 
 
             queue.Remove(currentNode); // remove the current node from the queue
+            unVisitedNodes.Remove(currentNode); // remove the current node from the unvisited nodes
 
-            // find the node with the lowest fCost in the queue
-            float lowestFCostInQueue = Mathf.Infinity;
-            foreach (PathFindingNode node in queue) {
-                if (node.fCost < lowestFCostInQueue) {
-                    lowestFCostInQueue = node.fCost;
-                }
-            }
-
-            // get the node with the lowest fCost in the queue
             PathFindingNode nextNode = null;
-            foreach (PathFindingNode node in queue) {
-                if (node.fCost == lowestFCostInQueue) {
-                    nextNode = node;
-                    break; // use the first one we find
+            if (queue.Count == 0) {
+
+                // find the node with the lowest fCost in the unvisited nodes
+                float lowestFCostInUnvisited = Mathf.Infinity;
+                foreach (PathFindingNode node in visitedNodes) {
+                    if (node.fCost < lowestFCostInUnvisited) {
+                        lowestFCostInUnvisited = node.fCost;
+                    }
+                }
+
+                // get the node with the lowest fCost in the unvisited nodes
+                foreach (PathFindingNode node in visitedNodes) {
+                    if (node.fCost == lowestFCostInUnvisited) {
+                        nextNode = node;
+                        break; // use the first one we find
+                    }
+                }
+
+            } else {
+
+                // find the node with the lowest fCost in the queue
+                float lowestFCostInQueue = Mathf.Infinity;
+                foreach (PathFindingNode node in queue) {
+                    if (node.fCost < lowestFCostInQueue) {
+                        lowestFCostInQueue = node.fCost;
+                    }
+                }
+
+                // get the node with the lowest fCost in the queue
+                foreach (PathFindingNode node in queue) {
+                    if (node.fCost == lowestFCostInQueue) {
+                        nextNode = node;
+                        break; // use the first one we find
+                    }
                 }
             }
+
+
 
             currentNode.visited = true;
+            visitedNodes.Add(currentNode);
             currentNode = nextNode; // move to the next node
             
-            // check if we have reached the end of the queue, ie there is no path to the destination
-            if (queue.Count == 0) {
+            // there is no path to the destination; the queue is empty
+            if (currentNode == null) {
                 Debug.Log("No path to destination");
                 return null;
             }
@@ -140,6 +180,7 @@ class NPCPathfinding {
             chunkTiles.Add(path[path.Count - i - 1].tile);
         }
 
+        Debug.Log("iterations: "+iterations);
         return chunkTiles;
 
     }
@@ -215,6 +256,7 @@ class NPCPathfinding {
 
 class PathFindingNode {
 
+
     public ChunkTile tile;
 
     public bool walkable;
@@ -270,17 +312,28 @@ class PathFindingNode {
         return neighbours[direction];
     }
 
-    public PathFindingNode[] GetNeighbours(bool allowVisitedNeighbours = false) {
+    public PathFindingNode[] GetNeighbours(bool allowVisitedNeighbours = false, bool allowUnwalkableNeighbours = false, bool allowNull = false) {
         
-        if (!allowVisitedNeighbours) {
         List<PathFindingNode> neighbourList = new List<PathFindingNode>();
+        if (!allowVisitedNeighbours || !allowUnwalkableNeighbours) {
         foreach (Vector2Int direction in neighbours.Keys) {
+
+            bool add = true;
             if (neighbours[direction] != null) {
-                if (!neighbours[direction].visited) {
-                    neighbourList.Add(neighbours[direction]);
+                if (neighbours[direction].visited) {
+                    add =false;
                 } 
+                if (!neighbours[direction].walkable) {
+                    add = false;
+                }
+                if (neighbours[direction] == null) {
+                    add = false;
+                }
+                if (add) neighbourList.Add(neighbours[direction]);
             }
+
         }
+
         return neighbourList.ToArray();
         } else {
             return neighbours.Values.ToArray();
