@@ -22,8 +22,7 @@ class NPCPathfinding {
 
         // check if the destination is walkable
         ChunkTile endTile = WorldDataGenerator.instance.GetChunkTileFromCoordinates(destinationCoordinates);
-        if (endTile.GetMaxSteepness() > npc.stats.maxWalkableSteepness || (endTile.terrainObject != null && endTile.terrainObject.blocksMovement) || endTile == null) {
-            Debug.Log("Destination is not walkable");
+        if (endTile.GetMaxSteepness() > npc.baseStats.maxWalkableSteepness || (endTile.terrainObject != null && endTile.terrainObject.blocksMovement) || endTile == null) {
             return null;
         }
 
@@ -180,7 +179,6 @@ class NPCPathfinding {
             chunkTiles.Add(path[path.Count - i - 1].tile);
         }
 
-        Debug.Log("iterations: "+iterations);
         return chunkTiles;
 
     }
@@ -353,7 +351,7 @@ class PathFindingNode {
     /// <returns></returns>
     public bool CheckIfToSteepToWalkOn(PathFindingNode other, NPC npc) {
         float slope = Mathf.Abs((tile.height - other.tile.height) / Vector2Int.Distance(tile.coordinates, other.tile.coordinates) / WorldDataGenerator.instance.tileSize);
-        if (slope > npc.stats.maxWalkableSteepness) {
+        if (slope > npc.baseStats.maxWalkableSteepness) {
             return true;
         }
         return false;

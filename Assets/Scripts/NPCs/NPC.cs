@@ -11,12 +11,21 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
 
 
     /// <summary>
-    /// A class containig all the stats of this npc.
+    /// A class containig all the baseStats of this npc. Set from the NPCSO (is the same instance)
     /// </summary>
-    public NPCstats stats;
+    public NPCBaseStats baseStats;
 
+    public NPCStats npcStats;
 
-    
+    /// <summary>
+    /// The current "AI" of the NPC. This class is responsible for the movement and behaviour of the NPC.
+    /// </summary>
+    public NPCBehaviour npcBehaviour;
+
+    public NPCSO nPCSO; // the scriptable object that holds the stats and more of the npc
+
+    public bool isOwnedByPlayer = true; // if the npc is owned by the player
+
     // position and chunktile
 
     /// <summary>
@@ -28,9 +37,33 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     /// </summary>
     [HideInInspector] public ChunkTile chunkTile { get; private set; }
 
+    
+    private Vector2 _currentForwardDirection = Vector2.right; // the direction the npc is currently facing
+    public Vector2 currentForwardDirection {
+        get {
+            return _currentForwardDirection;
+        }
+        set {
+            _currentForwardDirection = value;
+            forwardDirectionUpdated?.Invoke(this, value);
+        }
+    }
+    public event EventHandler<Vector2> forwardDirectionUpdated; // event that is called when the forward direction is updated
+
 
     // movement
-    public bool currentlyMoving {get; private set;}
+    private bool _currentlyMoving = false;
+    public bool currentlyMoving {
+        get {
+            return _currentlyMoving;
+        }
+        set {
+            _currentlyMoving = value;
+            currentlyMovingUpdated?.Invoke(this, value);
+        }
+    }
+    public event EventHandler<bool> currentlyMovingUpdated;
+
     /// <summary>
     /// The coroutine that moves the npc to an adjacent tile.
     /// </summary>
@@ -45,6 +78,10 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     /// </summary>
     public List<ChunkTile> movementQueue = new List<ChunkTile>();
 
+    /// <summary>
+    /// Event that is called when the NPC reaches its pathfinding goal.
+    /// </summary>
+    public event EventHandler<ChunkTile> OnMovementTargetReached;
 
 
     // ------- INITIALIZATION --------
@@ -69,7 +106,7 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     // Update is called once per frame
     void Update()
     {
-        
+        npcBehaviour.FrameUpdate();
     }
 
 
@@ -154,6 +191,16 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
             return; // cant move to a tile with a terrain object
         }
 
+        Vector2 f = tileToMoveTo.coordinates - chunkTile.coordinates;
+        currentForwardDirection = f.normalized; // update the forward direction of the npc
+
+        if (tileToMoveTo.chunkTiles.chunk != chunkTile.chunkTiles.chunk)
+        {
+            // if the chunkTile is in a different chunk, update the chunks list of npcs
+            chunkTile.chunkTiles.chunk.npcs.Remove(this);
+            tileToMoveTo.chunkTiles.chunk.npcs.Add(this);
+        }
+
         // change the npc of the tiles
         chunkTile.npc = null;
         tileToMoveTo.npc = this;
@@ -191,7 +238,10 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     /// Moves the NPC to the next tile in the movement queue, that was calculated by SetMovementTarget.
     /// </summary>
     public void MoveToNextTileInQueue() { // public for debbuging
-        if (movementQueue.Count == 0) return;
+        if (movementQueue.Count == 0) {
+          OnMovementTargetReached?.Invoke(this, chunkTile);  
+        return;
+        }
 
         ChunkTile nextTile = movementQueue[0];
         movementQueue.RemoveAt(0);
@@ -209,7 +259,7 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
         Vector3 worldPos2 = tileToMoveTo.chunkTiles.GetTileWorldPosition(tileToMoveTo.posInChunk.x, tileToMoveTo.posInChunk.y);
 
         float tileDistance = Vector3.Distance(worldPos1, worldPos2) / WorldDataGenerator.instance.tileSize; // distance in tiles
-        float movementTime = tileDistance / stats.movementSpeed; // time in seconds
+        float movementTime = tileDistance / baseStats.movementSpeed; // time in seconds
 
         currentlyMoving = true;
         float passedTime = 0f;
@@ -230,7 +280,28 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
 
 
 
+    // ----- GETTING VISIBLE OBJECTS -------
 
+    public List<NPC> GetVisibleNPCs() {
+
+        List<NPC> visibleNPCs = new List<NPC>();
+
+        for (int i = - baseStats.renderDistance; i < baseStats.renderDistance; i++) {
+            for (int j = -baseStats.renderDistance; j < baseStats.renderDistance; j++) {
+                Chunk lookInChunk = chunkTile.chunkTiles.chunk.GetRelativeChunk(new Vector2Int(i, j));
+                if (lookInChunk != null && lookInChunk.generated) {
+                    foreach (NPC npc in lookInChunk.npcs) {
+                        if (npc != this) {
+                            visibleNPCs.Add(npc);
+                        }
+                    }
+                }
+
+            }
+        }
+
+        return visibleNPCs;
+    }
 
     // ------ IMPLEMENTATION OF IRenderAround INTERFACE -------
 
@@ -243,7 +314,7 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     // returns how many chunks should be rendered around the NPC. used in the irenderaround interface
     public int getRenderDistanceChunks()
     {
-        return stats.renderDistance;
+        return baseStats.renderDistance;
     }
 
 }

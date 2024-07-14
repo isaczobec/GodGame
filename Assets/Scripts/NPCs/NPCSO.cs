@@ -6,11 +6,15 @@ using UnityEngine;
 public class NPCSO : ScriptableObject
 {
 
+    public string npcName;
+
     [Header("Visuals")]
     /// <summary>
     /// The prefab of the NPC that will be spawned
     /// </summary>
     public GameObject prefab;
 
-    public NPCstats npcStats;
+    public NPCBaseStats npcBaseStats;
+
+    public NPCBehaviourType npcBehaviourType;
 }

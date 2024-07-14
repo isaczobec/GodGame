@@ -131,10 +131,13 @@ class WorldDataGenerator : MonoBehaviour
     private void TestSpawnNPC() {
         Chunk chunk = chunkTree.CreateOrGetChunk(new Vector2Int(fullWorldSizeChunks / 2, fullWorldSizeChunks / 2), allowCreation: false);
         for (int i = 0; i < 1; i++) {
-            for (int j = 0; j<1; j++) {
+            for (int j = 0; j<2; j++) {
 
-        ChunkTile tile = chunk.tiles.tiles[i, j];
+        ChunkTile tile = chunk.tiles.tiles[i, j*3];
         NPC npc = NpcManager.instance.SpawnNPC(testNPCSO, tile);
+        if (j != 0) {
+            npc.isOwnedByPlayer = false;
+        }
         }
         }
         testSpawnedNPC = true;
@@ -277,6 +280,7 @@ public ChunkTile GetChunkTileFromCoordinates(Vector2Int coordinates) {
             chunk.chunkDataArray = generateChunkJobs[i].chunkDataArray;
 
             chunk.tiles = chunk.chunkDataArray.CreateChunkTiles(); // create the tiles from the data array. Do this only for the lowest LOD
+            chunk.tiles.chunk = chunk;
         }
 
 

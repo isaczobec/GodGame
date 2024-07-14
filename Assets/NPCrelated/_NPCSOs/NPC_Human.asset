@@ -10,10 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 02686688b68eddf4b916ff1470e40804, type: 3}
-  m_Name: NPC
+  m_Name: NPC_Human
   m_EditorClassIdentifier: 
-  prefab: {fileID: 100000, guid: cf6ef605756407349b16cd2d710302fd, type: 3}
-  npcStats:
-    renderDistance: 2
-    movementSpeed: 5
-    maxWalkableSteepness: 0.6
+  npcName: Human
+  prefab: {fileID: 1787226246611154714, guid: 8d7e740f55f08034fbe46be30cc636de, type: 3}
+  npcBaseStats:
+    renderDistance: 3
+    movementSpeed: 6
+    maxWalkableSteepness: 0.5
+    maxHealth: 0

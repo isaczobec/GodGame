@@ -51,10 +51,24 @@ public class NpcManager : MonoBehaviour
         gameObject.transform.parent = transform;
         NPC spawnedNPC = gameObject.AddComponent<NPC>();
 
-        spawnedNPC.stats = new NPCstats(npcso.npcStats); // create a copy of the npc stats
+        // set the basestats and npcso
+        spawnedNPC.baseStats = npcso.npcBaseStats;
+        spawnedNPC.nPCSO = npcso;
+
+        // init the npcStats
+        spawnedNPC.npcStats = new NPCStats(spawnedNPC.baseStats);
+
+
 
         GameObject npcGameObject = Instantiate(npcso.prefab, Vector3.zero, Quaternion.identity, gameObject.transform); // spawn the NPC prefab
 
+        // init the npcBehaviour. this is perhaps temporary, not sure if this is the best way to do it
+        spawnedNPC.npcBehaviour = NPCBehavioursList.GetNPCbehaviour(npcso.npcBehaviourType);
+        spawnedNPC.npcBehaviour.Setup(spawnedNPC);
+
+        // get and assign the NPCvisual
+        NPCvisual npcVisual = npcGameObject.GetComponent<NPCvisual>();
+        npcVisual.Setup(spawnedNPC);
 
         spawnedNPC.SetChunkTileAndCoordinates(chunkTile);
 
@@ -68,6 +82,9 @@ public class NpcManager : MonoBehaviour
 
 
         WorldDataGenerator.instance.AddRenderAround(spawnedNPC);
+
+        
+        chunkTile.chunkTiles.chunk.npcs.Add(spawnedNPC);
 
 
         npcs.Add(spawnedNPC);

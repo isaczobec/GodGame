@@ -42,7 +42,7 @@ public class Chunk {
     /// <summary>
     /// A list of all the NPCs that are currently in this chunk.
     /// </summary>
-    public List<NPC> nPCs = new List<NPC>();
+    public List<NPC> npcs = new List<NPC>();
     
 
     public bool visible {

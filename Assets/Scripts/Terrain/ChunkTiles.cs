@@ -13,6 +13,8 @@ public class ChunkTiles {
 
     public ChunkTile[,] tiles;
 
+    public Chunk chunk;
+
 
     /// <summary>
     /// returns the world position of the tile at the given x and y position

@@ -119,8 +119,10 @@ public class PlayerCamera : MonoBehaviour
         if (data.hit) {
             Vector2Int coords = WorldDataGenerator.instance.GetWorldCoordinates(data.hitPoint);
             foreach (NPC npc in NpcManager.instance.npcs) {
-                npc.SetMovementTarget(coords);
-                npc.MoveToNextTileInQueue();
+                if (npc.isOwnedByPlayer) {
+                    npc.SetMovementTarget(coords);
+                    npc.MoveToNextTileInQueue();
+                }
             }
         }
     }

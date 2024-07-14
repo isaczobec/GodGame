@@ -1,37 +1,48 @@
 using System;
-using UnityEngine;
 
-/// <summary>
-/// A class that holds all the stats of an NPC.
-/// </summary>
-[Serializable]
-public class NPCstats {
+public class NPCStats {
+    private float _movementSpeed;
+    private float _maxHealth;
+    private float _currentHealth;
 
-    [Header("Rendering")]
-    /// <summary>
-    /// How many chunks should be rendered around the NPC
-    /// </summary>
-    public int renderDistance = 3;
+    // Declare events for when the properties change
+    public event EventHandler<float> OnMovementSpeedChanged;
+    public event EventHandler<float> OnMaxHealthChanged;
+    public event EventHandler<float> OnCurrentHealthChanged;
 
-    [Header("Movement")]
-    /// <summary>
-    /// The speed at which the NPC moves. 1 means 1 tile per second. (scales linearly)
-    /// </summary>
-    public float movementSpeed = 1;
-
-    /// <summary>
-    /// The maximum steepness of the terrain the NPC can walk on. 1 means 45 degrees (calculus style lets go).
-    /// </summary>
-    public float maxWalkableSteepness = 1f;
-
-
-
-
-    // a constructor to create a copy of the object
-    public NPCstats(NPCstats original) {
-        renderDistance = original.renderDistance;
-        movementSpeed = original.movementSpeed;
-        maxWalkableSteepness = original.maxWalkableSteepness;
+    public float movementSpeed {
+        get => _movementSpeed;
+        set {
+            if (_movementSpeed != value) {
+                _movementSpeed = value;
+                OnMovementSpeedChanged?.Invoke(this,_movementSpeed);
+            }
+        }
     }
 
+    public float maxHealth {
+        get => _maxHealth;
+        set {
+            if (_maxHealth != value) {
+                _maxHealth = value;
+                OnMaxHealthChanged?.Invoke(this,_maxHealth);
+            }
+        }
+    }
+
+    public float currentHealth {
+        get => _currentHealth;
+        set {
+            if (_currentHealth != value) {
+                _currentHealth = value;
+                OnCurrentHealthChanged?.Invoke(this,_currentHealth);
+            }
+        }
+    }
+
+    public NPCStats(NPCBaseStats NPCBaseStats) {
+        movementSpeed = NPCBaseStats.movementSpeed;
+        maxHealth = NPCBaseStats.maxHealth;
+        currentHealth = maxHealth;
+    }
 }
