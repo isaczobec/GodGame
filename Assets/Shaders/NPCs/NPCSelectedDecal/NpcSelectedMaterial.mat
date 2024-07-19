@@ -42,8 +42,11 @@ Material:
     - _DecalMeshDepthBias: 0
     - _DecalMeshViewBias: 0
     - _DrawOrder: 0
+    - _IsEnemy: 1
     m_Colors:
     - _Color: {r: 0.044874653, g: 1, b: 0, a: 1}
+    - _EnemyColor: {r: 1, g: 0, b: 0, a: 1}
+    - _FriendlyColor: {r: 0.044874653, g: 1, b: 0, a: 1}
     - _InnerColor: {r: 0, g: 1, b: 0, a: 1}
   m_BuildTextureStacks: []
 --- !u!114 &1921150421964979617

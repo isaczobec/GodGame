@@ -44,6 +44,15 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""CameraControlMode"",
+                    ""type"": ""Value"",
+                    ""id"": ""d7b2c307-d200-4014-8199-d74296b7b9c7"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -68,6 +77,17 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""action"": ""Mouse2"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1cc0e5fc-a0e4-4796-beb5-f8e8219e687e"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CameraControlMode"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -78,6 +98,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         m_PlayerControls = asset.FindActionMap("PlayerControls", throwIfNotFound: true);
         m_PlayerControls_Mouse1 = m_PlayerControls.FindAction("Mouse1", throwIfNotFound: true);
         m_PlayerControls_Mouse2 = m_PlayerControls.FindAction("Mouse2", throwIfNotFound: true);
+        m_PlayerControls_CameraControlMode = m_PlayerControls.FindAction("CameraControlMode", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -141,12 +162,14 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
     private List<IPlayerControlsActions> m_PlayerControlsActionsCallbackInterfaces = new List<IPlayerControlsActions>();
     private readonly InputAction m_PlayerControls_Mouse1;
     private readonly InputAction m_PlayerControls_Mouse2;
+    private readonly InputAction m_PlayerControls_CameraControlMode;
     public struct PlayerControlsActions
     {
         private @PlayerInput m_Wrapper;
         public PlayerControlsActions(@PlayerInput wrapper) { m_Wrapper = wrapper; }
         public InputAction @Mouse1 => m_Wrapper.m_PlayerControls_Mouse1;
         public InputAction @Mouse2 => m_Wrapper.m_PlayerControls_Mouse2;
+        public InputAction @CameraControlMode => m_Wrapper.m_PlayerControls_CameraControlMode;
         public InputActionMap Get() { return m_Wrapper.m_PlayerControls; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -162,6 +185,9 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @Mouse2.started += instance.OnMouse2;
             @Mouse2.performed += instance.OnMouse2;
             @Mouse2.canceled += instance.OnMouse2;
+            @CameraControlMode.started += instance.OnCameraControlMode;
+            @CameraControlMode.performed += instance.OnCameraControlMode;
+            @CameraControlMode.canceled += instance.OnCameraControlMode;
         }
 
         private void UnregisterCallbacks(IPlayerControlsActions instance)
@@ -172,6 +198,9 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @Mouse2.started -= instance.OnMouse2;
             @Mouse2.performed -= instance.OnMouse2;
             @Mouse2.canceled -= instance.OnMouse2;
+            @CameraControlMode.started -= instance.OnCameraControlMode;
+            @CameraControlMode.performed -= instance.OnCameraControlMode;
+            @CameraControlMode.canceled -= instance.OnCameraControlMode;
         }
 
         public void RemoveCallbacks(IPlayerControlsActions instance)
@@ -193,5 +222,6 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
     {
         void OnMouse1(InputAction.CallbackContext context);
         void OnMouse2(InputAction.CallbackContext context);
+        void OnCameraControlMode(InputAction.CallbackContext context);
     }
 }

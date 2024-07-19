@@ -45,4 +45,8 @@ public class PlayerInputHandler : MonoBehaviour
         playerInput.PlayerControls.Mouse2.canceled += ctx => OnMouse2Released?.Invoke(this, ctx);
     }
 
+    public bool GetCameraControlButtonPressed() {
+        return playerInput.PlayerControls.CameraControlMode.ReadValue<float>() != 0;
+    }
+
 }

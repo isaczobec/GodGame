@@ -16,8 +16,17 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private float orbitSpeed = 10f;
 
 
+    [SerializeField] private LayerMask npcSelectionHitBoxLayerMask;
+
+
     private Vector3 orbitPoint;
     private bool isOrbiting = false;
+
+
+    private bool cameraControlModeEnabled = false;
+    public void SetCameraControlMode(bool enabled) {
+        cameraControlModeEnabled = enabled;
+    }
 
 
     private void Start() {
@@ -25,7 +34,6 @@ public class PlayerCamera : MonoBehaviour
         PlayerInputHandler.Instance.OnMouse2 += Mouse2Click;
         PlayerInputHandler.Instance.OnMouse2Released += Mouse2Released;
 
-        PlayerInputHandler.Instance.OnMouse1 += Mouse1Click;
     }
 
 
@@ -36,7 +44,7 @@ public class PlayerCamera : MonoBehaviour
 
     private void HandleCamerMovenemt() {
 
-        if (isOrbiting) return;
+        if (isOrbiting && cameraControlModeEnabled) return;
 
         Vector3 mousePosition = Input.mousePosition;
 
@@ -71,7 +79,7 @@ public class PlayerCamera : MonoBehaviour
     }
 
     private void HandleOrbiting() {
-        if (!isOrbiting) return;
+        if (!isOrbiting || !cameraControlModeEnabled) return;
 
         float horizontalInput = Input.GetAxis("Mouse X");
         float angle = horizontalInput * orbitSpeed;
@@ -96,13 +104,9 @@ public class PlayerCamera : MonoBehaviour
     }
 
 
-    private class WorldClickData {
-        public Vector3 hitPoint;
-        public bool hit;
-    }
 
 
-    private WorldClickData GetClickedTerrainPosition() {
+    public WorldClickData GetClickedTerrainPosition() {
 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
@@ -113,17 +117,31 @@ public class PlayerCamera : MonoBehaviour
             return new WorldClickData { hit = false };
         }
     }
-    private void Mouse1Click(object sender, InputAction.CallbackContext e)
-    {
-        WorldClickData data = GetClickedTerrainPosition();
-        if (data.hit) {
-            Vector2Int coords = WorldDataGenerator.instance.GetWorldCoordinates(data.hitPoint);
-            foreach (NPC npc in NpcManager.instance.npcs) {
-                if (npc.isOwnedByPlayer) {
-                    npc.SetMovementTarget(coords);
-                    npc.MoveToNextTileInQueue();
-                }
+
+
+
+    /// <summary>
+    /// Gets the npc that is currently hovered by the mouse. Returns null if no npc is hovered.
+    /// </summary>
+    /// <returns></returns>
+    public NPC GetHoveredNPC() {
+
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, npcSelectionHitBoxLayerMask)) {
+            NPCSelectionHitBox hitBox = hit.collider.GetComponent<NPCSelectionHitBox>();
+            NPC npc = hitBox.GetNPC();
+            if (npc != null) {
+                return npc;
             }
         }
+
+        return null;
     }
+}
+
+public class WorldClickData {
+    public Vector3 hitPoint;
+    public bool hit;
 }

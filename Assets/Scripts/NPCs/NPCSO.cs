@@ -17,4 +17,8 @@ public class NPCSO : ScriptableObject
     public NPCBaseStats npcBaseStats;
 
     public NPCBehaviourType npcBehaviourType;
+
+    public bool isMercenary;
+
+    public Vector3 selectedHitBoxDimensions = new Vector3(3, 3, 3);
 }

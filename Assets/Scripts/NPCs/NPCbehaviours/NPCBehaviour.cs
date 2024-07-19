@@ -6,13 +6,15 @@ public class NPCBehaviour {
 
     public NPC npc;
 
-    public float npcUpdateInterval = 0.3f;
+    public float npcUpdateInterval = 1f;
     public float npcUpdateTimer = 0f;
 
     public void Setup(NPC npc) {
         this.npc = npc;
         npc.OnMovementFinished += OnMovedToNewTile;
         npc.OnMovementFinished += OnReachedMovementTarget;
+
+        npcUpdateTimer += UnityEngine.Random.Range(0, npcUpdateInterval); // randomize the update timer to eliminate bottlenecks
     }
 
 

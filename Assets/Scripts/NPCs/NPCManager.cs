@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,9 +8,14 @@ public class NpcManager : MonoBehaviour
 
     [SerializeField] private GameObject npcSelectedDecalPrefab;
 
+    [SerializeField] private GameObject npcSelectedHitBoxPrefab;
+
     public static NpcManager instance;
 
     public List<NPC> npcs = new List<NPC>(); // for debbuyding?
+
+
+    public event EventHandler<NPC> OnNPCSpawned;
 
     private void Awake()
     {
@@ -41,7 +47,7 @@ public class NpcManager : MonoBehaviour
     /// </summary>
     /// <param name="npc"></param>
     /// <param name="chunkTile"></param>
-    public NPC SpawnNPC(NPCSO npcso, ChunkTile chunkTile) {
+    public NPC SpawnNPC(NPCSO npcso, ChunkTile chunkTile, bool isOwnedByPlayer) {
 
         if (chunkTile.terrainObject != null) {
             return null; // cant spawn an NPC on a terrain object
@@ -58,6 +64,7 @@ public class NpcManager : MonoBehaviour
         // init the npcStats
         spawnedNPC.npcStats = new NPCStats(spawnedNPC.baseStats);
 
+        spawnedNPC.isOwnedByPlayer = isOwnedByPlayer;
 
 
         GameObject npcGameObject = Instantiate(npcso.prefab, Vector3.zero, Quaternion.identity, gameObject.transform); // spawn the NPC prefab
@@ -66,19 +73,33 @@ public class NpcManager : MonoBehaviour
         spawnedNPC.npcBehaviour = NPCBehavioursList.GetNPCbehaviour(npcso.npcBehaviourType);
         spawnedNPC.npcBehaviour.Setup(spawnedNPC);
 
-        // get and assign the NPCvisual
-        NPCvisual npcVisual = npcGameObject.GetComponent<NPCvisual>();
-        npcVisual.Setup(spawnedNPC);
 
+
+        // set the chunkTile and coordinates of the NPC
         spawnedNPC.SetChunkTileAndCoordinates(chunkTile);
 
+        // init the npc
         spawnedNPC.Initialize();
 
         // instantiate and initialize the NPC selected decal
         GameObject decalObject = Instantiate(npcSelectedDecalPrefab, Vector3.zero, Quaternion.identity, gameObject.transform); // spawn the selected decal and parent it to the npc
         decalObject.transform.localPosition = new Vector3(0, 0.1f, 0);
         NPCSelctedDecal decal = decalObject.GetComponent<NPCSelctedDecal>();
-        decal.SetNPC(spawnedNPC);
+        decal.SetNPCandSetup(spawnedNPC);
+
+        // get and assign the NPCvisual
+        NPCvisual npcVisual = npcGameObject.GetComponent<NPCvisual>();
+        npcVisual.Setup(spawnedNPC, decal);
+        spawnedNPC.SetNpcVisual(npcVisual);
+
+        // add the hitboxes of the npc
+        GameObject hitBoxObject = Instantiate(npcSelectedHitBoxPrefab, Vector3.zero, Quaternion.identity, npcGameObject.transform); // spawn the selection hitbox and parent it to the npc
+        hitBoxObject.transform.localPosition = new Vector3(0, 0, 0);
+        Collider selectionCollider = hitBoxObject.GetComponent<Collider>();
+        hitBoxObject.transform.localScale = npcso.selectedHitBoxDimensions; // change the scale of the hitbox
+        // get and set the npc of the hitbox
+        NPCSelectionHitBox hitBox = hitBoxObject.GetComponent<NPCSelectionHitBox>();
+        hitBox.SetNPC(spawnedNPC);
 
 
         WorldDataGenerator.instance.AddRenderAround(spawnedNPC);
@@ -88,6 +109,8 @@ public class NpcManager : MonoBehaviour
 
 
         npcs.Add(spawnedNPC);
+
+        OnNPCSpawned?.Invoke(this, spawnedNPC);
 
         return spawnedNPC;
         

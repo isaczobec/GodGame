@@ -24,6 +24,11 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
 
     public NPCSO nPCSO; // the scriptable object that holds the stats and more of the npc
 
+    public NPCvisual npcVisual {get; private set;} // the visuals of the npc
+    public void SetNpcVisual(NPCvisual npcVisual) {
+        this.npcVisual = npcVisual;
+    }
+
     public bool isOwnedByPlayer = true; // if the npc is owned by the player
 
     // position and chunktile
@@ -232,6 +237,7 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
         if (path != null) {
             movementQueue = path;
         }
+        
     }
 
     /// <summary>
@@ -301,6 +307,55 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
         }
 
         return visibleNPCs;
+    }
+
+    /// <summary>
+    /// Gets the closest npc or returns null if no npc is visible.
+    /// </summary>
+    /// <returns></returns>
+    public NPC GetClosestNPC() {
+
+        NPC closestNPC = null;
+        float closestDistance = Mathf.Infinity;
+
+        float thisNPCsDistanceToChunkborder = Mathf.Min(chunkTile.chunkTiles.sideLength - chunkTile.posInChunk.x, chunkTile.posInChunk.x, chunkTile.chunkTiles.sideLength - chunkTile.posInChunk.y, chunkTile.posInChunk.y);
+
+        int currentSearchRadius = 1;
+        while (currentSearchRadius <= baseStats.renderDistance) {
+
+            int iterations = currentSearchRadius * 2 - 1;
+            float sureDistance = thisNPCsDistanceToChunkborder + (currentSearchRadius-1) * chunkTile.chunkTiles.sideLength;
+
+            for (int i = 0; i < iterations; i++) {
+                for (int j = 0; j < iterations; j++) {
+
+                    // continue if we are not on the edge
+                    if (i != 0 && i != currentSearchRadius*2-2 && j != 0 && j != currentSearchRadius*2-2) {
+                        continue;
+                    }
+
+                    Chunk lookInChunk = chunkTile.chunkTiles.chunk.GetRelativeChunk(new Vector2Int(i - currentSearchRadius, j - currentSearchRadius));
+                    if (lookInChunk != null && lookInChunk.generated) {
+                        foreach (NPC npc in lookInChunk.npcs) {
+                            if (npc != this) {
+                                float distance = Vector2.Distance(npc.coordinates, coordinates);
+                                if (distance < closestDistance) {
+                                    closestDistance = distance;
+                                    closestNPC = npc;
+                                    if (i == iterations-1 && j == iterations-1 && closestDistance < sureDistance) { // if the closest npc is on the edge of the search radius and the distance is less than the distance to the chunk border + the search radius
+                                        return closestNPC;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            currentSearchRadius++;
+        }
+
+
+        return closestNPC;
     }
 
     // ------ IMPLEMENTATION OF IRenderAround INTERFACE -------

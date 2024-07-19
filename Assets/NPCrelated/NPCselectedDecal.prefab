@@ -46,6 +46,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   decalProjector: {fileID: 3004971289588004674}
+  decalGameObject: {fileID: 6496820318226160273}
+  decalShader: {fileID: -6465566751694194690, guid: 7801ff17bbc9d54489d0dfb92a0b624f,
+    type: 3}
+  decalSizeUnSelected: 1
+  decalSizeSelected: 1.37
 --- !u!1 &6496820318226160273
 GameObject:
   m_ObjectHideFlags: 0
@@ -98,7 +103,7 @@ MonoBehaviour:
   m_UVScale: {x: 1, y: 1}
   m_UVBias: {x: 0, y: 0}
   m_DecalLayerMask: 1
-  m_ScaleMode: 0
+  m_ScaleMode: 1
   m_Offset: {x: 0, y: 0, z: 0.284325}
   m_Size: {x: 7, y: 7, z: 2.23}
   m_FadeFactor: 1

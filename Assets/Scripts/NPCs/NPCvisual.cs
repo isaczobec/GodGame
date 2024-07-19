@@ -7,6 +7,8 @@ public class NPCvisual : MonoBehaviour
 {
     [SerializeField] private Animator npcAnimator;
     [SerializeField] private GameObject visualGameObject;
+
+    private NPCSelctedDecal npcSelctedDecal;
     private NPC nPC;
 
 
@@ -22,7 +24,7 @@ public class NPCvisual : MonoBehaviour
     private Coroutine turningCoroutine;
 
 
-    public void Setup(NPC npc) {
+    public void Setup(NPC npc, NPCSelctedDecal npcSelctedDecal) {
         nPC = npc;
         // subscribe to the events
         nPC.currentlyMovingUpdated += CurrentlyMovingUpdated;    
@@ -31,6 +33,9 @@ public class NPCvisual : MonoBehaviour
 
         // set initial values
         npcAnimator.SetFloat(MovementSpeed, nPC.npcStats.movementSpeed);
+
+        // set decal values
+        this.npcSelctedDecal = npcSelctedDecal;
     }
 
     private void MovementSpeedUpdated(object sender, float e)
@@ -61,5 +66,13 @@ public class NPCvisual : MonoBehaviour
 
     public void SetNPC(NPC npc) {
         nPC = npc;
+    }
+
+    /// <summary>
+    /// should be called from PlayerActions When the changed npc is selected or deselected.
+    /// </summary>
+    /// <param name="selected"></param>
+    public void OnNPCSelectedChanged(bool selected) {
+        npcSelctedDecal.SetDecalOn(selected);
     }
 }

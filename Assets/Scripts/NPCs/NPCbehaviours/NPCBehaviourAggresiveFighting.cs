@@ -6,9 +6,9 @@ public class NPCBehaviourAggresiveFighting : NPCBehaviour {
     public override void OnUpdateNPCTick() {
         if (!npc.currentlyMoving) {
 
-            List<NPC> visibleNPCs = npc.GetVisibleNPCs();
-            if (visibleNPCs.Count > 0) {
-                npc.SetMovementTarget(visibleNPCs[0].coordinates);
+            NPC targetNPC = npc.GetClosestNPC();
+            if (targetNPC != null) {
+                npc.SetMovementTarget(targetNPC.coordinates);
                 npc.MoveToNextTileInQueue();
             }
         }
