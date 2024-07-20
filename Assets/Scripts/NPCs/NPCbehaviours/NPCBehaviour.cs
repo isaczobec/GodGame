@@ -10,6 +10,13 @@ public class NPCBehaviour {
     public float npcUpdateInterval = 1f;
     public float npcUpdateTimer = 0f;
 
+    private bool callAnimationActionEndedNextFrame = false;
+    private NPCAnimationAction currentAnimationActionToReference;
+    public void CallAnimationActionEndedNextFrame(NPCAnimationAction animationActionToReference) {
+        callAnimationActionEndedNextFrame = true;
+        currentAnimationActionToReference = animationActionToReference;
+    }
+
 
     /// <summary>
     /// List of animation actions that the npc can perform.
@@ -18,7 +25,7 @@ public class NPCBehaviour {
     public void SetNPCAnimationActionList(NPCAnimationActionList list) {
         npcAnimationActionList = list;
     }
-    
+
     public void Setup(NPC npc) {
         this.npc = npc;
         npc.OnMovementFinished += OnMovedToNewTile;
@@ -50,11 +57,24 @@ public class NPCBehaviour {
 
     }
 
+    /// <summary>
+    /// Overridable method that is called when the npc ends an animation action.
+    /// </summary>
+    /// <param name="action"></param>
+    public virtual void OnNpcAnimationActionEnded(NPCAnimationAction action) {
+
+    }
+
     public void FrameUpdate() {
         npcUpdateTimer += Time.deltaTime;
         if (npcUpdateTimer >= npcUpdateInterval) {
             npcUpdateTimer = 0;
             OnUpdateNPCTick();
+        }
+
+        if (callAnimationActionEndedNextFrame) {
+            callAnimationActionEndedNextFrame = false;
+            OnNpcAnimationActionEnded(currentAnimationActionToReference);
         }
     }
 

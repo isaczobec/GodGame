@@ -49,13 +49,17 @@ public class NPCvisual : MonoBehaviour
 
     private void ForwardDirectionUpdated(object sender, Vector2 e)
     {
+        TurnToDirection(e);
+    }
+
+    public void TurnToDirection(Vector2 direction) {
         if (turningCoroutine != null) {
             StopCoroutine(turningCoroutine);
         }
-        turningCoroutine = StartCoroutine(TurnToDirection(e));
+        turningCoroutine = StartCoroutine(TurnToDirectionCoroutine(direction));
     }
 
-    private IEnumerator TurnToDirection(Vector2 direction) {
+    private IEnumerator TurnToDirectionCoroutine(Vector2 direction) {
         Vector3 targetDirection = new Vector3(direction.x, 0, direction.y);
         while (Vector3.Angle(visualGameObject.transform.forward, targetDirection) > 0.1f) {
             visualGameObject.transform.forward = Vector3.RotateTowards(visualGameObject.transform.forward, targetDirection, turningSpeed * Time.deltaTime, 0.0f);

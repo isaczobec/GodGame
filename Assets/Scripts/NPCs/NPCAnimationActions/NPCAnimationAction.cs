@@ -24,6 +24,7 @@ public class NPCAnimationAction : MonoBehaviour {
         // call methods
         npc.AnimationActionEnded();
         OnActionEnded();
+        npc.npcBehaviour.CallAnimationActionEndedNextFrame(this);
     }
 
     // OVERRIDABLE METHODS
@@ -39,6 +40,9 @@ public class NPCAnimationAction : MonoBehaviour {
         return true;
     }
 
+    public virtual void OnActionStarted() {
+        // override this method to add functionality to the action
+    }
     public virtual void OnActionPerformed() {
         // override this method to add functionality to the action
     }

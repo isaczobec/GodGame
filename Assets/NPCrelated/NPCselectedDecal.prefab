@@ -105,5 +105,5 @@ MonoBehaviour:
   m_DecalLayerMask: 1
   m_ScaleMode: 1
   m_Offset: {x: 0, y: 0, z: 0.284325}
-  m_Size: {x: 7, y: 7, z: 2.23}
+  m_Size: {x: 9, y: 9, z: 2.23}
   m_FadeFactor: 1

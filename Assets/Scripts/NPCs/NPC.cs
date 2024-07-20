@@ -385,6 +385,7 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
             isPerformingMovementRestrictingAction = !action.allowMoving; // set the movement restricting flag
             isPerformingAnimationAction = true; // set the animation action flag
             currentAnimationAction = action; // set the current animation action
+            action.OnActionStarted(); // call the action started "event method" of the action
         }
     }
 
@@ -401,6 +402,7 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     /// call this to end the animation action prematurely. This will call the EndAnimationActionPremautrely method of the npcVisual and then call the AnimationActionEnded method.
     /// </summary>
     public void TryEndAnimationActionPremautrely() {
+        if (currentAnimationAction == null) return; // we dont have an action to end
         if (currentAnimationAction.GetCanBeEndedPrematurely()) {
             npcVisual.EndAnimationActionPremautrely();
             AnimationActionEnded();

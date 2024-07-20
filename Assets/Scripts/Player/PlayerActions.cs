@@ -101,6 +101,7 @@ public class PlayerActions : MonoBehaviour
         WorldClickData data = playerCamera.GetClickedTerrainPosition();
         if (data.hit)
         {
+            npc.TryEndAnimationActionPremautrely(); // try and end the current animation action
             Vector2Int coords = WorldDataGenerator.instance.GetWorldCoordinates(data.hitPoint);
             npc.SetMovementTarget(coords);
             npc.MoveToNextTileInQueue();

@@ -10,5 +10,7 @@ public class NPCAnimationEventsTransmitter : MonoBehaviour
 
     public void OnActionEnded() {
         NPCvisual.OnAnimationActionEnded();
+
+        Debug.Log("ENDED");
     }
 }
