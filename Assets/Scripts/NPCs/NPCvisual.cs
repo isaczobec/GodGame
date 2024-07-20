@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using RPGCharacterAnims.Actions;
 using UnityEngine;
 
 public class NPCvisual : MonoBehaviour
@@ -18,6 +19,7 @@ public class NPCvisual : MonoBehaviour
     // string references
     private const string IsMoving = "IsMoving";
     private const string MovementSpeed = "MovementSpeed";
+    private const string AttackSpeed = "AttackSpeed";
     private const string EndAnimationAction = "EndAnimationAction";
 
 
@@ -34,12 +36,20 @@ public class NPCvisual : MonoBehaviour
         nPC.currentlyMovingUpdated += CurrentlyMovingUpdated;    
         nPC.forwardDirectionUpdated += ForwardDirectionUpdated;
         nPC.npcStats.OnMovementSpeedChanged += MovementSpeedUpdated;
+        nPC.npcStats.OnAttackSpeedChanged += AttackSpeedUpdated;
 
         // set initial values
         npcAnimator.SetFloat(MovementSpeed, nPC.npcStats.movementSpeed);
+        npcAnimator.SetFloat(AttackSpeed, nPC.npcStats.attackSpeed);
 
         // set decal values
         this.npcSelctedDecal = npcSelctedDecal;
+    }
+
+    private void AttackSpeedUpdated(object sender, float e)
+    {
+        Debug.Log("new attack speed: " + e);
+        npcAnimator.SetFloat(AttackSpeed,e);
     }
 
     private void MovementSpeedUpdated(object sender, float e)

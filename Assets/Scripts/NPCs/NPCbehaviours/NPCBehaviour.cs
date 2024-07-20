@@ -66,6 +66,7 @@ public class NPCBehaviour {
     }
 
     public void FrameUpdate() {
+
         npcUpdateTimer += Time.deltaTime;
         if (npcUpdateTimer >= npcUpdateInterval) {
             npcUpdateTimer = 0;

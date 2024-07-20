@@ -38,6 +38,9 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     public NPCAnimationAction currentAnimationAction; // the current animation action the npc is performing
 
 
+    public bool isDead {get; private set;} = false;
+
+
 
     // position and chunktile
 
@@ -97,6 +100,18 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     public event EventHandler<ChunkTile> OnMovementTargetReached;
 
 
+    /// <summary>
+    /// Called when the NPC takes damage. The first parameter is the sender of the event, the second is the amount of damage taken.
+    /// </summary>
+    public event EventHandler<HitInfo> OnDamageTaken;
+
+    /// <summary>
+    /// Called when the NPC deals damage. The first parameter is the sender of the event, the second is the amount of damage dealt.
+    /// </summary>
+    public event EventHandler<HitInfo> OnDamageDealt;
+
+
+
     // ------- INITIALIZATION --------
 
 
@@ -120,6 +135,8 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     void Update()
     {
         npcBehaviour.FrameUpdate();
+
+        if (isDead) Die();
     }
 
 
@@ -376,6 +393,7 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
 
     // ------ ANIMATION ACTIONS -------
 
+
     /// <summary>
     /// Tries to begin an animation action. If the action can be performed, the npcVisual will start the animation and the movement restricting flag will be set.
     /// </summary>
@@ -411,6 +429,49 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
 
 
 
+    // ------ DOING AND TAKING DAMAGE ------
+
+    public HitInfo TakeDamage(float damage) {
+        float finalDamage = damage;
+        bool died = false;
+
+        npcStats.currentHealth -= finalDamage;
+
+        if (npcStats.currentHealth <= 0) {
+            died = true;
+        }
+
+
+        if (died) {
+            isDead = true;
+        }
+
+        HitInfo hitInfo = new HitInfo{killed = died, finalDamage = finalDamage};
+        OnDamageTaken?.Invoke(this, hitInfo);
+
+        return hitInfo;
+    }
+
+    public HitInfo DealDamage(NPC target, float damage) {
+        HitInfo info = target.TakeDamage(damage);
+        OnDamageDealt?.Invoke(this, info);
+        return info;
+    }
+
+
+    // --------- DEATH ---------
+
+    /// <summary>
+    /// Kills the NPC. Removes it from the chunkTile and the list of npcs in the chunk.
+    /// </summary>
+    public void Die() {
+        chunkTile.npc = null;
+        chunkTile.chunkTiles.chunk.npcs.Remove(this);
+        NpcManager.instance.npcs.Remove(this);
+        WorldDataGenerator.instance.RemoveRenderAround(this);
+        npcBehaviour = null; // clear the behaviour
+        Destroy(gameObject);
+    }
 
 
 

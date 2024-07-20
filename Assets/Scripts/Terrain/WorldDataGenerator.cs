@@ -105,6 +105,11 @@ class WorldDataGenerator : MonoBehaviour
         renderArounds.Add(renderAround);
     }
 
+    public void RemoveRenderAround(IRenderAround renderAround)
+    {
+        renderArounds.Remove(renderAround);
+    }
+
     public void Start()
     {
         chunkTree = new ChunkTree(new Vector2Int(0, 0), new Vector2Int(fullWorldSizeChunks, fullWorldSizeChunks), fullWorldSizeChunks);

@@ -13,6 +13,6 @@ public class BasicMeleeAttack : NPCAnimationAction
 
     public override void OnActionPerformed()
     {
-        Debug.Log("BasicMeleeAttack OnActionPerformed");
+        npc.DealDamage(targetNPC, 30f);
     }
 }

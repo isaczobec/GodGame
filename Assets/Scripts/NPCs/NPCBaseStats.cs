@@ -20,6 +20,11 @@ public class NPCBaseStats {
     public float movementSpeed = 1;
 
     /// <summary>
+    /// The percentage multiplier with which the NPC attacks. 
+    /// </summary>
+    public float attackSpeed = 1f;
+
+    /// <summary>
     /// The maximum steepness of the terrain the NPC can walk on. 1 means 45 degrees (calculus style lets go).
     /// </summary>
     public float maxWalkableSteepness = 1f;
@@ -29,11 +34,14 @@ public class NPCBaseStats {
 
 
 
+
+
     // a constructor to create a copy of the object
     public NPCBaseStats(NPCBaseStats original) {
         renderDistance = original.renderDistance;
         movementSpeed = original.movementSpeed;
         maxWalkableSteepness = original.maxWalkableSteepness;
+        attackSpeed = original.attackSpeed;
     }
 
 }

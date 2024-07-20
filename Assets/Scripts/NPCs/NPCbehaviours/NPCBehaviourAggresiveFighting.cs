@@ -28,6 +28,7 @@ public class NPCBehaviourAggresiveFighting : NPCBehaviour {
                 
 
             NPC targetNPC = npc.GetClosestNPC();
+            if (targetNPC == null) return;
 
             if ((npc.coordinates - targetNPC.coordinates).magnitude > 3) return; 
 

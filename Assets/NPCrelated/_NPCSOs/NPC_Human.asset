@@ -17,8 +17,9 @@ MonoBehaviour:
   npcBaseStats:
     renderDistance: 3
     movementSpeed: 6
+    attackSpeed: 1
     maxWalkableSteepness: 0.5
-    maxHealth: 0
+    maxHealth: 100
   npcBehaviourType: 0
   isMercenary: 0
   selectedHitBoxDimensions: {x: 6, y: 6, z: 6}
