@@ -12,9 +12,13 @@ public class NPCvisual : MonoBehaviour
     private NPC nPC;
 
 
+    private NPCAnimationAction waitingOnActionToFinish;
+
+
     // string references
     private const string IsMoving = "IsMoving";
     private const string MovementSpeed = "MovementSpeed";
+    private const string EndAnimationAction = "EndAnimationAction";
 
 
 
@@ -74,5 +78,33 @@ public class NPCvisual : MonoBehaviour
     /// <param name="selected"></param>
     public void OnNPCSelectedChanged(bool selected) {
         npcSelctedDecal.SetDecalOn(selected);
+    }
+
+
+    // ANIMATION ACTIONS
+
+
+    public void OnAnimationActionPerformed() {
+        if (waitingOnActionToFinish != null) {
+            waitingOnActionToFinish.AnimationActionPerformed();
+        }
+    }
+
+    public void OnAnimationActionEnded() {
+        if (waitingOnActionToFinish != null) {
+            waitingOnActionToFinish.AnimationActionEnded();
+            waitingOnActionToFinish = null;
+        }
+    
+    }
+
+    public void StartAnimationAction(NPCAnimationAction action) {
+        npcAnimator.SetTrigger(action.animatorTriggerName);
+        waitingOnActionToFinish = action;
+    }
+
+    public void EndAnimationActionPremautrely() {
+        npcAnimator.SetTrigger(EndAnimationAction);
+        waitingOnActionToFinish = null;
     }
 }

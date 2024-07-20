@@ -69,9 +69,14 @@ public class NpcManager : MonoBehaviour
 
         GameObject npcGameObject = Instantiate(npcso.prefab, Vector3.zero, Quaternion.identity, gameObject.transform); // spawn the NPC prefab
 
+        // add the Animation actions to the npc
+        NPCAnimationActionList nPCAnimationActionList = npcGameObject.GetComponent<NPCAnimationActionList>();
+        nPCAnimationActionList.SetupActions(spawnedNPC);
+
         // init the npcBehaviour. this is perhaps temporary, not sure if this is the best way to do it
         spawnedNPC.npcBehaviour = NPCBehavioursList.GetNPCbehaviour(npcso.npcBehaviourType);
         spawnedNPC.npcBehaviour.Setup(spawnedNPC);
+        spawnedNPC.npcBehaviour.SetNPCAnimationActionList(nPCAnimationActionList);
 
 
 
@@ -100,6 +105,7 @@ public class NpcManager : MonoBehaviour
         // get and set the npc of the hitbox
         NPCSelectionHitBox hitBox = hitBoxObject.GetComponent<NPCSelectionHitBox>();
         hitBox.SetNPC(spawnedNPC);
+
 
 
         WorldDataGenerator.instance.AddRenderAround(spawnedNPC);

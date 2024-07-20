@@ -127,10 +127,25 @@ public class PlayerCamera : MonoBehaviour
     public NPC GetHoveredNPC() {
 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity, npcSelectionHitBoxLayerMask)) {
-            NPCSelectionHitBox hitBox = hit.collider.GetComponent<NPCSelectionHitBox>();
+        if (Physics.RaycastAll(ray, 10000f, npcSelectionHitBoxLayerMask).Length > 0) { // if we hit something
+
+            float largestDotProduct = float.MinValue;
+            NPCSelectionHitBox hitBox = null;
+
+            RaycastHit[] hits = Physics.RaycastAll(ray, 10000f, npcSelectionHitBoxLayerMask);
+            if (hits.Length == 0) return null; // nothing hit
+            for (int i = 0; i < hits.Length; i++) {
+
+                NPCSelectionHitBox selectionHitBox = hits[i].collider.GetComponent<NPCSelectionHitBox>();
+                float dotProduct = Vector3.Dot(ray.direction, (selectionHitBox.GetMiddlePoint().position - Camera.main.transform.position).normalized);
+                if (dotProduct > largestDotProduct) {
+                    largestDotProduct = dotProduct;
+                    hitBox = selectionHitBox;
+                }
+                
+            }
+
             NPC npc = hitBox.GetNPC();
             if (npc != null) {
                 return npc;

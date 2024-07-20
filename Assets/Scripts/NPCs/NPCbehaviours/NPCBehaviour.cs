@@ -1,5 +1,6 @@
 
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class NPCBehaviour {
@@ -9,6 +10,15 @@ public class NPCBehaviour {
     public float npcUpdateInterval = 1f;
     public float npcUpdateTimer = 0f;
 
+
+    /// <summary>
+    /// List of animation actions that the npc can perform.
+    /// </summary>
+    public NPCAnimationActionList npcAnimationActionList {get; private set;}
+    public void SetNPCAnimationActionList(NPCAnimationActionList list) {
+        npcAnimationActionList = list;
+    }
+    
     public void Setup(NPC npc) {
         this.npc = npc;
         npc.OnMovementFinished += OnMovedToNewTile;
@@ -46,6 +56,14 @@ public class NPCBehaviour {
             npcUpdateTimer = 0;
             OnUpdateNPCTick();
         }
+    }
+
+    /// <summary>
+    /// Sets the update interval for the npc.
+    /// </summary>
+    /// <param name="interval"></param>
+    public void SetUpdateInterval(float interval) {
+        npcUpdateInterval = interval;
     }
 
 }

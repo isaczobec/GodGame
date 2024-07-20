@@ -31,6 +31,14 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
 
     public bool isOwnedByPlayer = true; // if the npc is owned by the player
 
+
+    // animation actions
+    public bool isPerformingMovementRestrictingAction = false; // if the npc is currently performing an action that restricts movement
+    public bool isPerformingAnimationAction {get; private set;} = false; // if the npc is currently performing an animation action
+    public NPCAnimationAction currentAnimationAction; // the current animation action the npc is performing
+
+
+
     // position and chunktile
 
     /// <summary>
@@ -196,6 +204,8 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
             return; // cant move to a tile with a terrain object
         }
 
+        if (isPerformingMovementRestrictingAction) return; // if the npc is currently performing an action that restricts movement
+
         Vector2 f = tileToMoveTo.coordinates - chunkTile.coordinates;
         currentForwardDirection = f.normalized; // update the forward direction of the npc
 
@@ -211,6 +221,9 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
         tileToMoveTo.npc = this;
         chunkTile = tileToMoveTo;
 
+        // update the coordinates
+        coordinates = chunkTile.coordinates;
+
         // start the coroutine
         if (movementCoroutine != null)
         {
@@ -223,7 +236,6 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     /// Called when the NPC tries to move to a tile but is blocked by an object or another NPC.
     /// </summary>
     private void OnMovementWasBlocked() {
-        movementQueue.Clear(); // remove all tiles from the movement queue
     }
 
     /// <summary>
@@ -357,6 +369,48 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
 
         return closestNPC;
     }
+
+
+
+
+
+    // ------ ANIMATION ACTIONS -------
+
+    /// <summary>
+    /// Tries to begin an animation action. If the action can be performed, the npcVisual will start the animation and the movement restricting flag will be set.
+    /// </summary>
+    public void TryBeginAnimationAction(NPCAnimationAction action) {
+        if (action.GetCanBePerformed()) {
+            npcVisual.StartAnimationAction(action); // check if the action can be performed and then start the animation
+            isPerformingMovementRestrictingAction = !action.allowMoving; // set the movement restricting flag
+            isPerformingAnimationAction = true; // set the animation action flag
+            currentAnimationAction = action; // set the current animation action
+        }
+    }
+
+    /// <summary>
+    /// Called automatically when an animation action has ended. Resets the movement restricting flag and calls the OnActionEnded method of the action.
+    /// </summary>
+    public void AnimationActionEnded() {
+        isPerformingAnimationAction = false;
+        isPerformingMovementRestrictingAction = false;
+        currentAnimationAction = null;
+    }
+
+    /// <summary>
+    /// call this to end the animation action prematurely. This will call the EndAnimationActionPremautrely method of the npcVisual and then call the AnimationActionEnded method.
+    /// </summary>
+    public void TryEndAnimationActionPremautrely() {
+        if (currentAnimationAction.GetCanBeEndedPrematurely()) {
+            npcVisual.EndAnimationActionPremautrely();
+            AnimationActionEnded();
+        }
+    }
+
+
+
+
+
 
     // ------ IMPLEMENTATION OF IRenderAround INTERFACE -------
 
