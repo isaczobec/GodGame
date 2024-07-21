@@ -53,6 +53,15 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""ShiftButton"",
+                    ""type"": ""Value"",
+                    ""id"": ""8ecaa37c-53d7-4ff7-8cbf-d6aa89badbd2"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -88,6 +97,17 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""action"": ""CameraControlMode"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""f88bb466-92b4-4daf-a959-5222dc166c61"",
+                    ""path"": ""<Keyboard>/shift"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ShiftButton"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -99,6 +119,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         m_PlayerControls_Mouse1 = m_PlayerControls.FindAction("Mouse1", throwIfNotFound: true);
         m_PlayerControls_Mouse2 = m_PlayerControls.FindAction("Mouse2", throwIfNotFound: true);
         m_PlayerControls_CameraControlMode = m_PlayerControls.FindAction("CameraControlMode", throwIfNotFound: true);
+        m_PlayerControls_ShiftButton = m_PlayerControls.FindAction("ShiftButton", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -163,6 +184,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
     private readonly InputAction m_PlayerControls_Mouse1;
     private readonly InputAction m_PlayerControls_Mouse2;
     private readonly InputAction m_PlayerControls_CameraControlMode;
+    private readonly InputAction m_PlayerControls_ShiftButton;
     public struct PlayerControlsActions
     {
         private @PlayerInput m_Wrapper;
@@ -170,6 +192,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         public InputAction @Mouse1 => m_Wrapper.m_PlayerControls_Mouse1;
         public InputAction @Mouse2 => m_Wrapper.m_PlayerControls_Mouse2;
         public InputAction @CameraControlMode => m_Wrapper.m_PlayerControls_CameraControlMode;
+        public InputAction @ShiftButton => m_Wrapper.m_PlayerControls_ShiftButton;
         public InputActionMap Get() { return m_Wrapper.m_PlayerControls; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -188,6 +211,9 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @CameraControlMode.started += instance.OnCameraControlMode;
             @CameraControlMode.performed += instance.OnCameraControlMode;
             @CameraControlMode.canceled += instance.OnCameraControlMode;
+            @ShiftButton.started += instance.OnShiftButton;
+            @ShiftButton.performed += instance.OnShiftButton;
+            @ShiftButton.canceled += instance.OnShiftButton;
         }
 
         private void UnregisterCallbacks(IPlayerControlsActions instance)
@@ -201,6 +227,9 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @CameraControlMode.started -= instance.OnCameraControlMode;
             @CameraControlMode.performed -= instance.OnCameraControlMode;
             @CameraControlMode.canceled -= instance.OnCameraControlMode;
+            @ShiftButton.started -= instance.OnShiftButton;
+            @ShiftButton.performed -= instance.OnShiftButton;
+            @ShiftButton.canceled -= instance.OnShiftButton;
         }
 
         public void RemoveCallbacks(IPlayerControlsActions instance)
@@ -223,5 +252,6 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         void OnMouse1(InputAction.CallbackContext context);
         void OnMouse2(InputAction.CallbackContext context);
         void OnCameraControlMode(InputAction.CallbackContext context);
+        void OnShiftButton(InputAction.CallbackContext context);
     }
 }

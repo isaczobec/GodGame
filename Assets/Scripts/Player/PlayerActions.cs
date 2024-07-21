@@ -51,7 +51,34 @@ public class PlayerActions : MonoBehaviour
 
     private void Mouse2Click(object sender, InputAction.CallbackContext e)
     {
-        if (!isInCameraControlMode && mainSelectedNPC != null) SetNpcMovementDestinationToClickedPosition(mainSelectedNPC);
+
+        NPC clickedNpc = playerCamera.GetHoveredNPC();
+
+        if (clickedNpc == null) { // if the player clicked the ground
+            // set the movement destination of the selected npc to the clicked position
+            if (!isInCameraControlMode && mainSelectedNPC != null) {
+                foreach (NPC npc in selectedNpcs) {
+                    TrySetNpcMovementDestinationToClickedPosition(npc); // add some space between the npcs later
+                }
+            }
+
+        } else {
+            // if the player right clicked on an npc
+
+            if (!clickedNpc.isOwnedByPlayer) { // if an enemy was right clicked
+                
+                bool shiftPressed = playerInputHandler.GetShiftButtonPressed(); // if shift was pressed, multi select 
+
+                foreach (NPC npc in selectedNpcs) {
+                    if (npc.nPCSO.isMercenary && npc.isOwnedByPlayer) {
+                        if (npc.npcBehaviour is NPCBehaviourMercenary mercBehaviour) {
+                            if (!shiftPressed) mercBehaviour.ClearTargettedEnemyNPCs(); // single selected npc if shift is not pressed
+                            mercBehaviour.AddPlayerAttackTarget(clickedNpc);
+                        }
+                    }
+                }
+            }
+        }
     }
 
 
@@ -65,9 +92,21 @@ public class PlayerActions : MonoBehaviour
 
     private void SetSelectedNPC()
     {
+        
         // try and select an npc
         NPC npc = playerCamera.GetHoveredNPC();
-        if (mainSelectedNPC != npc) mainSelectedNPC = npc; // can be null if no npc is hovered, ie deselecting. Dont need to set it if it already is the same.
+
+        if (mainSelectedNPC != npc) {
+            selectedNpcs.Add(npc);
+        }
+
+        // no npc was clicked. Deselect all npcs
+        if (npc == null) {
+            mainSelectedNPC = null;
+            selectedNpcs.Clear();
+        }
+
+        mainSelectedNPC = npc; // can be null if no npc is hovered, ie deselecting. Dont need to set it if it already is the same.
     }
 
     void Update()
@@ -96,15 +135,21 @@ public class PlayerActions : MonoBehaviour
     /// <summary>
     /// Sets the movement destination of some player controlled npcs to the clicked position.
     /// </summary>
-    private void SetNpcMovementDestinationToClickedPosition(NPC npc)
+    private void TrySetNpcMovementDestinationToClickedPosition(NPC npc)
     {
-        WorldClickData data = playerCamera.GetClickedTerrainPosition();
-        if (data.hit)
-        {
-            npc.TryEndAnimationActionPremautrely(); // try and end the current animation action
-            Vector2Int coords = WorldDataGenerator.instance.GetWorldCoordinates(data.hitPoint);
-            npc.SetMovementTarget(coords);
-            npc.MoveToNextTileInQueue();
+
+        if (npc.nPCSO.isMercenary && npc.isOwnedByPlayer) {
+
+            WorldClickData data = playerCamera.GetClickedTerrainPosition();
+            if (data.hit)
+            {
+                Vector2Int coords = WorldDataGenerator.instance.GetWorldCoordinates(data.hitPoint);
+                if (npc.npcBehaviour is NPCBehaviourMercenary mercBehaviour) {
+                    // call the overridable method in the mercenary behaviour
+                    mercBehaviour.OnMovementTargetSetByPlayer(coords);
+                }
+            }
         }
+
     }
 }

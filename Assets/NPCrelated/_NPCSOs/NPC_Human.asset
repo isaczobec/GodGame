@@ -21,5 +21,5 @@ MonoBehaviour:
     maxWalkableSteepness: 0.5
     maxHealth: 100
   npcBehaviourType: 0
-  isMercenary: 0
+  isMercenary: 1
   selectedHitBoxDimensions: {x: 6, y: 6, z: 6}

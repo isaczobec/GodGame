@@ -49,4 +49,8 @@ public class PlayerInputHandler : MonoBehaviour
         return playerInput.PlayerControls.CameraControlMode.ReadValue<float>() != 0;
     }
 
+    public bool GetShiftButtonPressed() {
+        return playerInput.PlayerControls.ShiftButton.ReadValue<float>() != 0;
+    }
+
 }

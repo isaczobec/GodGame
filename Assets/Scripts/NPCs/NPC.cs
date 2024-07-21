@@ -265,6 +265,8 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
 
         if (path != null) {
             movementQueue = path;
+        } else {
+            Debug.LogError("No path found");
         }
         
     }
@@ -342,7 +344,7 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     /// Gets the closest npc or returns null if no npc is visible.
     /// </summary>
     /// <returns></returns>
-    public NPC GetClosestNPC() {
+    public NPC GetClosestNPC(bool needsToBeEnemy = false, bool needsToBeFriendly = false) {
 
         NPC closestNPC = null;
         float closestDistance = Mathf.Infinity;
@@ -366,6 +368,12 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
                     Chunk lookInChunk = chunkTile.chunkTiles.chunk.GetRelativeChunk(new Vector2Int(i - currentSearchRadius, j - currentSearchRadius));
                     if (lookInChunk != null && lookInChunk.generated) {
                         foreach (NPC npc in lookInChunk.npcs) {
+
+                            // check if the npc is an enemy or friendly
+                            if (needsToBeEnemy && this.isOwnedByPlayer == npc.isOwnedByPlayer) continue;
+                            if (needsToBeFriendly && this.isOwnedByPlayer != npc.isOwnedByPlayer) continue;
+
+                            
                             if (npc != this) {
                                 float distance = Vector2.Distance(npc.coordinates, coordinates);
                                 if (distance < closestDistance) {

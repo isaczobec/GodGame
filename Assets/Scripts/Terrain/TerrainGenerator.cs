@@ -25,7 +25,7 @@ public class TerrainGenerator: MonoBehaviour
 
 
 
-    private int seed = 0;
+    private int seed = 10;
     /// <summary>
     /// Random instance used for ie seeding the perlin generators
     /// </summary>
