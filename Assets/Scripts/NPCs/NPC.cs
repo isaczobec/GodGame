@@ -53,6 +53,9 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     /// </summary>
     [HideInInspector] public ChunkTile chunkTile { get; private set; }
 
+    private bool isTryingToMoveAroundNPC = false; // if the npc is trying to move around another npc
+    private Vector2Int moveAroundNPCDestination; // the direction the npc is trying to move around another npc
+
     
     private Vector2 _currentForwardDirection = Vector2.right; // the direction the npc is currently facing
     public Vector2 currentForwardDirection {
@@ -151,8 +154,9 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
         // test movement, not final
         // SetMovementTarget(coordinates + new Vector2Int(2, -25));
         // MoveToNextTileInQueue();
-        OnMovementFinished += (sender, tile) => MoveToNextTileInQueue();
+        OnMovementFinished += (sender, tile) => OnMovementWasFinnished();
     }
+
 
 
     /// <summary>
@@ -217,7 +221,7 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     {
         if (tileToMoveTo.terrainObject != null || tileToMoveTo.npc != null)
         { // check if the tile is occupied
-            OnMovementWasBlocked();
+            OnMovementWasBlocked(tileToMoveTo); // !!!!!!!!!!!!!!!!!! risk of infinite loop
             return; // cant move to a tile with a terrain object
         }
 
@@ -252,16 +256,45 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     /// <summary>
     /// Called when the NPC tries to move to a tile but is blocked by an object or another NPC.
     /// </summary>
-    private void OnMovementWasBlocked() {
+    private void OnMovementWasBlocked(ChunkTile blockingTile) {
+        if (movementQueue.Count > 0) {
+            // get the best closest tile to move to
+            Vector2Int posDifference = blockingTile.coordinates - chunkTile.coordinates;
+
+            List<Vector2Int> newPositions = new List<Vector2Int>();
+
+            if (posDifference.x + 1 <= 1) newPositions.Add(posDifference + new Vector2Int(1,0));
+            if (posDifference.x - 1 >= -1) newPositions.Add(posDifference + new Vector2Int(-1,0));
+            if (posDifference.y + 1 <= 1) newPositions.Add(posDifference + new Vector2Int(0,1));
+            if (posDifference.y - 1 >= -1) newPositions.Add(posDifference + new Vector2Int(0,-1));
+
+            moveAroundNPCDestination = movementQueue[movementQueue.Count-1].coordinates;
+
+            int bestIndex = 0;
+            float bestDistance = Mathf.Infinity;
+            int i = 0;
+            foreach (Vector2Int pos in newPositions) {
+                float distance = Vector2.Distance(chunkTile.coordinates + pos, moveAroundNPCDestination);
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    bestIndex = i;
+                }
+                i++;
+            }
+
+            ChunkTile adjacentTile = chunkTile.GetChunkTileFromRelativePosition(newPositions[bestIndex]);
+            isTryingToMoveAroundNPC = true;
+            AdministerChunkTileMovement(adjacentTile);
+        }
     }
 
     /// <summary>
     /// Sets the movement target of the NPC to the given coordinates. The NPC will then automatically try to move to that position.
     /// The resulting path will be stored in the movementQueue list, which is then walked through by the NPC using the MoveToNextTileInQueue method.
     /// </summary>
-    public void SetMovementTarget(Vector2Int destination) {
+    public void SetMovementTarget(Vector2Int destination, bool npcsAreObstacles = false) {
         // List<ChunkTile> path = NPCPathfinding.instance.NPCGetPathTo(chunkTile, this, destination, 1000);
-        List<ChunkTile> path = NPCPathfinding.angledPathfinding.NPCGetPathAngledTo(this, destination, 45, 15, 80);
+        List<ChunkTile> path = NPCPathfinding.angledPathfinding.NPCGetPathAngledTo(this, destination, 45, 15, 80, npcsAreObstacles: npcsAreObstacles);
 
         if (path != null) {
             movementQueue = path;
@@ -271,10 +304,21 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
         
     }
 
+    private void OnMovementWasFinnished()
+    {
+        if (isTryingToMoveAroundNPC){
+            isTryingToMoveAroundNPC = false;
+            SetMovementTarget(moveAroundNPCDestination);
+            MoveToNextTileInQueue();
+        } else {
+            MoveToNextTileInQueue();
+        }
+    }
+
     /// <summary>
     /// Moves the NPC to the next tile in the movement queue, that was calculated by SetMovementTarget.
     /// </summary>
-    public void MoveToNextTileInQueue() { // public for debbuging
+    public void MoveToNextTileInQueue() {
         if (movementQueue.Count == 0) {
           OnMovementTargetReached?.Invoke(this, chunkTile);  
         return;

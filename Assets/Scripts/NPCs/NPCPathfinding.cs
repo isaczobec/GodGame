@@ -16,7 +16,7 @@ class NPCPathfinding {
     /// <summary>
     /// Returns a list of chunkTiles that the NPC should move to in order to reach the destination. Returns null if there is no path to the destination.
     /// </summary>
-    public List<ChunkTile> NPCGetPathTo(ChunkTile startTile, NPC npc, Vector2Int destinationCoordinates, int maxIterations = 1000) {
+    public List<ChunkTile> NPCGetPathTo(ChunkTile startTile, NPC npc, Vector2Int destinationCoordinates, int maxIterations = 1000, bool npcsAreObstacles = false) {
 
         PathFindingNode startNode = new PathFindingNode(startTile);
 
@@ -37,7 +37,7 @@ class NPCPathfinding {
         int iterations = 0;
         while (true) {
 
-            if (!currentNode.visited) CalculateAdjacentNodes(destinationCoordinates, currentNode, npc);
+            if (!currentNode.visited) CalculateAdjacentNodes(destinationCoordinates, currentNode, npc, npcsAreObstacles: npcsAreObstacles);
 
             PathFindingNode[] neighbourNodes = currentNode.GetNeighbours(); // doesnt return visited, null or unwalkable nodes
             unVisitedNodes.AddRange(neighbourNodes);
@@ -189,7 +189,7 @@ class NPCPathfinding {
     /// <param name="destinationCoordinates"></param>
     /// <param name="node"></param>
     /// <param name="npc"></param>
-    public void CalculateAdjacentNodes(Vector2Int destinationCoordinates, PathFindingNode node, NPC npc) {
+    public void CalculateAdjacentNodes(Vector2Int destinationCoordinates, PathFindingNode node, NPC npc, bool npcsAreObstacles = false) {
 
         Dictionary<Vector2Int, PathFindingNode> neighbours = node.GetNeighboursDict();
         for (int i = 0; i < neighbours.Count; i++) {
@@ -208,6 +208,7 @@ class NPCPathfinding {
                         walkable = !neighbourTile.terrainObject.blocksMovement;
                     }
 
+
                     neighbourNode = new PathFindingNode(neighbourTile,node);
                     neighbours[direction] = neighbourNode;
                     neighbourNode.walkable = walkable;
@@ -220,6 +221,15 @@ class NPCPathfinding {
                 // check if the neighbour is too steep to walk on
                 if (node.CheckIfToSteepToWalkOn(neighbourNode,npc)) {
                     neighbourNode.walkable = false;
+                }
+
+                
+                if (npcsAreObstacles) { // if npcs are obstacles, check if the neighbour tile has an npc on it
+                    if (neighbourNode.tile.npc != null) { 
+                        if (neighbourNode.tile.npc != npc) {
+                            neighbourNode.walkable = false;
+                        }
+                    }
                 }
 
                 if (!neighbourNode.walkable) continue; // if the neighbour is not walkable, skip it

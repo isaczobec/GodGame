@@ -41,9 +41,11 @@ public class NPCBehaviourAggresiveFighting : NPCBehaviourMercenary {
 
     public override void OnPlayerAddAttackTarget(NPC targetNPC, bool isFirstTarget) {
         if (isFirstTarget) {
-            npc.TryEndAnimationActionPremautrely();
             if (npcAnimationActionList.actions[0] is BasicMeleeAttack) {
                     BasicMeleeAttack basicMeleeAttack = (BasicMeleeAttack)npcAnimationActionList.actions[0];
+                    if (basicMeleeAttack.targetNPC != targetNPC && (targetNPC.coordinates - npc.coordinates).magnitude > 3) {
+                        npc.TryEndAnimationActionPremautrely();
+                    }
                     basicMeleeAttack.targetNPC = targetNPC;
 
                     npc.SetMovementTarget(targetNPC.coordinates);

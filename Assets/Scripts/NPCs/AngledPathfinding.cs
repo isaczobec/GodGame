@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class AngledPathfinding {
 
-    public List<ChunkTile> NPCGetPathAngledTo(NPC npc, Vector2Int destinationCoordinates, float angleIncrement, int radius, int maxIterationsPerRadius, float angleMultiplier = 0.8f, float radiusMultiplier = 0.3f, float maxIterationsMultiplier = 0.8f) {
+    public List<ChunkTile> NPCGetPathAngledTo(NPC npc, Vector2Int destinationCoordinates, float angleIncrement, int radius, int maxIterationsPerRadius, float angleMultiplier = 0.8f, float radiusMultiplier = 0.3f, float maxIterationsMultiplier = 0.8f, bool npcsAreObstacles = false) {
 
         ChunkTile currentTile = npc.chunkTile;
         List<ChunkTile> fullPath = new List<ChunkTile>();
@@ -60,7 +60,7 @@ public class AngledPathfinding {
             }
         }
 
-        List<ChunkTile> lastPath = NPCPathfinding.instance.NPCGetPathTo(currentTile, npc, destinationCoordinates, maxIterationsPerRadius);
+        List<ChunkTile> lastPath = NPCPathfinding.instance.NPCGetPathTo(currentTile, npc, destinationCoordinates, maxIterationsPerRadius, npcsAreObstacles : npcsAreObstacles);
         if (lastPath != null) {
             fullPath.AddRange(lastPath);
         }

@@ -80,6 +80,7 @@ MonoBehaviour:
   npc: {fileID: 0}
   animatorTriggerName: MeleeAttack
   allowMoving: 0
+  targetNPC: {fileID: 0}
 --- !u!1 &3249899035974576066
 GameObject:
   m_ObjectHideFlags: 0
@@ -213,7 +214,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 3.52, y: 3.52, z: 3.52}
+  m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 2296049058480010517}
