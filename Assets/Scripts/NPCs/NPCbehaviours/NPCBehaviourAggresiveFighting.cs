@@ -43,8 +43,13 @@ public class NPCBehaviourAggresiveFighting : NPCBehaviourMercenary {
         if (isFirstTarget) {
             if (npcAnimationActionList.actions[0] is BasicMeleeAttack) {
                     BasicMeleeAttack basicMeleeAttack = (BasicMeleeAttack)npcAnimationActionList.actions[0];
-                    if (basicMeleeAttack.targetNPC != targetNPC && (targetNPC.coordinates - npc.coordinates).magnitude > 3) {
-                        npc.TryEndAnimationActionPremautrely();
+                    if (basicMeleeAttack.targetNPC != targetNPC) {
+                        if ((targetNPC.coordinates - npc.coordinates).magnitude > 3) {
+                            npc.TryEndAnimationActionPremautrely();
+                        } else {
+                            // target new enemy and turn to it
+                            npc.npcVisual.TurnToDirection(targetNPC.coordinates - npc.coordinates);
+                        }
                     }
                     basicMeleeAttack.targetNPC = targetNPC;
 
