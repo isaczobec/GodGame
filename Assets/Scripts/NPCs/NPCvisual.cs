@@ -100,7 +100,7 @@ public class NPCvisual : MonoBehaviour
 
     public void OnNPCTargettedChanged(bool isTargetted, bool wasTargettedNaturally) {
         if (isTargetted) nPCTargettedDecal.EnableTargetDecal(wasTargettedNaturally);
-        else nPCTargettedDecal.DisableTargetDecal();
+        else if (nPC != null) nPCTargettedDecal.DisableTargetDecal();
     }
 
 

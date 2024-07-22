@@ -1,7 +1,7 @@
 
 public enum NPCBehaviourType {
-    AggresiveFighting,
-    PassiveFighting,
+    MercenaryWarrior,
+    BasicMelee,
     PassiveMovement,
     AggresiveMovement
 }
@@ -9,8 +9,10 @@ public enum NPCBehaviourType {
 public class NPCBehavioursList {
     public static NPCBehaviour GetNPCbehaviour(NPCBehaviourType type) {
         switch (type) {
-            case NPCBehaviourType.AggresiveFighting:
-                return new NPCBehaviourAggresiveFighting();
+            case NPCBehaviourType.MercenaryWarrior:
+                return new NPCBehaviourMercenaryWarrior();
+            case NPCBehaviourType.BasicMelee:
+                return new NPCBehaviourBasicMelee();
             default:
                 return null;
         }

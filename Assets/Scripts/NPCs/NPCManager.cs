@@ -119,6 +119,7 @@ public class NpcManager : MonoBehaviour
         
         chunkTile.chunkTiles.chunk.npcs.Add(spawnedNPC);
 
+        spawnedNPC.npcBehaviour.OnNPCStart(); // init the npcBehaviour 
 
         npcs.Add(spawnedNPC);
 

@@ -42,7 +42,6 @@ public class NPCBehaviourMercenary : NPCBehaviour
     }
 
     public override void OnReachedMovementTarget(object sender, ChunkTile tile) {
-        if (npc.isOwnedByPlayer)Debug.Log("poses: " + tile.coordinates + " " + PlayerAssignedPositionToMoveTo);
         if (tile.coordinates == PlayerAssignedPositionToMoveTo) {
             currentlyMovingToPlayerAssignedPosition = false;
         }
@@ -52,7 +51,7 @@ public class NPCBehaviourMercenary : NPCBehaviour
     /// <summary>
     /// Should be called when this mercenary npc dies. Clears targetted npcs and friendly npcs.
     /// </summary>
-    public void OnDie() {
+    public override void OnDie() {
         ClearPlayerTargettedEnemyNPCs();
         ClearNaturallyTargettedEnemyNPCs();
         friendlyNPCToFollow = null;
@@ -86,9 +85,7 @@ public class NPCBehaviourMercenary : NPCBehaviour
         }
     }
 
-    public void OnAddAttackTargetGeneral(NPC addedTargetNPC, bool wasTargettedNaturally) {
-        addedTargetNPC.npcVisual.OnNPCTargettedChanged(true, wasTargettedNaturally);
-    }
+
 
     /// <summary>
     /// Overridable method that is called when the player adds an attack target to this mercenary npc. 

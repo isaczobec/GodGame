@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
-public class NPCBehaviourAggresiveFighting : NPCBehaviourMercenary {
+public class NPCBehaviourMercenaryWarrior : NPCBehaviourMercenary {
 
 
     public override void OnUpdateNPCTick() {
@@ -74,6 +74,8 @@ public class NPCBehaviourAggresiveFighting : NPCBehaviourMercenary {
         }
 
     }
+
+    
 
 
 

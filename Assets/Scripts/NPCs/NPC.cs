@@ -544,10 +544,7 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     /// </summary>
     public void Die() {
 
-        if (npcBehaviour is NPCBehaviourMercenary) {
-            NPCBehaviourMercenary mercenaryBehaviour = (NPCBehaviourMercenary)npcBehaviour;
-            mercenaryBehaviour.OnDie();
-        }
+        npcBehaviour.OnDie();
 
         chunkTile.npc = null;
         chunkTile.chunkTiles.chunk.npcs.Remove(this);

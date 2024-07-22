@@ -1064,6 +1064,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   testNPCSO: {fileID: 11400000, guid: e4571384a4f69b9449352a1a4f51a893, type: 2}
+  testEnemyNPCSO: {fileID: 11400000, guid: a3c306d969e04364e860d4762714dc03, type: 2}
   maxChunkSize: 65
   initialWorldSize: 5
   fullWorldSizeChunks: 256

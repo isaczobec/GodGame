@@ -10,16 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 02686688b68eddf4b916ff1470e40804, type: 3}
-  m_Name: NPC_Human
+  m_Name: NPC_Skeleton
   m_EditorClassIdentifier: 
-  npcName: Human
-  prefab: {fileID: 1787226246611154714, guid: 8d7e740f55f08034fbe46be30cc636de, type: 3}
+  npcName: Skeleton
+  prefab: {fileID: 1787226246611154714, guid: cafb575ee4c6fa54e9319934567e4604, type: 3}
   npcBaseStats:
-    renderDistance: 3
-    movementSpeed: 6
+    renderDistance: 2
+    movementSpeed: 3
     attackSpeed: 1
-    maxWalkableSteepness: 0.5
-    maxHealth: 1000
-  npcBehaviourType: 0
-  isMercenary: 1
-  selectedHitBoxDimensions: {x: 6, y: 6, z: 6}
+    maxWalkableSteepness: 1
+    maxHealth: 50
+  npcBehaviourType: 1
+  isMercenary: 0
+  selectedHitBoxDimensions: {x: 3, y: 3, z: 3}

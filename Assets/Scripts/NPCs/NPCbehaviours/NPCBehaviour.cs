@@ -1,7 +1,9 @@
 
 using System;
 using System.Collections.Generic;
+using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class NPCBehaviour {
 
@@ -19,6 +21,12 @@ public class NPCBehaviour {
 
 
     /// <summary>
+    /// The main attack target of the npc. Not used for mercenary NPCs as their targetting is different.
+    /// </summary>
+    public NPC mainAttackTargetNPC {get; private set;}
+
+
+    /// <summary>
     /// List of animation actions that the npc can perform.
     /// </summary>
     public NPCAnimationActionList npcAnimationActionList {get; private set;}
@@ -32,6 +40,14 @@ public class NPCBehaviour {
         npc.OnMovementTargetReached += OnReachedMovementTarget;
 
         npcUpdateTimer += UnityEngine.Random.Range(0, npcUpdateInterval); // randomize the update timer to eliminate bottlenecks
+    }
+
+
+    /// <summary>
+    /// Overridable method that is called when the npc is setup.
+    /// </summary>
+    public virtual void OnNPCStart() {
+        
     }
 
 
@@ -85,6 +101,33 @@ public class NPCBehaviour {
     /// <param name="interval"></param>
     public void SetUpdateInterval(float interval) {
         npcUpdateInterval = interval;
+    }
+
+
+    /// <summary>
+    /// Sets the main attack target of the npc. !DO NOT use this one for mercenary NPCs. Instead, use AddPlayerAttackTarget() and AddNaturallyTargettedEnemyNPC().
+    /// </summary>
+    /// <param name="targetNPC"></param>
+    public void SetAttackTarget(NPC targetNPC) {
+        mainAttackTargetNPC?.npcVisual.OnNPCTargettedChanged(false, false);
+        if (targetNPC != null) {
+            mainAttackTargetNPC = targetNPC;
+            OnAddAttackTargetGeneral(targetNPC, true);
+        }
+    }
+
+    public void OnAddAttackTargetGeneral(NPC addedTargetNPC, bool wasTargettedNaturally) {
+        addedTargetNPC.npcVisual.OnNPCTargettedChanged(true, wasTargettedNaturally);
+    }
+
+    public virtual void OnDie() {
+
+        if (!npc.nPCSO.isMercenary) {
+            if (mainAttackTargetNPC != null) {
+                mainAttackTargetNPC.npcVisual.OnNPCTargettedChanged(false, false);
+            }
+            mainAttackTargetNPC = null;
+        }
     }
 
 }

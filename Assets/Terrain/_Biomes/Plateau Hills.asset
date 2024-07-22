@@ -43,7 +43,7 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
     plainnessPerlinGenerator:
-      scale: 0.05
+      scale: 0.025
       valMultiplier: 1
       valCurve:
         serializedVersion: 2

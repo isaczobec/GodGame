@@ -14,6 +14,7 @@ class WorldDataGenerator : MonoBehaviour
 {
 
     [SerializeField] private NPCSO testNPCSO;
+    [SerializeField] private NPCSO testEnemyNPCSO;
 
     [Header("World Generation Settings")]
     [SerializeField] public int maxChunkSize;
@@ -135,15 +136,15 @@ class WorldDataGenerator : MonoBehaviour
 
     private void TestSpawnNPC() {
         Chunk chunk = chunkTree.CreateOrGetChunk(new Vector2Int(fullWorldSizeChunks / 2, fullWorldSizeChunks / 2), allowCreation: false);
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 4; i++) {
             for (int j = 0; j<5; j++) {
 
         ChunkTile tile = chunk.tiles.tiles[i*2 + 4, j*2];
         bool player = true;
-        if (j != 0) {
+        if (j != 0 || i != 0) {
             player = false;
         }
-        NPC npc = NpcManager.instance.SpawnNPC(testNPCSO, tile,player);
+        NPC npc = player ? NpcManager.instance.SpawnNPC(testNPCSO, tile,player) : NpcManager.instance.SpawnNPC(testEnemyNPCSO, tile,player);
         }
         }
         testSpawnedNPC = true;
