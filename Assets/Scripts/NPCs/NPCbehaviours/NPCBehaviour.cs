@@ -29,7 +29,7 @@ public class NPCBehaviour {
     public void Setup(NPC npc) {
         this.npc = npc;
         npc.OnMovementFinished += OnMovedToNewTile;
-        npc.OnMovementFinished += OnReachedMovementTarget;
+        npc.OnMovementTargetReached += OnReachedMovementTarget;
 
         npcUpdateTimer += UnityEngine.Random.Range(0, npcUpdateInterval); // randomize the update timer to eliminate bottlenecks
     }

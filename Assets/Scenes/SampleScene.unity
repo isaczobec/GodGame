@@ -1029,6 +1029,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   npcSelectedDecalPrefab: {fileID: 1881453517955174800, guid: ed67df67c5d27ce489821bcaee662a84,
     type: 3}
+  npcTargettedDecalPrefab: {fileID: 1881453517955174800, guid: 6b7e1e78cd49454409ea5a47c3e0b25f,
+    type: 3}
   npcSelectedHitBoxPrefab: {fileID: 5530116107146563953, guid: 2a1ac9526862a7247b82532eae0a242a,
     type: 3}
   npcs: []
@@ -1081,7 +1083,7 @@ Transform:
   m_GameObject: {fileID: 2005700292}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -427.08688, y: 314.12845, z: 7.434311}
+  m_LocalPosition: {x: -427.0869, y: 314.1284, z: 7.434311}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

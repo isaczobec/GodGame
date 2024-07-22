@@ -10,7 +10,10 @@ public class NPCvisual : MonoBehaviour
     [SerializeField] private GameObject visualGameObject;
 
     private NPCSelctedDecal npcSelctedDecal;
+    private NPCTargettedDecal nPCTargettedDecal;
     private NPC nPC;
+
+    
 
 
     private NPCAnimationAction waitingOnActionToFinish;
@@ -30,7 +33,7 @@ public class NPCvisual : MonoBehaviour
     private Coroutine turningCoroutine;
 
 
-    public void Setup(NPC npc, NPCSelctedDecal npcSelctedDecal) {
+    public void Setup(NPC npc, NPCSelctedDecal npcSelctedDecal, NPCTargettedDecal nPCTargettedDecal) {
         nPC = npc;
         // subscribe to the events
         nPC.currentlyMovingUpdated += CurrentlyMovingUpdated;    
@@ -44,6 +47,7 @@ public class NPCvisual : MonoBehaviour
 
         // set decal values
         this.npcSelctedDecal = npcSelctedDecal;
+        this.nPCTargettedDecal = nPCTargettedDecal;
     }
 
     private void AttackSpeedUpdated(object sender, float e)
@@ -92,6 +96,11 @@ public class NPCvisual : MonoBehaviour
     /// <param name="selected"></param>
     public void OnNPCSelectedChanged(bool selected) {
         npcSelctedDecal.SetDecalOn(selected);
+    }
+
+    public void OnNPCTargettedChanged(bool isTargetted, bool wasTargettedNaturally) {
+        if (isTargetted) nPCTargettedDecal.EnableTargetDecal(wasTargettedNaturally);
+        else nPCTargettedDecal.DisableTargetDecal();
     }
 
 

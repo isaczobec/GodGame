@@ -7,6 +7,7 @@ public class NpcManager : MonoBehaviour
 {
 
     [SerializeField] private GameObject npcSelectedDecalPrefab;
+    [SerializeField] private GameObject npcTargettedDecalPrefab;
 
     [SerializeField] private GameObject npcSelectedHitBoxPrefab;
 
@@ -87,14 +88,19 @@ public class NpcManager : MonoBehaviour
         spawnedNPC.Initialize();
 
         // instantiate and initialize the NPC selected decal
-        GameObject decalObject = Instantiate(npcSelectedDecalPrefab, Vector3.zero, Quaternion.identity, gameObject.transform); // spawn the selected decal and parent it to the npc
-        decalObject.transform.localPosition = new Vector3(0, 0.1f, 0);
-        NPCSelctedDecal decal = decalObject.GetComponent<NPCSelctedDecal>();
-        decal.SetNPCandSetup(spawnedNPC);
+        GameObject selectedDecalObject = Instantiate(npcSelectedDecalPrefab, Vector3.zero, Quaternion.identity, gameObject.transform); // spawn the selected decal and parent it to the npc
+        selectedDecalObject.transform.localPosition = new Vector3(0, 0.1f, 0);
+        NPCSelctedDecal selectedDecal = selectedDecalObject.GetComponent<NPCSelctedDecal>();
+        selectedDecal.SetNPCandSetup(spawnedNPC);
+
+        GameObject targettedDecalObject = Instantiate(npcTargettedDecalPrefab, Vector3.zero, Quaternion.identity, gameObject.transform); // spawn the targetted decal and parent it to the npc
+        targettedDecalObject.transform.localPosition = new Vector3(0, 0.1f, 0);
+        NPCTargettedDecal targettedDecal = targettedDecalObject.GetComponent<NPCTargettedDecal>();
+        targettedDecal.SetNPCandSetup(spawnedNPC);
 
         // get and assign the NPCvisual
         NPCvisual npcVisual = npcGameObject.GetComponent<NPCvisual>();
-        npcVisual.Setup(spawnedNPC, decal);
+        npcVisual.Setup(spawnedNPC, selectedDecal, targettedDecal);
         spawnedNPC.SetNpcVisual(npcVisual);
 
         // add the hitboxes of the npc
@@ -121,4 +127,5 @@ public class NpcManager : MonoBehaviour
         return spawnedNPC;
         
     }
+
 }

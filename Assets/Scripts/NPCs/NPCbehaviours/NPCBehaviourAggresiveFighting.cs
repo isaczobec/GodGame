@@ -5,7 +5,18 @@ public class NPCBehaviourAggresiveFighting : NPCBehaviourMercenary {
 
     public override void OnUpdateNPCTick() {
 
-            NPC targetNPC = playerTargettedEnemyNPCs.Count > 0 ? GetFirstTargettedEnemyNPC() : null;
+        if (currentlyMovingToPlayerAssignedPosition) return;
+
+            NPC targetNPC = playerTargettedEnemyNPCs.Count > 0 ? GetFirstPlayerTargettedEnemyNPC() : null;
+            if (targetNPC == null) {
+                targetNPC = GetFirstNaturallyTargettedEnemyNPC();
+                if (targetNPC == null) {
+                    
+                    targetNPC = npc.GetClosestNPC(needsToBeEnemy: true);
+                    AddNaturallyTargettedEnemyNPC(targetNPC);
+                }
+            }
+
             if (npcAnimationActionList.actions[0] is BasicMeleeAttack) {
                 BasicMeleeAttack basicMeleeAttack = (BasicMeleeAttack)npcAnimationActionList.actions[0];
                 basicMeleeAttack.targetNPC = targetNPC;
@@ -26,7 +37,7 @@ public class NPCBehaviourAggresiveFighting : NPCBehaviourMercenary {
         if (action is BasicMeleeAttack) {
                 
 
-            NPC targetNPC = playerTargettedEnemyNPCs.Count > 0 ? GetFirstTargettedEnemyNPC() : null;
+            NPC targetNPC = GetHighestPriorityTargettedNPC();
             if (targetNPC == null) return;
 
             if ((npc.coordinates - targetNPC.coordinates).magnitude > 3) return; 

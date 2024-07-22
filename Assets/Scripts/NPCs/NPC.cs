@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.AI;
 
 
 
@@ -55,6 +56,7 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
 
     private bool isTryingToMoveAroundNPC = false; // if the npc is trying to move around another npc
     private Vector2Int moveAroundNPCDestination; // the direction the npc is trying to move around another npc
+    private int moveAroundNPCIterations = 0; // the number of times the npc has tried to move around another in a loop
 
     
     private Vector2 _currentForwardDirection = Vector2.right; // the direction the npc is currently facing
@@ -139,6 +141,7 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     {
         npcBehaviour.FrameUpdate();
 
+        if (isDead && isOwnedByPlayer) Debug.Log("NPC is dead");
         if (isDead) Die();
     }
 
@@ -257,16 +260,27 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     /// Called when the NPC tries to move to a tile but is blocked by an object or another NPC.
     /// </summary>
     private void OnMovementWasBlocked(ChunkTile blockingTile) {
+
+        moveAroundNPCIterations++;
+        if (moveAroundNPCIterations > 8) {
+            Debug.LogError("Couldnt move around NPC after 8 iterations");
+            return;
+        }
+
         if (movementQueue.Count > 0) {
             // get the best closest tile to move to
-            Vector2Int posDifference = blockingTile.coordinates - chunkTile.coordinates;
 
-            List<Vector2Int> newPositions = new List<Vector2Int>();
+            List<Vector2Int> newPositions = new List<Vector2Int>() {
+                new Vector2Int(1, 0),
+                new Vector2Int(-1, 0),
+                new Vector2Int(0, 1),
+                new Vector2Int(0, -1),
+                new Vector2Int(1, 1),
+                new Vector2Int(-1, 1),
+                new Vector2Int(1, -1),
+                new Vector2Int(-1, -1)
+            };
 
-            if (posDifference.x + 1 <= 1) newPositions.Add(posDifference + new Vector2Int(1,0));
-            if (posDifference.x - 1 >= -1) newPositions.Add(posDifference + new Vector2Int(-1,0));
-            if (posDifference.y + 1 <= 1) newPositions.Add(posDifference + new Vector2Int(0,1));
-            if (posDifference.y - 1 >= -1) newPositions.Add(posDifference + new Vector2Int(0,-1));
 
             moveAroundNPCDestination = movementQueue[movementQueue.Count-1].coordinates;
 
@@ -275,7 +289,8 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
             int i = 0;
             foreach (Vector2Int pos in newPositions) {
                 float distance = Vector2.Distance(chunkTile.coordinates + pos, moveAroundNPCDestination);
-                if (distance < bestDistance) {
+                ChunkTile lookingAtChunkTile = chunkTile.GetChunkTileFromRelativePosition(pos);
+                if (lookingAtChunkTile.npc == null && distance < bestDistance) {
                     bestDistance = distance;
                     bestIndex = i;
                 }
@@ -293,6 +308,9 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     /// The resulting path will be stored in the movementQueue list, which is then walked through by the NPC using the MoveToNextTileInQueue method.
     /// </summary>
     public void SetMovementTarget(Vector2Int destination, bool npcsAreObstacles = false) {
+
+        moveAroundNPCIterations = 0;
+
         // List<ChunkTile> path = NPCPathfinding.instance.NPCGetPathTo(chunkTile, this, destination, 1000);
         List<ChunkTile> path = NPCPathfinding.angledPathfinding.NPCGetPathAngledTo(this, destination, 45, 15, 80, npcsAreObstacles: npcsAreObstacles);
 
@@ -319,12 +337,17 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     /// Moves the NPC to the next tile in the movement queue, that was calculated by SetMovementTarget.
     /// </summary>
     public void MoveToNextTileInQueue() {
-        if (movementQueue.Count == 0) {
-          OnMovementTargetReached?.Invoke(this, chunkTile);  
-        return;
-        }
+
+        if (movementQueue.Count == 0) return;
 
         ChunkTile nextTile = movementQueue[0];
+
+        if (movementQueue.Count == 1) {
+          OnMovementTargetReached?.Invoke(this, movementQueue[0]);  
+        movementQueue.RemoveAt(0);
+          
+        return;
+        }
         movementQueue.RemoveAt(0);
 
         MoveToAdjacentTile(nextTile);
@@ -354,6 +377,8 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
         transform.position = worldPos2;
 
         currentlyMoving = false; // reset the moving flag
+
+        moveAroundNPCIterations = 0; // reset the move around npc iterations
 
         OnMovementFinished?.Invoke(this, tileToMoveTo);
 
@@ -505,6 +530,7 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     }
 
     public HitInfo DealDamage(NPC target, float damage) {
+        if (target == null) return new HitInfo{wasHit = false};
         HitInfo info = target.TakeDamage(damage);
         OnDamageDealt?.Invoke(this, info);
         return info;
@@ -517,6 +543,12 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     /// Kills the NPC. Removes it from the chunkTile and the list of npcs in the chunk.
     /// </summary>
     public void Die() {
+
+        if (npcBehaviour is NPCBehaviourMercenary) {
+            NPCBehaviourMercenary mercenaryBehaviour = (NPCBehaviourMercenary)npcBehaviour;
+            mercenaryBehaviour.OnDie();
+        }
+
         chunkTile.npc = null;
         chunkTile.chunkTiles.chunk.npcs.Remove(this);
         NpcManager.instance.npcs.Remove(this);

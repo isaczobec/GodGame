@@ -67,12 +67,13 @@ public class PlayerActions : MonoBehaviour
 
             if (!clickedNpc.isOwnedByPlayer) { // if an enemy was right clicked
                 
-                bool shiftPressed = playerInputHandler.GetShiftButtonPressed(); // if shift was pressed, multi select 
+                bool shiftPressed = playerInputHandler.GetShiftButtonPressed(); // if shift was pressed, multi target the enemies
 
                 foreach (NPC npc in selectedNpcs) {
                     if (npc.nPCSO.isMercenary && npc.isOwnedByPlayer) {
                         if (npc.npcBehaviour is NPCBehaviourMercenary mercBehaviour) {
-                            if (!shiftPressed) mercBehaviour.ClearTargettedEnemyNPCs(); // single selected npc if shift is not pressed
+                            if (!shiftPressed) mercBehaviour.ClearPlayerTargettedEnemyNPCs(); // single selected npc if shift is not pressed
+                            mercBehaviour.ClearNaturallyTargettedEnemyNPCs(); // prioritize the player targetted npcs
                             mercBehaviour.AddPlayerAttackTarget(clickedNpc);
                         }
                     }
