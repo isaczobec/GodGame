@@ -19,6 +19,8 @@ public class NPCSelctedDecal : MonoBehaviour
     // --- material reference strings ---
     private const string IsEnemy = "_IsEnemy";
     private const string IsSelected = "_IsSelected";
+    private const string IsMainSelected = "_IsMainSelected";
+    
 
 
     // memeber variables    
@@ -43,5 +45,10 @@ public class NPCSelctedDecal : MonoBehaviour
         decalGameObject.transform.localScale = new Vector3(1f,1f,1f) * (enabled ? decalSizeSelected : decalSizeUnSelected) + new Vector3(0f, 0f, 1f);
         decalProjector.material.SetFloat(IsSelected, enabled ? 1 : 0);
         currentlySelected = enabled; // do this last so we can compare states
+    }
+
+    public void SetMainSelected(bool mainSelected) {
+        Debug.Log("mainselected? :" +mainSelected);
+        decalProjector.material.SetFloat(IsMainSelected, mainSelected ? 1 : 0);
     }
 }

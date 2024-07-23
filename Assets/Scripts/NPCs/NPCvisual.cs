@@ -98,6 +98,10 @@ public class NPCvisual : MonoBehaviour
         npcSelctedDecal.SetDecalOn(selected);
     }
 
+    public void OnMainSelectedChanged(bool mainSelected) {
+        npcSelctedDecal.SetMainSelected(mainSelected);
+    }
+
     public void OnNPCTargettedChanged(bool isTargetted, bool wasTargettedNaturally) {
         if (isTargetted) nPCTargettedDecal.EnableTargetDecal(wasTargettedNaturally);
         else if (nPC != null) nPCTargettedDecal.DisableTargetDecal();

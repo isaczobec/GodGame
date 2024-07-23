@@ -263,7 +263,7 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
 
         moveAroundNPCIterations++;
         if (moveAroundNPCIterations > 8) {
-            Debug.LogError("Couldnt move around NPC after 8 iterations");
+            Debug.LogWarning("Couldnt move around NPC after 8 iterations");
             return;
         }
 

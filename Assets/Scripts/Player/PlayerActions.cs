@@ -26,10 +26,10 @@ public class PlayerActions : MonoBehaviour
         get => _mainSelectedNPC;
         set {
             if (_mainSelectedNPC != null) {
-                _mainSelectedNPC.npcVisual.OnNPCSelectedChanged(false);
+                _mainSelectedNPC.npcVisual.OnMainSelectedChanged(false);
             }
             if (value != null) {
-                value.npcVisual.OnNPCSelectedChanged(true);
+                value.npcVisual.OnMainSelectedChanged(true);
             }
             _mainSelectedNPC = value;
         }
@@ -48,6 +48,10 @@ public class PlayerActions : MonoBehaviour
         NpcManager.instance.OnNPCSpawned += OnNPCSpawned;
     }
 
+    void Update()
+    {
+        HandlePlayerCameraCommunication();
+    }
 
     private void Mouse2Click(object sender, InputAction.CallbackContext e)
     {
@@ -94,26 +98,42 @@ public class PlayerActions : MonoBehaviour
     private void SetSelectedNPC()
     {
         
-        // try and select an npc
-        NPC npc = playerCamera.GetHoveredNPC();
+        // try and select an npc, prioritize mercenaries
+        NPC hoveredNPC = playerCamera.GetHoveredNPC(prioritizeMercenaries: true);
 
-        if (mainSelectedNPC != npc) {
-            selectedNpcs.Add(npc);
-        }
+        if (!playerInputHandler.GetShiftButtonPressed()) RemoveAllSelectedNPCs(); // if shift is not pressed, clear the selected npcs
+        AddSelectedNPC(hoveredNPC);
 
         // no npc was clicked. Deselect all npcs
-        if (npc == null) {
+        if (hoveredNPC == null) {
             mainSelectedNPC = null;
-            selectedNpcs.Clear();
+            RemoveAllSelectedNPCs();
         }
 
-        mainSelectedNPC = npc; // can be null if no npc is hovered, ie deselecting. Dont need to set it if it already is the same.
+        mainSelectedNPC = hoveredNPC; // can be null if no npc is hovered, ie deselecting. Dont need to set it if it already is the same.
     }
 
-    void Update()
-    {
-        HandlePlayerCameraCommunication();
+    private void AddSelectedNPC(NPC npc) {
+        if (!selectedNpcs.Contains(npc) && npc != null) {
+            selectedNpcs.Add(npc);
+            npc.npcVisual.OnNPCSelectedChanged(true);
+        }
     }
+
+    private void RemoveSelectedNPC(NPC npc) {
+        if (selectedNpcs.Contains(npc)) {
+            selectedNpcs.Remove(npc);
+            npc.npcVisual.OnNPCSelectedChanged(false);
+        }
+    }
+
+    private void RemoveAllSelectedNPCs() {
+        foreach (NPC npc in selectedNpcs) {
+            npc.npcVisual.OnNPCSelectedChanged(false);
+        }
+        selectedNpcs.Clear();
+    }
+
 
     private void OnNPCSpawned(object sender, NPC npc)
     {

@@ -141,7 +141,7 @@ class WorldDataGenerator : MonoBehaviour
 
         ChunkTile tile = chunk.tiles.tiles[i*2 + 4, j*2];
         bool player = true;
-        if (j != 0 || i != 0) {
+        if (j != 0 || (i != 0 && i != 1)) {
             player = false;
         }
         NPC npc = player ? NpcManager.instance.SpawnNPC(testNPCSO, tile,player) : NpcManager.instance.SpawnNPC(testEnemyNPCSO, tile,player);

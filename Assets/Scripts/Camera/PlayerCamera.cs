@@ -124,14 +124,15 @@ public class PlayerCamera : MonoBehaviour
     /// Gets the npc that is currently hovered by the mouse. Returns null if no npc is hovered.
     /// </summary>
     /// <returns></returns>
-    public NPC GetHoveredNPC() {
+    public NPC GetHoveredNPC(bool prioritizeMercenaries = false) {
 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
         if (Physics.RaycastAll(ray, 10000f, npcSelectionHitBoxLayerMask).Length > 0) { // if we hit something
 
             float largestDotProduct = float.MinValue;
-            NPCSelectionHitBox hitBox = null;
+            NPCSelectionHitBox bestHitBox = null;
+            NPCSelectionHitBox bestMercenaryHitBox = null;
 
             RaycastHit[] hits = Physics.RaycastAll(ray, 10000f, npcSelectionHitBoxLayerMask);
             if (hits.Length == 0) return null; // nothing hit
@@ -141,12 +142,26 @@ public class PlayerCamera : MonoBehaviour
                 float dotProduct = Vector3.Dot(ray.direction, (selectionHitBox.GetMiddlePoint().position - Camera.main.transform.position).normalized);
                 if (dotProduct > largestDotProduct) {
                     largestDotProduct = dotProduct;
-                    hitBox = selectionHitBox;
+                    bestHitBox = selectionHitBox;
+                    if (selectionHitBox.GetIsMercenary() && prioritizeMercenaries) {
+                        bestMercenaryHitBox = selectionHitBox;
+                    }
                 }
                 
             }
 
-            NPC npc = hitBox.GetNPC();
+            NPCSelectionHitBox definitiveBestHitbox;
+            if (prioritizeMercenaries) {
+                if (bestMercenaryHitBox != null) {
+                    definitiveBestHitbox = bestMercenaryHitBox;
+                } else {
+                    definitiveBestHitbox = bestHitBox;
+                }
+            } else {
+                definitiveBestHitbox = bestHitBox;
+            }
+
+            NPC npc = definitiveBestHitbox.GetNPC();
             if (npc != null) {
                 return npc;
             }
