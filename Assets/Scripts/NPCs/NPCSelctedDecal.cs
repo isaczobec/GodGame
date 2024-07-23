@@ -48,7 +48,6 @@ public class NPCSelctedDecal : MonoBehaviour
     }
 
     public void SetMainSelected(bool mainSelected) {
-        Debug.Log("mainselected? :" +mainSelected);
         decalProjector.material.SetFloat(IsMainSelected, mainSelected ? 1 : 0);
     }
 }

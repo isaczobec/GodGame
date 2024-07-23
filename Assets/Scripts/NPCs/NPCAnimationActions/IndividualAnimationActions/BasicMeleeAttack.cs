@@ -27,6 +27,9 @@ public class BasicMeleeAttack : NPCAnimationAction
 
     public override void OnActionPerformed()
     {
+        if (targetNPC == null) {
+            return;
+        }
         if ((targetNPC.coordinates - npc.coordinates).magnitude <= maxPerformRange) {
             npc.DealDamage(targetNPC, baseDamage);
         }

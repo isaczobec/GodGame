@@ -21,6 +21,10 @@ public class PlayerInputHandler : MonoBehaviour
     public EventHandler<UnityEngine.InputSystem.InputAction.CallbackContext> OnMouse2Released;
 
 
+    public EventHandler<int> OnAbilityPressed;
+    public EventHandler<int> OnAbilityReleased;
+
+
     // methods
 
     public void Awake() {
@@ -43,6 +47,15 @@ public class PlayerInputHandler : MonoBehaviour
 
         playerInput.PlayerControls.Mouse2.performed += ctx => OnMouse2?.Invoke(this, ctx);
         playerInput.PlayerControls.Mouse2.canceled += ctx => OnMouse2Released?.Invoke(this, ctx);
+
+        playerInput.PlayerControls.AbilityButton1.performed += ctx => OnAbilityPressed?.Invoke(this, 1);
+        playerInput.PlayerControls.AbilityButton1.canceled += ctx => OnAbilityReleased?.Invoke(this, 1);
+        playerInput.PlayerControls.AbilityButton2.performed += ctx => OnAbilityPressed?.Invoke(this, 2);
+        playerInput.PlayerControls.AbilityButton2.canceled += ctx => OnAbilityReleased?.Invoke(this, 2);
+        playerInput.PlayerControls.AbilityButton3.performed += ctx => OnAbilityPressed?.Invoke(this, 3);
+        playerInput.PlayerControls.AbilityButton3.canceled += ctx => OnAbilityReleased?.Invoke(this, 3);
+        playerInput.PlayerControls.AbilityButton4.performed += ctx => OnAbilityPressed?.Invoke(this, 4);
+        playerInput.PlayerControls.AbilityButton4.canceled += ctx => OnAbilityReleased?.Invoke(this, 4);
     }
 
     public bool GetCameraControlButtonPressed() {

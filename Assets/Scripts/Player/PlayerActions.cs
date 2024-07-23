@@ -45,6 +45,8 @@ public class PlayerActions : MonoBehaviour
         playerInputHandler.OnMouse1 += Mouse1Click;
         playerInputHandler.OnMouse2 += Mouse2Click;
 
+        playerInputHandler.OnAbilityReleased += TryCastAbility;
+
         NpcManager.instance.OnNPCSpawned += OnNPCSpawned;
     }
 
@@ -172,5 +174,16 @@ public class PlayerActions : MonoBehaviour
             }
         }
 
+    }
+
+
+
+
+    // ---------------- ABILITIES ----------------
+
+    private void TryCastAbility(object sender, int abilityIndex) {
+        if (mainSelectedNPC != null && mainSelectedNPC.isOwnedByPlayer && mainSelectedNPC.nPCSO.isMercenary) {
+            bool succeded = mainSelectedNPC.abilityList.TryCastAbilityAtIndex(abilityIndex);
+        }
     }
 }

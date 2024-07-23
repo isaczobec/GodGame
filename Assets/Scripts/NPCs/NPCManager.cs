@@ -74,6 +74,18 @@ public class NpcManager : MonoBehaviour
         NPCAnimationActionList nPCAnimationActionList = npcGameObject.GetComponent<NPCAnimationActionList>();
         nPCAnimationActionList.SetupActions(spawnedNPC);
 
+        // add abilityList
+        spawnedNPC.abilityList = new NPCAbilityList(spawnedNPC);
+        NPCAbility[] abilities = npcGameObject.GetComponents<NPCAbility>();
+        Debug.Log("Abilities length: " + abilities.Length);
+        for (int i = 0; i < abilities.Length; i++) {
+            Debug.Log("Setting ability at index: " + i);
+            spawnedNPC.abilityList.SetAbilityAtIndex(abilities[i],i);
+            if (i > spawnedNPC.abilityList.maxAbilities - 1 ) break;
+        }
+        // for testing; try adding abilities to the abilityList
+
+
         // init the npcBehaviour. this is perhaps temporary, not sure if this is the best way to do it
         spawnedNPC.npcBehaviour = NPCBehavioursList.GetNPCbehaviour(npcso.npcBehaviourType);
         spawnedNPC.npcBehaviour.Setup(spawnedNPC);

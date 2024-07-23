@@ -34,9 +34,14 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
 
 
     // animation actions
+    public NPCAnimationActionList animationActionList; // the list of animation actions the npc can perform
     public bool isPerformingMovementRestrictingAction = false; // if the npc is currently performing an action that restricts movement
     public bool isPerformingAnimationAction {get; private set;} = false; // if the npc is currently performing an animation action
     public NPCAnimationAction currentAnimationAction; // the current animation action the npc is performing
+
+
+    // abilities
+    public NPCAbilityList abilityList; // the list of abilities the npc has
 
 
     public bool isDead {get; private set;} = false;
@@ -474,14 +479,16 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     /// <summary>
     /// Tries to begin an animation action. If the action can be performed, the npcVisual will start the animation and the movement restricting flag will be set.
     /// </summary>
-    public void TryBeginAnimationAction(NPCAnimationAction action) {
+    public bool TryBeginAnimationAction(NPCAnimationAction action) {
         if (action.GetCanBePerformed()) {
             npcVisual.StartAnimationAction(action); // check if the action can be performed and then start the animation
             isPerformingMovementRestrictingAction = !action.allowMoving; // set the movement restricting flag
             isPerformingAnimationAction = true; // set the animation action flag
             currentAnimationAction = action; // set the current animation action
             action.OnActionStarted(); // call the action started "event method" of the action
+            return true;
         }
+        return false;
     }
 
     /// <summary>
@@ -553,6 +560,10 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
         npcBehaviour = null; // clear the behaviour
         Destroy(gameObject);
     }
+
+
+    // ----------- ABIILITIES ------------
+
 
 
 
