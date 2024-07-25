@@ -19,7 +19,7 @@ MonoBehaviour:
     movementSpeed: 7
     attackSpeed: 1.5
     maxWalkableSteepness: 0.5
-    maxHealth: 2000
+    maxHealth: 1000
   npcBehaviourType: 0
   isMercenary: 1
   selectedHitBoxDimensions: {x: 6, y: 6, z: 6}

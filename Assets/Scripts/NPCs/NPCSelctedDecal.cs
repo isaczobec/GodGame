@@ -41,7 +41,7 @@ public class NPCSelctedDecal : MonoBehaviour
     }
 
     public void SetDecalOn(bool enabled) {
-
+        if (decalGameObject == null) return;
         decalGameObject.transform.localScale = new Vector3(1f,1f,1f) * (enabled ? decalSizeSelected : decalSizeUnSelected) + new Vector3(0f, 0f, 1f);
         decalProjector.material.SetFloat(IsSelected, enabled ? 1 : 0);
         currentlySelected = enabled; // do this last so we can compare states

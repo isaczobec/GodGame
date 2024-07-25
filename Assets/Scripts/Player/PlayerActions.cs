@@ -125,13 +125,13 @@ public class PlayerActions : MonoBehaviour
     private void RemoveSelectedNPC(NPC npc) {
         if (selectedNpcs.Contains(npc)) {
             selectedNpcs.Remove(npc);
-            npc.npcVisual.OnNPCSelectedChanged(false);
+            npc?.npcVisual.OnNPCSelectedChanged(false);
         }
     }
 
     private void RemoveAllSelectedNPCs() {
         foreach (NPC npc in selectedNpcs) {
-            npc.npcVisual.OnNPCSelectedChanged(false);
+            npc?.npcVisual.OnNPCSelectedChanged(false);
         }
         selectedNpcs.Clear();
     }

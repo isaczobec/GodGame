@@ -503,7 +503,7 @@ PrefabInstance:
     - target: {fileID: 3426786160635054361, guid: 7b5bf1a3097d9614398c2d304c5a070b,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 6.76
+      value: 7.08
       objectReference: {fileID: 0}
     - target: {fileID: 3426786160635054361, guid: 7b5bf1a3097d9614398c2d304c5a070b,
         type: 3}
@@ -519,6 +519,21 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7796044600110865331, guid: 7b5bf1a3097d9614398c2d304c5a070b,
+        type: 3}
+      propertyPath: healthBarColor.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7796044600110865331, guid: 7b5bf1a3097d9614398c2d304c5a070b,
+        type: 3}
+      propertyPath: healthBarColor.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7796044600110865331, guid: 7b5bf1a3097d9614398c2d304c5a070b,
+        type: 3}
+      propertyPath: healthBarColor.r
+      value: 0.9481132
       objectReference: {fileID: 0}
     - target: {fileID: 7796044600110865331, guid: 7b5bf1a3097d9614398c2d304c5a070b,
         type: 3}
