@@ -19,6 +19,7 @@ public class NPCvisual : MonoBehaviour
     [Header("Refs to materials")]
 
     [SerializeField] private Material invincibilityMaterial;
+    [SerializeField] private Material hoveredMaterial;
 
 
 
@@ -70,6 +71,8 @@ public class NPCvisual : MonoBehaviour
         npcMaterialSetter = new NPCMaterialSetter(skinnedMeshRenderers, meshRenderers, npc);
         npcMaterialSetter.SetInvincibilityMaterial(invincibilityMaterial);
         npcMaterialSetter.SetupInvincibiltyMaterials();
+        npcMaterialSetter.SetHoveredMaterial(hoveredMaterial);
+        npcMaterialSetter.SetupHoveredMaterials();
     }
 
 

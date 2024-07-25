@@ -9,8 +9,14 @@ public class NPCMaterialSetter {
     public NPC npc {get; private set;}
 
     private Material invincibilityMaterial;
+
+    bool isHovered = false;
     public void SetInvincibilityMaterial(Material material) {
         invincibilityMaterial = material;
+    }
+    private Material hoveredMaterial;
+    public void SetHoveredMaterial(Material material) {
+        hoveredMaterial = material;
     }
 
 
@@ -36,6 +42,11 @@ public class NPCMaterialSetter {
         npc.npcStats.OnInvincibilityChanged += ChangeInvincibiltyMaterials;
     }
 
+    public void SetupHoveredMaterials() {
+        PlayerActions.instance.OnNpcHoveredChanged += ChangeHoveredMaterials;
+    }
+
+
     private void ChangeInvincibiltyMaterials(object sender, bool invincible)
     {
         if (invincible)
@@ -45,6 +56,27 @@ public class NPCMaterialSetter {
         else
         {
             ApplyDefaultMaterials();
+            // make sure to apply hovered material if npc is hovered
+            if (isHovered) {
+                AddMaterial(hoveredMaterial);
+            }
+        }
+    }
+
+    private void ChangeHoveredMaterials(object sender, NPCHoveredEventArgs args)
+    {
+        Debug.Log("hovered changed");
+        if (args.npc == npc)
+        {
+            if (!isHovered) {
+                AddMaterial(hoveredMaterial);
+                isHovered = true;
+            }
+        }
+        else if (args.unHoveredOtherNPCs)
+        {
+            ApplyDefaultMaterials();
+            isHovered = false;
         }
     }
 
@@ -73,6 +105,31 @@ public class NPCMaterialSetter {
             }
             if (nPCRenderer.meshRenderer != null) {
                 nPCRenderer.meshRenderer.materials = materials;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Adds a material to all NPC renderers; all meshes of an npc visual.
+    /// </summary>
+    /// <param name="material"></param>
+    public void AddMaterial(Material material) {
+        foreach (NPCRenderer nPCRenderer in nPCRenderers) {
+            if (nPCRenderer.skinnedMeshRenderer != null) {
+                Material[] newMaterials = new Material[nPCRenderer.skinnedMeshRenderer.materials.Length + 1];
+                for (int i = 0; i < nPCRenderer.skinnedMeshRenderer.materials.Length; i++) {
+                    newMaterials[i] = nPCRenderer.skinnedMeshRenderer.materials[i];
+                }
+                newMaterials[newMaterials.Length - 1] = material;
+                nPCRenderer.skinnedMeshRenderer.materials = newMaterials;
+            }
+            if (nPCRenderer.meshRenderer != null) {
+                Material[] newMaterials = new Material[nPCRenderer.meshRenderer.materials.Length + 1];
+                for (int i = 0; i < nPCRenderer.meshRenderer.materials.Length; i++) {
+                    newMaterials[i] = nPCRenderer.meshRenderer.materials[i];
+                }
+                newMaterials[newMaterials.Length - 1] = material;
+                nPCRenderer.meshRenderer.materials = newMaterials;
             }
         }
     }

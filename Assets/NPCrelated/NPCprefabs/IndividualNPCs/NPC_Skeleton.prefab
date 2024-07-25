@@ -57,6 +57,7 @@ MonoBehaviour:
   - {fileID: 8390791997881429751}
   invincibilityMaterial: {fileID: 2100000, guid: 3628d2e9bcfb85c499eec361a8a52365,
     type: 2}
+  hoveredMaterial: {fileID: 2100000, guid: 6e6efcce9b908ff4e9842db270d9753e, type: 2}
   turningSpeed: 10
 --- !u!114 &4051154896624385624
 MonoBehaviour:

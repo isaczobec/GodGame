@@ -20,6 +20,15 @@ public class PlayerActions : MonoBehaviour
     private List<NPC> playerNPCs = new List<NPC>();
     private List<NPC> selectedNpcs = new List<NPC>();
 
+
+
+    private NPC currenylyHoveredNPC;
+
+    /// <summary>
+    /// Event that is invoked when the hovered npc changes. NPC can be null.
+    /// </summary>
+    public event EventHandler<NPCHoveredEventArgs> OnNpcHoveredChanged;
+
     
     private NPC _mainSelectedNPC;
     private NPC mainSelectedNPC {
@@ -38,6 +47,13 @@ public class PlayerActions : MonoBehaviour
 
     private bool isInCameraControlMode = false;
 
+    public static PlayerActions instance;
+    private void Awake()
+    {
+        if (instance == null) instance = this;
+        else Destroy(this);
+    }
+
     void Start()
     {
         // subscribe to events
@@ -53,6 +69,20 @@ public class PlayerActions : MonoBehaviour
     void Update()
     {
         HandlePlayerCameraCommunication();
+        HandleHoveredNPC();
+    }
+
+    private void HandleHoveredNPC()
+    {
+        NPC hoveredNPC = playerCamera.GetHoveredNPC();
+        if (hoveredNPC == currenylyHoveredNPC) return;
+        if (hoveredNPC != null)
+        {
+            OnNpcHoveredChanged?.Invoke(this, new NPCHoveredEventArgs { npc = hoveredNPC, unHoveredOtherNPCs = true });
+        } else {
+            OnNpcHoveredChanged?.Invoke(this, new NPCHoveredEventArgs { npc = null, unHoveredOtherNPCs = true });
+        }
+        currenylyHoveredNPC = hoveredNPC;
     }
 
     private void Mouse2Click(object sender, InputAction.CallbackContext e)
@@ -186,4 +216,10 @@ public class PlayerActions : MonoBehaviour
             bool succeded = mainSelectedNPC.abilityList.TryCastAbilityAtIndex(abilityIndex);
         }
     }
+}
+
+
+public class NPCHoveredEventArgs {
+    public NPC npc;
+    public bool unHoveredOtherNPCs;
 }
