@@ -6,15 +6,28 @@ using UnityEngine;
 
 public class NPCvisual : MonoBehaviour
 {
+    [Header("References")]
     [SerializeField] private Animator npcAnimator;
     [SerializeField] private GameObject visualGameObject;
     [SerializeField] private NPCHealthBar npcHealthBar;
     public NPCHealthBar NPCHealthBar => npcHealthBar;
 
+    [Header("Refs to Renderers")]
+    [SerializeField] private MeshRenderer[] meshRenderers;
+    [SerializeField] private SkinnedMeshRenderer[] skinnedMeshRenderers;
+
+    [Header("Refs to materials")]
+
+    [SerializeField] private Material invincibilityMaterial;
+
+
+
     private NPCSelctedDecal npcSelctedDecal;
     private NPCTargettedDecal nPCTargettedDecal;
     private NPC nPC;
 
+
+    private NPCMaterialSetter npcMaterialSetter;
     
 
 
@@ -50,6 +63,11 @@ public class NPCvisual : MonoBehaviour
         // set decal values
         this.npcSelctedDecal = npcSelctedDecal;
         this.nPCTargettedDecal = nPCTargettedDecal;
+
+        // setup the npcMaterialSetter
+        npcMaterialSetter = new NPCMaterialSetter(skinnedMeshRenderers, meshRenderers, npc);
+        npcMaterialSetter.SetInvincibilityMaterial(invincibilityMaterial);
+        npcMaterialSetter.SetupInvincibiltyMaterials();
     }
 
     private void AttackSpeedUpdated(object sender, float e)

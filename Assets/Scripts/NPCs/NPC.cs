@@ -145,6 +145,7 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     void Update()
     {
         npcBehaviour.FrameUpdate();
+        npcStats.UpdateStats();
 
         if (isDead && isOwnedByPlayer) Debug.Log("NPC is dead");
         if (isDead) Die();
@@ -516,6 +517,10 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
     // ------ DOING AND TAKING DAMAGE ------
 
     public HitInfo TakeDamage(float damage) {
+
+        // cant hit an invincible npc
+        if (npcStats.isInvincible) return new HitInfo{wasHit = false};
+
         float finalDamage = damage;
         bool died = false;
 
@@ -529,6 +534,8 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
         if (died) {
             isDead = true;
         }
+
+        npcStats.invincibilityTime = 0.2f; // set invincibility time        
 
         HitInfo hitInfo = new HitInfo{killed = died, finalDamage = finalDamage};
         OnDamageTaken?.Invoke(this, hitInfo);
