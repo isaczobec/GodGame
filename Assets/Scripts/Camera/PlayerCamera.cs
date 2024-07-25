@@ -29,6 +29,16 @@ public class PlayerCamera : MonoBehaviour
     }
 
 
+    public static PlayerCamera Instance { get; private set; }
+    private void Awake() {
+        if (Instance == null) {
+            Instance = this;
+        } else {
+            Destroy(gameObject);
+        }
+    }
+
+
     private void Start() {
         Cursor.lockState = CursorLockMode.Confined;
         PlayerInputHandler.Instance.OnMouse2 += Mouse2Click;

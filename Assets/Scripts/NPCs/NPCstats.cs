@@ -58,4 +58,8 @@ public class NPCStats {
         currentHealth = maxHealth;
         attackSpeed = NPCBaseStats.attackSpeed;
     }
+
+    public float GetHealthPercentage() {
+        return currentHealth / maxHealth;
+    }
 }

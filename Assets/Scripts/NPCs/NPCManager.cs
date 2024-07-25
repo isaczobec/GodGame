@@ -124,6 +124,12 @@ public class NpcManager : MonoBehaviour
         NPCSelectionHitBox hitBox = hitBoxObject.GetComponent<NPCSelectionHitBox>();
         hitBox.SetNPC(spawnedNPC);
 
+        // setup the Healthbar
+        NPCHealthBar healthBar = npcVisual.NPCHealthBar;
+        if (healthBar != null) {
+            healthBar.Setup(spawnedNPC);
+        }
+
 
 
         WorldDataGenerator.instance.AddRenderAround(spawnedNPC);

@@ -8,6 +8,8 @@ public class NPCvisual : MonoBehaviour
 {
     [SerializeField] private Animator npcAnimator;
     [SerializeField] private GameObject visualGameObject;
+    [SerializeField] private NPCHealthBar npcHealthBar;
+    public NPCHealthBar NPCHealthBar => npcHealthBar;
 
     private NPCSelctedDecal npcSelctedDecal;
     private NPCTargettedDecal nPCTargettedDecal;
