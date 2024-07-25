@@ -56,6 +56,8 @@ public class NPCvisual : MonoBehaviour
         nPC.npcStats.OnMovementSpeedChanged += MovementSpeedUpdated;
         nPC.npcStats.OnAttackSpeedChanged += AttackSpeedUpdated;
 
+        npc.OnDamageTaken += OnDamageTaken;
+
         // set initial values
         npcAnimator.SetFloat(MovementSpeed, nPC.npcStats.movementSpeed);
         npcAnimator.SetFloat(AttackSpeed, nPC.npcStats.attackSpeed);
@@ -69,6 +71,7 @@ public class NPCvisual : MonoBehaviour
         npcMaterialSetter.SetInvincibilityMaterial(invincibilityMaterial);
         npcMaterialSetter.SetupInvincibiltyMaterials();
     }
+
 
     private void AttackSpeedUpdated(object sender, float e)
     {
@@ -153,5 +156,11 @@ public class NPCvisual : MonoBehaviour
     public void EndAnimationActionPremautrely() {
         npcAnimator.SetTrigger(EndAnimationAction);
         waitingOnActionToFinish = null;
+    }
+    private void OnDamageTaken(object sender, HitInfo hitInfo)
+    {
+        if (hitInfo.wasHit) {
+            DamageNumberManager.instance.CreateDamageNumber(nPC.transform.position, hitInfo.finalDamage, !nPC.isOwnedByPlayer);
+        }
     }
 }

@@ -535,7 +535,7 @@ public class NPC : MonoBehaviour, IRenderAround // Irenderaround is an interface
             isDead = true;
         }
 
-        npcStats.invincibilityTime = 0.2f; // set invincibility time        
+        npcStats.invincibilityTime = isOwnedByPlayer? 0.08f : 0.2f; // set invincibility time        
 
         HitInfo hitInfo = new HitInfo{killed = died, finalDamage = finalDamage};
         OnDamageTaken?.Invoke(this, hitInfo);

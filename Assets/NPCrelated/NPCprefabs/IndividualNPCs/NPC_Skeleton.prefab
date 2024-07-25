@@ -91,7 +91,7 @@ MonoBehaviour:
   targetNPC: {fileID: 0}
   maxStartRange: 2.9
   maxPerformRange: 5
-  baseDamage: 2
+  baseDamage: 20
 --- !u!1 &3249899035974576066
 GameObject:
   m_ObjectHideFlags: 0

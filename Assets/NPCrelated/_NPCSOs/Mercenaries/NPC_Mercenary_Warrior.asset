@@ -16,10 +16,10 @@ MonoBehaviour:
   prefab: {fileID: 1787226246611154714, guid: 8d7e740f55f08034fbe46be30cc636de, type: 3}
   npcBaseStats:
     renderDistance: 3
-    movementSpeed: 6
-    attackSpeed: 1
+    movementSpeed: 7
+    attackSpeed: 1.5
     maxWalkableSteepness: 0.5
-    maxHealth: 1000
+    maxHealth: 2000
   npcBehaviourType: 0
   isMercenary: 1
   selectedHitBoxDimensions: {x: 6, y: 6, z: 6}
