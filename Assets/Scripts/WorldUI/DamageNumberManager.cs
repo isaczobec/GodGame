@@ -32,7 +32,7 @@ public class DamageNumberManager : MonoBehaviour
     public void CreateDamageNumber(Vector3 position, float damage, bool enemyTookDamage)
     {
         GameObject damageNumberGameObject = Instantiate(damageNumberPrefab, position, Quaternion.identity);
-        damageNumberGameObject.transform.parent = transform;
+        damageNumberGameObject.transform.SetParent(transform,worldPositionStays: false);
         DamageNumber damageNumber = damageNumberGameObject.GetComponent<DamageNumber>();
 
         // calculate the scale based on previous damage

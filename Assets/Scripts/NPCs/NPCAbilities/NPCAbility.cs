@@ -20,7 +20,7 @@ public class NPCAbility : MonoBehaviour
     }
 
     public float currentCooldown = 0;
-    public float maxCooldown = 1;
+    public float maxCooldown = 3;
 
     private void Update() {
         if (currentCooldown > 0) {
@@ -29,6 +29,9 @@ public class NPCAbility : MonoBehaviour
     }
 
     public bool TryCastAbility() {
+
+        if (currentCooldown > 0) return false; // cant cast if on cooldown
+        
         if (GetCanBeCast()) {
             currentCooldown = maxCooldown;
             if (npcAnimationAction != null) {

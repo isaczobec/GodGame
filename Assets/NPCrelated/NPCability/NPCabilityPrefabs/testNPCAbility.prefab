@@ -47,7 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   npcAnimationAction: {fileID: 447809632916366462}
   currentCooldown: 0
-  maxCooldown: 1
+  maxCooldown: 3
 --- !u!114 &447809632916366462
 MonoBehaviour:
   m_ObjectHideFlags: 0
