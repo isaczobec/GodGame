@@ -22,6 +22,20 @@ public class NPCAbilityList
         }
     }
 
+    /// <summary>
+    /// Instantiates an ability from the given NPCAbilitySO and sets it at the given index.
+    /// </summary>
+    /// <param name="abilitySO"></param>
+    /// <param name="index"></param>
+    public void AddAbilityFromAbilitySO(NPCAbilitySO abilitySO, int index) {
+        if (abilitySO != null) {
+            GameObject abilityObject = GameObject.Instantiate(abilitySO.abilityPrefab);
+            abilityObject.transform.parent = ownerNPC.transform;
+            NPCAbility ability = abilityObject.GetComponent<NPCAbility>();
+            SetAbilityAtIndex(ability, index);
+        }
+    }
+
     public NPCAbility GetAbilityAtIndex(int index) {
         return abilities[index];
     }

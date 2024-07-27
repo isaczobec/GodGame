@@ -11,6 +11,8 @@ public class NpcManager : MonoBehaviour
 
     [SerializeField] private GameObject npcSelectedHitBoxPrefab;
 
+    [SerializeField] private NPCAbilitySO testAbilitySO;
+
     public static NpcManager instance;
 
     public List<NPC> npcs = new List<NPC>(); // for debbuyding?
@@ -74,16 +76,18 @@ public class NpcManager : MonoBehaviour
         NPCAnimationActionList nPCAnimationActionList = npcGameObject.GetComponent<NPCAnimationActionList>();
         nPCAnimationActionList.SetupActions(spawnedNPC);
 
-        // add abilityList
+        // add abilityList and instantiate it
         spawnedNPC.abilityList = new NPCAbilityList(spawnedNPC);
-        NPCAbility[] abilities = npcGameObject.GetComponents<NPCAbility>();
-        Debug.Log("Abilities length: " + abilities.Length);
-        for (int i = 0; i < abilities.Length; i++) {
-            Debug.Log("Setting ability at index: " + i);
-            spawnedNPC.abilityList.SetAbilityAtIndex(abilities[i],i);
-            if (i > spawnedNPC.abilityList.maxAbilities - 1 ) break;
-        }
-        // for testing; try adding abilities to the abilityList
+        // NPCAbility[] abilities = npcGameObject.GetComponents<NPCAbility>();
+        // // for testing; try adding abilities to the abilityList
+        // for (int i = 0; i < abilities.Length; i++) {
+        //     Debug.Log("Setting ability at index: " + i);
+        //     spawnedNPC.abilityList.SetAbilityAtIndex(abilities[i],i);
+        //     if (i > spawnedNPC.abilityList.maxAbilities - 1 ) break;
+        // }
+
+        spawnedNPC.abilityList.AddAbilityFromAbilitySO(testAbilitySO, 0);
+
 
 
         // init the npcBehaviour. this is perhaps temporary, not sure if this is the best way to do it

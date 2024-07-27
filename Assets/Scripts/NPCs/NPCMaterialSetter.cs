@@ -65,7 +65,6 @@ public class NPCMaterialSetter {
 
     private void ChangeHoveredMaterials(object sender, NPCHoveredEventArgs args)
     {
-        Debug.Log("hovered changed");
         if (args.npc == npc)
         {
             if (!isHovered) {
